@@ -4,7 +4,7 @@ import { EnergyMetric } from '@/types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface EnergyChartProps {
-   EnergyMetric[];
+data:EnergyMetric[];
 }
 
 export default function EnergyChart({ data }: EnergyChartProps) {
