@@ -14,9 +14,8 @@ export function useOptimizationStream() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Point to your AI Engine URL
-    // Note: If your AI Engine is hosted elsewhere, change 'localhost:8000' to that URL
-    const ws = new WebSocket('ws://localhost:8000/ws/stream');
+    // Connect to your LIVE AI Engine on Render
+    const ws = new WebSocket('wss://ai-gpu-brain.onrender.com/ws/stream');
     
     ws.onopen = () => setConnected(true);
     ws.onclose = () => setConnected(false);
