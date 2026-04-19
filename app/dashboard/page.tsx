@@ -12,6 +12,8 @@ import EnergyChart from '@/components/EnergyChart';
 import OptimizationPanel from '@/components/OptimizationPanel';
 import CostSavings from '@/components/CostSavings';
 import TemperatureAlert from '@/components/TemperatureAlert';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { mockData } from '@/lib/mockData';
 import { DashboardData } from '@/types';
 import { RefreshCw, Download } from 'lucide-react';
@@ -27,6 +29,9 @@ export default function DashboardPage() {
     temperature: number;
     location: string;
   }>>([]);
+
+  const { addNotification } = useNotifications();
+  const { settings } = useTheme();
 
   const refreshData = () => {
     setIsLoading(true);
@@ -47,7 +52,8 @@ export default function DashboardPage() {
       location: cluster.location,
       status: cluster.status,
       gpu_utilization: `${cluster.gpuUtilization}%`,
-      power_draw: cluster.powerDraw,      temperature: `${cluster.temperature}°C`,
+      power_draw: cluster.powerDraw,
+      temperature: `${cluster.temperature}°C`,
       renewable_energy: `${cluster.renewablePercentage}%`,
       active_gpus: `${cluster.activeGPUs}/${cluster.totalGPUs}`,
       cost_per_kwh: cluster.costPerKWh
@@ -55,95 +61,10 @@ export default function DashboardPage() {
     exportToCSV(gpuData, 'gpu_metrics');
   };
 
-  // Check for temperature alerts
+  // Monitor temperatures & trigger alerts/notifications
   useEffect(() => {
     const alerts = data.clusters
       .filter(cluster => cluster.temperature > 75)
       .map(cluster => ({
         id: cluster.id,
-        clusterName: cluster.name,
-        temperature: cluster.temperature,
-        location: cluster.location
-      }));
-    setActiveAlerts(alerts);
-  }, [data.clusters]);
-
-  const dismissAlert = (id: string) => {
-    setActiveAlerts(prev => prev.filter(alert => alert.id !== id));
-  };
-
-  useEffect(() => {
-    const interval = setInterval(refreshData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <DashboardLayout>
-      {/* Temperature Alert Popups */}
-      {activeAlerts.map(alert => (
-        <TemperatureAlert 
-          key={alert.id}
-          clusterName={alert.clusterName}
-          temperature={alert.temperature}
-          location={alert.location}
-          onDismiss={() => dismissAlert(alert.id)}
-        />
-      ))}
-
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-100">Dashboard</h2>
-            <p className="text-gray-400 mt-1">Real-time GPU energy optimization and monitoring</p>
-          </div>          <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-sm text-gray-500">Last updated: {lastUpdated.toLocaleTimeString()}</p>
-            <button 
-              onClick={exportGPUData}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              Export GPU Data
-            </button>
-            <button 
-              onClick={exportEnergyData}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              Export Energy Data
-            </button>
-            <button 
-              onClick={refreshData} 
-              disabled={isLoading} 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 rounded-lg transition-colors"
-            >
-              <RefreshCw className={isLoading ? "animate-spin h-4 w-4" : "h-4 w-4"} />
-              Refresh
-            </button>
-          </div>
-        </div>
-
-        {/* Cost Savings */}
-        <CostSavings 
-          totalSavings={data.totalCostSavings} 
-          carbonReduction={data.carbonReduction} 
-        />
-
-        {/* GPU Clusters */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {data.clusters.map((cluster) => (
-              <GPUMetricsCard key={cluster.id} cluster={cluster} />
-            ))}
-          </div>
-        </div>
-
-        {/* Energy Chart */}
-        <EnergyChart data={data.energyMetrics} />
-
-        {/* Optimization Panel */}
-        <OptimizationPanel optimizations={data.optimizations} />
-      </div>
-    </DashboardLayout>  );
-        }
+        clusterName: cluster
