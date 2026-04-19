@@ -11,6 +11,7 @@ import GPUMetricsCard from '@/components/GPUMetricsCard';
 import EnergyChart from '@/components/EnergyChart';
 import OptimizationPanel from '@/components/OptimizationPanel';
 import CostSavings from '@/components/CostSavings';
+import TemperatureAlert from '@/components/TemperatureAlert';
 import { mockData } from '@/lib/mockData';
 import { DashboardData } from '@/types';
 import { RefreshCw, Download } from 'lucide-react';
@@ -20,6 +21,12 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>(mockData);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [activeAlerts, setActiveAlerts] = useState<Array<{
+    id: string;
+    clusterName: string;
+    temperature: number;
+    location: string;
+  }>>([]);
 
   const refreshData = () => {
     setIsLoading(true);
@@ -40,14 +47,31 @@ export default function DashboardPage() {
       location: cluster.location,
       status: cluster.status,
       gpu_utilization: `${cluster.gpuUtilization}%`,
-      power_draw: cluster.powerDraw,
-      temperature: `${cluster.temperature}°C`,
+      power_draw: cluster.powerDraw,      temperature: `${cluster.temperature}°C`,
       renewable_energy: `${cluster.renewablePercentage}%`,
       active_gpus: `${cluster.activeGPUs}/${cluster.totalGPUs}`,
       cost_per_kwh: cluster.costPerKWh
     }));
     exportToCSV(gpuData, 'gpu_metrics');
   };
+
+  // Check for temperature alerts
+  useEffect(() => {
+    const alerts = data.clusters
+      .filter(cluster => cluster.temperature > 75)
+      .map(cluster => ({
+        id: cluster.id,
+        clusterName: cluster.name,
+        temperature: cluster.temperature,
+        location: cluster.location
+      }));
+    setActiveAlerts(alerts);
+  }, [data.clusters]);
+
+  const dismissAlert = (id: string) => {
+    setActiveAlerts(prev => prev.filter(alert => alert.id !== id));
+  };
+
   useEffect(() => {
     const interval = setInterval(refreshData, 30000);
     return () => clearInterval(interval);
@@ -55,14 +79,24 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      {/* Temperature Alert Popups */}
+      {activeAlerts.map(alert => (
+        <TemperatureAlert 
+          key={alert.id}
+          clusterName={alert.clusterName}
+          temperature={alert.temperature}
+          location={alert.location}
+          onDismiss={() => dismissAlert(alert.id)}
+        />
+      ))}
+
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-100">Dashboard</h2>
             <p className="text-gray-400 mt-1">Real-time GPU energy optimization and monitoring</p>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          </div>          <div className="flex items-center gap-3 flex-wrap">
             <p className="text-sm text-gray-500">Last updated: {lastUpdated.toLocaleTimeString()}</p>
             <button 
               onClick={exportGPUData}
@@ -96,7 +130,8 @@ export default function DashboardPage() {
         />
 
         {/* GPU Clusters */}
-        <div>          <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {data.clusters.map((cluster) => (
               <GPUMetricsCard key={cluster.id} cluster={cluster} />
@@ -110,6 +145,5 @@ export default function DashboardPage() {
         {/* Optimization Panel */}
         <OptimizationPanel optimizations={data.optimizations} />
       </div>
-    </DashboardLayout>
-  );
-}
+    </DashboardLayout>  );
+        }
