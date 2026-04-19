@@ -1,0 +1,8 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+websockets==13.0
+pydantic==2.9.0
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+python-dotenv==1.0.1
