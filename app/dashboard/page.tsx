@@ -13,7 +13,8 @@ import OptimizationPanel from '@/components/OptimizationPanel';
 import CostSavings from '@/components/CostSavings';
 import { mockData } from '@/lib/mockData';
 import { DashboardData } from '@/types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Download } from 'lucide-react';
+import { exportToCSV } from '@/lib/exportData';
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>(mockData);
@@ -29,6 +30,24 @@ export default function DashboardPage() {
     }, 1000);
   };
 
+  const exportEnergyData = () => {
+    exportToCSV(data.energyMetrics, 'energy_consumption');
+  };
+
+  const exportGPUData = () => {
+    const gpuData = data.clusters.map(cluster => ({
+      cluster_name: cluster.name,
+      location: cluster.location,
+      status: cluster.status,
+      gpu_utilization: `${cluster.gpuUtilization}%`,
+      power_draw: cluster.powerDraw,
+      temperature: `${cluster.temperature}°C`,
+      renewable_energy: `${cluster.renewablePercentage}%`,
+      active_gpus: `${cluster.activeGPUs}/${cluster.totalGPUs}`,
+      cost_per_kwh: cluster.costPerKWh
+    }));
+    exportToCSV(gpuData, 'gpu_metrics');
+  };
   useEffect(() => {
     const interval = setInterval(refreshData, 30000);
     return () => clearInterval(interval);
@@ -38,13 +57,27 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-100">Dashboard</h2>
             <p className="text-gray-400 mt-1">Real-time GPU energy optimization and monitoring</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <p className="text-sm text-gray-500">Last updated: {lastUpdated.toLocaleTimeString()}</p>
+            <button 
+              onClick={exportGPUData}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              Export GPU Data
+            </button>
+            <button 
+              onClick={exportEnergyData}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              Export Energy Data
+            </button>
             <button 
               onClick={refreshData} 
               disabled={isLoading} 
@@ -63,8 +96,7 @@ export default function DashboardPage() {
         />
 
         {/* GPU Clusters */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
+        <div>          <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {data.clusters.map((cluster) => (
               <GPUMetricsCard key={cluster.id} cluster={cluster} />
