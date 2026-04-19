@@ -3,15 +3,13 @@
  * Copyright (c) 2026 Mike Bains. All Rights Reserved.
  * Contact: Mikebains41@gmail.com
  */
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'AI + GPU + Energy Optimization Platform',
-  description: 'Optimize GPU compute and energy usage across data centers',
+export const metadata = {
+  title: 'AI GPU Energy Optimizer',
+  description: 'Real-time GPU energy optimization and monitoring dashboard',
 };
 
 export default function RootLayout({
@@ -20,8 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
