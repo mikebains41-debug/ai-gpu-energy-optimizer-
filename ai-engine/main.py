@@ -6,8 +6,12 @@ from optimizer import engine, Recommendation
 from metrics_simulator import generate_cluster_metrics
 import requests
 
-# YOUR COLAB URL
-COLAB_URL = "http://5000-m-s-kkb-use1c2-2lpwdnee1ssab-c.us-east1-2.prod.colab.dev/metrics"
+# ============================================
+# REPLACE THE URL BELOW WITH YOUR FRESH COLAB URL
+# When Colab resets (24-48 hours), get a new URL like:
+# http://5000-gpu-t4-xxxx.prod.colab.dev/metrics
+# ============================================
+COLAB_URL = "http://YOUR-NEW-COLAB-URL-HERE.prod.colab.dev/metrics"
 
 app = FastAPI()
 
@@ -56,6 +60,7 @@ async def get_metrics():
         return {"timestamp": datetime.utcnow().isoformat(), "real_gpu": data, "is_mock": False}
     except Exception as e:
         print(f"ERROR: {e}")
+    # Fallback to mock data if Colab is down
     clusters, carbon = generate_cluster_metrics()
     recommendations = engine.analyze(clusters, carbon)
     return {"timestamp": datetime.utcnow().isoformat(), "clusters": [c.dict() for c in clusters], "recommendations": [r.dict() for r in recommendations], "grid_carbon_intensity": carbon, "total_power_mw": sum(c.power_draw for c in clusters), "avg_utilization": sum(c.utilization for c in clusters) / len(clusters), "is_mock": True}
