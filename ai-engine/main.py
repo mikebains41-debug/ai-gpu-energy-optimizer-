@@ -12,9 +12,8 @@ import requests
 
 # ==========================================
 # STEP 1: PASTE YOUR COLAB URL BELOW
-# Make sure it ends with /metrics
 # ==========================================
-COLAB_URL = "http://5000-gpu-t4-s-kkb-usw1b0-2bwstzf8e1yr2-b.us-west1-0.prod.colab.dev/metrics" 
+COLAB_URL = "http://5000-gpu-t4-s-kkb-usw1b0-2bwstzf8e1yr2-b.us-west1-0.prod.colab.dev/metrics"
 # ==========================================
 
 app = FastAPI(title="AI GPU Optimization Engine", version="1.0.0")
@@ -47,8 +46,8 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@app.websocket("/ws/stream")async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+@app.websocket("/ws/stream")
+async def websocket_endpoint(websocket: WebSocket):    await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
@@ -59,24 +58,20 @@ manager = ConnectionManager()
 
 @app.get("/api/metrics")
 async def get_metrics():
-    # FORCE FETCH FROM COLAB
     try:
-        print(f"🚀 FETCHING FROM: {COLAB_URL}")
+        print(f"FETCHING FROM: {COLAB_URL}")
         response = requests.get(COLAB_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
-        # If we got data, return it immediately
         return {
             "timestamp": datetime.utcnow().isoformat(),
             "real_gpu": data,
             "is_mock": False
         }
     except Exception as e:
-        print(f"❌ CONNECTION FAILED: {e}")
+        print(f"CONNECTION FAILED: {e}")
 
-    # ONLY IF IT FAILS, SHOW MOCK DATA
-    print("⚠️ FALLING BACK TO MOCK DATA")
+    print("FALLING BACK TO MOCK DATA")
     clusters, carbon = generate_cluster_metrics()
     recommendations = engine.analyze(clusters, carbon)
     
@@ -96,12 +91,12 @@ async def apply_recommendation(rec_id: str):
 
 async def live_stream_loop():
     while True:
-        metrics = await get_metrics()        await manager.broadcast(metrics)
+        metrics = await get_metrics()
+        await manager.broadcast(metrics)
         await asyncio.sleep(5)
 
 @app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(live_stream_loop())
+async def startup_event():    asyncio.create_task(live_stream_loop())
 
 if __name__ == "__main__":
     import uvicorn
