@@ -68,7 +68,6 @@ export function useOptimizationStream() {
       } catch (error) {
         console.error('❌ Failed to connect WebSocket:', error);
         setConnected(false);
-        // Fallback to polling if WebSocket fails
         startPolling();
       }
     };
@@ -96,8 +95,8 @@ export function useOptimizationStream() {
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
-      }      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (reconnectTimeoutRef.current) {        clearTimeout(reconnectTimeoutRef.current);
       }
     };
   }, []);
