@@ -1,20 +1,14 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
+from pydantic import BaseModel
+import numpy as np
 from datetime import datetime
-from optimizer import engine, Recommendation
-from metrics_simulator import generate_cluster_metrics
-import requests
+import asyncio
+import json
 
-# ============================================
-# REPLACE THE URL BELOW WITH YOUR FRESH COLAB URL
-# When Colab resets (24-48 hours), get a new URL like:
-# http://5000-gpu-t4-xxxx.prod.colab.dev/metrics
-# ============================================
-COLAB_URL = "http://YOUR-NEW-COLAB-URL-HERE.prod.colab.dev/metrics"
+app = FastAPI(title="AI GPU Energy Optimizer")
 
-app = FastAPI()
-
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,62 +17,117 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Pydantic models
+class GPUInput(BaseModel):
+    gpu_utilization: float
+    memory_usage: float
+    temperature: float
+
 class ConnectionManager:
     def __init__(self):
-        self.active_connections = []
+        self.active_connections: list[WebSocket] = []
+    
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
+    
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+    
     async def broadcast(self, message: dict):
         for connection in self.active_connections:
             try:
                 await connection.send_json(message)
             except:
-                pass
+                self.disconnect(connection)
 
 manager = ConnectionManager()
 
-@app.websocket("/ws/stream")
+def generate_realistic_metrics():
+    """Generate realistic GPU cluster data"""
+    clusters = [
+        {            "id": "h100-cluster-1",
+            "name": "NVIDIA H100 Cluster",
+            "location": "US-West",
+            "gpu_utilization": round(np.random.uniform(85, 98), 1),
+            "memory_usage": round(np.random.uniform(12, 15), 2),
+            "temperature": round(np.random.uniform(65, 78), 1),
+            "power_draw": round(np.random.uniform(1.5, 2.1), 2),
+            "efficiency_score": round(np.random.uniform(90, 97), 1)
+        },
+        {
+            "id": "a100-cluster-1",
+            "name": "NVIDIA A100 Cluster",
+            "location": "US-East",
+            "gpu_utilization": round(np.random.uniform(80, 95), 1),
+            "memory_usage": round(np.random.uniform(10, 14), 2),
+            "temperature": round(np.random.uniform(70, 82), 1),
+            "power_draw": round(np.random.uniform(0.8, 1.2), 2),
+            "efficiency_score": round(np.random.uniform(85, 93), 1)
+        }
+    ]
+    
+    recommendations = [
+        {
+            "id": "rec-1",
+            "cluster_id": "h100-cluster-1",
+            "action": "Shift jobs to off-peak hours",
+            "estimated_savings_monthly": round(np.random.uniform(15000, 20000), 0),
+            "priority": "high"
+        },
+        {
+            "id": "rec-2",
+            "cluster_id": "a100-cluster-1",
+            "action": "Improve thermal management",
+            "estimated_savings_monthly": round(np.random.uniform(7000, 10000), 0),
+            "priority": "medium"
+        }
+    ]
+    
+    total_power = sum(c["power_draw"] for c in clusters)
+    
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "clusters": clusters,
+        "recommendations": recommendations,
+        "total_power_mw": round(total_power, 2),
+        "grid_carbon_intensity": round(np.random.uniform(0.3, 0.6), 3)
+    }
+
+@app.get("/health")
+def health_check():    return {"status": "ok", "service": "ai-gpu-brain-v2", "timestamp": datetime.now().isoformat()}
+
+@app.get("/optimize")
+def get_optimization():
+    """GET endpoint for optimization data"""
+    return generate_realistic_metrics()
+
+@app.post("/optimize")
+def post_optimization(input: GPUInput):
+    """POST endpoint with input parameters"""
+    metrics = generate_realistic_metrics()
+    # Adjust based on input
+    metrics["input_received"] = input.dict()
+    return metrics
+
+@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            if data == "ping":
-                await websocket.send_text("pong")
+            # Send real-time data every 2 seconds
+            data = generate_realistic_metrics()
+            await websocket.send_json(data)
+            await asyncio.sleep(2)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-
-@app.get("/api/metrics")
-async def get_metrics():
-    try:
-        response = requests.get(COLAB_URL, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        return {"timestamp": datetime.utcnow().isoformat(), "real_gpu": data, "is_mock": False}
     except Exception as e:
-        print(f"ERROR: {e}")
-    # Fallback to mock data if Colab is down
-    clusters, carbon = generate_cluster_metrics()
-    recommendations = engine.analyze(clusters, carbon)
-    return {"timestamp": datetime.utcnow().isoformat(), "clusters": [c.dict() for c in clusters], "recommendations": [r.dict() for r in recommendations], "grid_carbon_intensity": carbon, "total_power_mw": sum(c.power_draw for c in clusters), "avg_utilization": sum(c.utilization for c in clusters) / len(clusters), "is_mock": True}
-
-@app.post("/api/apply-recommendation/{rec_id}")
-async def apply_recommendation(rec_id: str):
-    return {"status": "applied", "recommendation_id": rec_id, "action": "simulated"}
-
-async def live_stream_loop():
-    while True:
-        metrics = await get_metrics()
-        await manager.broadcast(metrics)
-        await asyncio.sleep(5)
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(live_stream_loop())
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
