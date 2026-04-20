@@ -8,12 +8,17 @@ from typing import List
 from datetime import datetime
 from optimizer import engine, Recommendation
 from metrics_simulator import generate_cluster_metrics
-import os
 import requests
+
+# ==========================================
+# STEP 1: PASTE YOUR COLAB URL BELOW
+# Make sure it ends with /metrics
+# ==========================================
+COLAB_URL = "http://5000-gpu-t4-s-kkb-usw1b0-2bwstzf8e1yr2-b.us-west1-0.prod.colab.dev/metrics" 
+# ==========================================
 
 app = FastAPI(title="AI GPU Optimization Engine", version="1.0.0")
 
-# Allow Next.js frontend to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,40 +47,36 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@app.websocket("/ws/stream")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/stream")async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()            if data == "ping":
+            data = await websocket.receive_text()
+            if data == "ping":
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
 @app.get("/api/metrics")
 async def get_metrics():
-    telemetry_url = os.getenv("GPU_TELEMETRY_URL")
-    
-    # 1. Try to fetch real data from Colab if URL is set
-    if telemetry_url:
-        try:
-            print(f"🔍 Fetching from Colab: {telemetry_url}")
-            response = requests.get(telemetry_url, timeout=10)
-            response.raise_for_status()
-            real_data = response.json()
-            print(f"✅ Got real data: {real_data}")
-            
-            # Return the real data
-            return {
-                "timestamp": datetime.utcnow().isoformat(),
-                "real_gpu": real_data,
-                "is_mock": False
-            }
-        except Exception as e:
-            print(f"❌ Failed to fetch from Colab (using mock): {e}")
+    # FORCE FETCH FROM COLAB
+    try:
+        print(f"🚀 FETCHING FROM: {COLAB_URL}")
+        response = requests.get(COLAB_URL, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        # If we got data, return it immediately
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "real_gpu": data,
+            "is_mock": False
+        }
+    except Exception as e:
+        print(f"❌ CONNECTION FAILED: {e}")
 
-    # 2. Fallback to Fake Data if Colab is down
-    print("⚠️ Using Mock Data")
+    # ONLY IF IT FAILS, SHOW MOCK DATA
+    print("⚠️ FALLING BACK TO MOCK DATA")
     clusters, carbon = generate_cluster_metrics()
     recommendations = engine.analyze(clusters, carbon)
     
@@ -95,8 +96,8 @@ async def apply_recommendation(rec_id: str):
 
 async def live_stream_loop():
     while True:
-        metrics = await get_metrics()
-        await manager.broadcast(metrics)        await asyncio.sleep(5)
+        metrics = await get_metrics()        await manager.broadcast(metrics)
+        await asyncio.sleep(5)
 
 @app.on_event("startup")
 async def startup_event():
