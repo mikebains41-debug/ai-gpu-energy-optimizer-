@@ -1,22 +1,15 @@
-"""
-AI Optimization Engine API & Real-Time Stream
-"""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-from typing import List
 from datetime import datetime
 from optimizer import engine, Recommendation
 from metrics_simulator import generate_cluster_metrics
 import requests
 
-# ==========================================
-# STEP 1: PASTE YOUR COLAB URL BELOW
-# ==========================================
+# PASTE YOUR COLAB URL BELOW (keep the quotes)
 COLAB_URL = "http://5000-gpu-t4-s-kkb-usw1b0-2bwstzf8e1yr2-b.us-west1-0.prod.colab.dev/metrics"
-# ==========================================
 
-app = FastAPI(title="AI GPU Optimization Engine", version="1.0.0")
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,15 +21,12 @@ app.add_middleware(
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
+        self.active_connections = []
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
-
     async def broadcast(self, message: dict):
         for connection in self.active_connections:
             try:
@@ -47,7 +37,8 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @app.websocket("/ws/stream")
-async def websocket_endpoint(websocket: WebSocket):    await manager.connect(websocket)
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
@@ -59,31 +50,15 @@ async def websocket_endpoint(websocket: WebSocket):    await manager.connect(web
 @app.get("/api/metrics")
 async def get_metrics():
     try:
-        print(f"FETCHING FROM: {COLAB_URL}")
         response = requests.get(COLAB_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-        return {
-            "timestamp": datetime.utcnow().isoformat(),
-            "real_gpu": data,
-            "is_mock": False
-        }
+        return {"timestamp": datetime.utcnow().isoformat(), "real_gpu": data, "is_mock": False}
     except Exception as e:
-        print(f"CONNECTION FAILED: {e}")
-
-    print("FALLING BACK TO MOCK DATA")
+        print(f"ERROR: {e}")
     clusters, carbon = generate_cluster_metrics()
     recommendations = engine.analyze(clusters, carbon)
-    
-    return {
-        "timestamp": datetime.utcnow().isoformat(),
-        "clusters": [c.dict() for c in clusters],
-        "recommendations": [r.dict() for r in recommendations],
-        "grid_carbon_intensity": carbon,
-        "total_power_mw": sum(c.power_draw for c in clusters),
-        "avg_utilization": sum(c.utilization for c in clusters) / len(clusters),
-        "is_mock": True
-    }
+    return {"timestamp": datetime.utcnow().isoformat(), "clusters": [c.dict() for c in clusters], "recommendations": [r.dict() for r in recommendations], "grid_carbon_intensity": carbon, "total_power_mw": sum(c.power_draw for c in clusters), "avg_utilization": sum(c.utilization for c in clusters) / len(clusters), "is_mock": True}
 
 @app.post("/api/apply-recommendation/{rec_id}")
 async def apply_recommendation(rec_id: str):
@@ -96,7 +71,8 @@ async def live_stream_loop():
         await asyncio.sleep(5)
 
 @app.on_event("startup")
-async def startup_event():    asyncio.create_task(live_stream_loop())
+async def startup_event():
+    asyncio.create_task(live_stream_loop())
 
 if __name__ == "__main__":
     import uvicorn
