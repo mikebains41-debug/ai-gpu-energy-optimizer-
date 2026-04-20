@@ -6,8 +6,8 @@ from optimizer import engine, Recommendation
 from metrics_simulator import generate_cluster_metrics
 import requests
 
-# PASTE YOUR COLAB URL BELOW (keep the quotes)
-COLAB_URL = "http://5000-gpu-t4-s-kkb-usw1b0-2bwstzf8e1yr2-b.us-west1-0.prod.colab.dev/metrics"
+# YOUR COLAB URL
+COLAB_URL = "http://5000-m-s-kkb-use1c2-2lpwdnee1ssab-c.us-east1-2.prod.colab.dev/metrics"
 
 app = FastAPI()
 
