@@ -8,6 +8,8 @@ from typing import List
 from datetime import datetime
 from optimizer import engine, Recommendation
 from metrics_simulator import generate_cluster_metrics
+import os
+import requests
 
 app = FastAPI(title="AI GPU Optimization Engine", version="1.0.0")
 
@@ -45,14 +47,35 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            if data == "ping":
+            data = await websocket.receive_text()            if data == "ping":
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
 @app.get("/api/metrics")
 async def get_metrics():
+    telemetry_url = os.getenv("GPU_TELEMETRY_URL")
+    
+    # 1. Try to fetch real data from Colab if URL is set
+    if telemetry_url:
+        try:
+            print(f"🔍 Fetching from Colab: {telemetry_url}")
+            response = requests.get(telemetry_url, timeout=10)
+            response.raise_for_status()
+            real_data = response.json()
+            print(f"✅ Got real data: {real_data}")
+            
+            # Return the real data
+            return {
+                "timestamp": datetime.utcnow().isoformat(),
+                "real_gpu": real_data,
+                "is_mock": False
+            }
+        except Exception as e:
+            print(f"❌ Failed to fetch from Colab (using mock): {e}")
+
+    # 2. Fallback to Fake Data if Colab is down
+    print("⚠️ Using Mock Data")
     clusters, carbon = generate_cluster_metrics()
     recommendations = engine.analyze(clusters, carbon)
     
@@ -62,7 +85,8 @@ async def get_metrics():
         "recommendations": [r.dict() for r in recommendations],
         "grid_carbon_intensity": carbon,
         "total_power_mw": sum(c.power_draw for c in clusters),
-        "avg_utilization": sum(c.utilization for c in clusters) / len(clusters)
+        "avg_utilization": sum(c.utilization for c in clusters) / len(clusters),
+        "is_mock": True
     }
 
 @app.post("/api/apply-recommendation/{rec_id}")
@@ -72,8 +96,7 @@ async def apply_recommendation(rec_id: str):
 async def live_stream_loop():
     while True:
         metrics = await get_metrics()
-        await manager.broadcast(metrics)
-        await asyncio.sleep(5)
+        await manager.broadcast(metrics)        await asyncio.sleep(5)
 
 @app.on_event("startup")
 async def startup_event():
