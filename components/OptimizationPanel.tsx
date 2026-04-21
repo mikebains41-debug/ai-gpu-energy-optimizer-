@@ -5,14 +5,42 @@
  */
 'use client';
 
-import { Optimization } from '@/types';
 import { Zap, Globe, Thermometer, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
-interface OptimizationPanelProps { optimizations: Optimization[]; }
+interface Recommendation {
+  id: string;
+  cluster_id: string;
+  action: string;
+  estimated_savings_monthly: number;
+  priority: 'high' | 'medium' | 'low';
+}
 
-const typeIcons = { scheduling: Clock, 'load-balancing': Globe, cooling: Thermometer, power: Zap };
-const priorityColors = { high: 'bg-red-500/10 text-red-400 border-red-500/20', medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', low: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+interface OptimizationPanelProps {
+  optimizations: Recommendation[];
+}
+
+const typeIcons: Record<string, any> = {
+  scheduling: Clock,
+  'load-balancing': Globe,
+  cooling: Thermometer,
+  power: Zap,
+};
+
+const priorityColors = {
+  high: 'bg-red-500/10 text-red-400 border-red-500/20',
+  medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  low: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
 
 export default function OptimizationPanel({ optimizations }: OptimizationPanelProps) {
   return (
@@ -23,7 +51,7 @@ export default function OptimizationPanel({ optimizations }: OptimizationPanelPr
       </div>
       <div className="space-y-4">
         {optimizations.map((opt) => {
-          const Icon = typeIcons[opt.type];
+          const Icon = typeIcons[opt.type] || Zap;
           return (
             <div key={opt.id} className="group rounded-lg border border-gray-800 p-4 hover:border-gray-700 hover:bg-gray-800/50 transition-all cursor-pointer">
               <div className="flex items-start gap-4">
@@ -32,12 +60,14 @@ export default function OptimizationPanel({ optimizations }: OptimizationPanelPr
                 </div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">
-                    <p className="text-sm font-medium text-gray-100">{opt.description}</p>
+                    <p className="text-sm font-medium text-gray-100">{opt.action}</p>
                     <span className={cn("px-2 py-1 rounded-full text-xs border", priorityColors[opt.priority])}>{opt.priority}</span>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1 text-green-400"><Zap className="h-4 w-4" /><span className="font-medium">{formatCurrency(opt.potentialSavings)}/mo</span></div>
-                    <div className="flex items-center gap-1 text-gray-400">{opt.implementation === 'automatic' ? <><CheckCircle2 className="h-4 w-4" /><span>Auto-apply</span></> : <><Clock className="h-4 w-4" /><span>Manual review</span></>}</div>
+                    <div className="flex items-center gap-1 text-green-400">
+                      <Zap className="h-4 w-4" />
+                      <span className="font-medium">{formatCurrency(opt.estimated_savings_monthly)}/mo</span>
+                    </div>
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-gray-400 transition-colors" />
