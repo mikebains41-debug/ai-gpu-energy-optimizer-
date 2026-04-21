@@ -40,14 +40,16 @@
 
 ## 🌐 Live Demo
 
-**Frontend:** [https://vb9gyxmx-mikebains41gmailcom.vercel.app](https://vb9gyxmx-mikebains41gmailcom.vercel.app)  
-**Backend API:** [https://ai-gpu-energy-optimizer-production.up.railway.app](https://ai-gpu-energy-optimizer-production.up.railway.app)
+**Frontend:** [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app)  
+**Backend API:** [https://alluring-imagination-production.up.railway.app](https://alluring-imagination-production.up.railway.app)
+
+*Status: ✅ Live & Streaming Real-Time Data*
 
 ---
 
 ## 🧪 Beta Testing Program
-
 **We're looking for 10 AI/data center teams to test our GPU optimization platform.**
+
 ### **What You Get:**
 ✅ **Free access** for 90 days (no credit card required)  
 ✅ **15-30% energy cost reduction** guaranteed  
@@ -94,9 +96,9 @@ Tracking carbon footprint across 5 data centers. Achieves 40% renewable energy u
 **Frontend:**
 ```bash
 git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-.git
-cd ai-gpu-energy-optimizer-
-npm install && npm run dev
+cd ai-gpu-energy-optimizer-npm install && npm run dev
 ```
+
 **Backend:**
 ```bash
 cd ai-engine
