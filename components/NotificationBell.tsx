@@ -18,7 +18,7 @@ export default function NotificationBell() {
     }
   };
 
-  if (notifications.length === 0) return null;
+  if (!notifications || notifications.length === 0) return null;
 
   return (
     <div className="relative">
@@ -44,24 +44,24 @@ export default function NotificationBell() {
           </div>
           
           <div className="divide-y divide-gray-700">
-            {notifications.map(notification => (
+            {notifications.map((notification: any) => (
               <div
-                key={notification.id}
+                key={(notification as any).id}
                 className="p-4 hover:bg-gray-800 transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl">{getNotificationIcon(notification.type)}</span>
+                  <span className="text-xl">{getNotificationIcon((notification as any).type)}</span>
                   <div className="flex-1">
                     <h4 className="text-sm font-semibold text-gray-100">
-                      {notification.title || 'Notification'}
+                      {(notification as any).title || 'Notification'}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{(notification as any).message}</p>
                     <p className="text-xs text-gray-600 mt-2">
-                      {notification.timestamp.toLocaleTimeString()}
+                      {new Date((notification as any).timestamp).toLocaleTimeString()}
                     </p>
                   </div>
                   <button
-                    onClick={() => removeNotification(notification.id)}
+                    onClick={() => removeNotification((notification as any).id)}
                     className="text-gray-500 hover:text-gray-300"
                   >
                     <X className="h-4 w-4" />
