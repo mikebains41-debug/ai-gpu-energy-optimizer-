@@ -1,143 +1,119 @@
-/**
- * PROPRIETARY & CONFIDENTIAL
- * Copyright (c) 2026 Mike Bains. All Rights Reserved.
- * Contact: Mikebains41@gmail.com
- */
 'use client';
 
-//import { GPUMetrics } from '@/types';
 import { AlertTriangle, Thermometer, Zap, Cpu, Droplet } from 'lucide-react';
 
 interface GPUMetricsCardProps {
-  cluster: GPUMetrics;
+  cluster: any;
 }
 
 const getTempStatus = (temp: number) => {
-  if (temp > 85) return { 
-    color: 'text-red-500', 
+  if (temp > 85) return {
+    color: 'text-red-500',
     bg: 'bg-red-500/20',
     border: 'border-red-500',
     label: 'Critical',
-    icon: AlertTriangle 
+    icon: AlertTriangle
   };
-  if (temp > 75) return { 
-    color: 'text-yellow-500', 
+  if (temp > 75) return {
+    color: 'text-yellow-500',
     bg: 'bg-yellow-500/20',
     border: 'border-yellow-500',
     label: 'Warning',
-    icon: AlertTriangle 
+    icon: AlertTriangle
   };
-  return { 
-    color: 'text-green-500', 
+  return {
+    color: 'text-green-500',
     bg: 'bg-green-500/20',
     border: 'border-green-500',
     label: 'Normal',
-    icon: Thermometer 
+    icon: Thermometer
   };
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Optimal': return 'bg-green-500';
-    case 'Warning': return 'bg-yellow-500';
-    case 'Critical': return 'bg-red-500';
-    default: return 'bg-gray-500';
-  }
-};
-
 export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
-  const tempStatus = getTempStatus(cluster.temperature);
+  const tempStatus = getTempStatus(cluster.temperature.gpu || 65);
   const TempIcon = tempStatus.icon;
+
   return (
-    <div className={`rounded-xl border-2 ${tempStatus.border} bg-gray-900/50 p-6 transition-all hover:scale-[1.02]`}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-xl font-semibold text-gray-100">{cluster.name}</h3>
-          <p className="text-gray-400 text-sm">{cluster.location}</p>
-        </div>
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${tempStatus.bg}`}>
-          <div className={`w-2 h-2 rounded-full ${getStatusColor(cluster.status)}`} />
-          <span className={`text-sm font-medium ${tempStatus.color}`}>{cluster.status}</span>
-        </div>
-      </div>
-
-      {/* Temperature Alert Banner */}
-      {cluster.temperature > 75 && (
-        <div className={`mb-4 p-3 rounded-lg border ${tempStatus.border} ${tempStatus.bg} flex items-center gap-3`}>
-          <TempIcon className={`h-5 w-5 ${tempStatus.color}`} />
+    <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 hover:border-gray-700 transition-colors">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Cpu className="h-6 w-6 text-blue-500" />
           <div>
-            <p className={`text-sm font-semibold ${tempStatus.color}`}>
-              {tempStatus.label} Temperature Alert
-            </p>
-            <p className="text-xs text-gray-400">
-              {cluster.temperature > 85 
-                ? 'Immediate action required! GPU overheating.' 
-                : 'Monitor closely. Consider improving cooling.'}
-            </p>
+            <h3 className="text-lg font-semibold text-gray-100">{cluster.name || 'GPU Cluster'}</h3>
+            <p className="text-sm text-gray-400">{cluster.location || 'US-West'}</p>
           </div>
         </div>
-      )}
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* GPU Utilization */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Cpu className="h-4 w-4" />
-            <span className="text-sm">GPU Utilization</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-100">{cluster.gpuUtilization}%</p>
-          <p className="text-xs text-gray-500">{cluster.activeGPUs}/{cluster.totalGPUs} active</p>
-        </div>
-
-        {/* Power Draw */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Zap className="h-4 w-4" />
-            <span className="text-sm">Power Draw</span>
-          </div>          <p className="text-2xl font-bold text-gray-100">{cluster.powerDraw}</p>
-          <p className="text-xs text-gray-500">{cluster.costPerKWh}/kWh</p>
-        </div>
-
-        {/* Temperature */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Thermometer className="h-4 w-4" />
-            <span className="text-sm">Temperature</span>
-          </div>
-          <p className={`text-2xl font-bold ${tempStatus.color}`}>{cluster.temperature}°C</p>
-          <p className={`text-xs ${tempStatus.color}`}>{tempStatus.label}</p>
-        </div>
-
-        {/* Renewable Energy */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Droplet className="h-4 w-4" />
-            <span className="text-sm">Renewable</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-100">{cluster.renewablePercentage}%</p>
-          <p className="text-xs text-gray-500">
-            {cluster.renewablePercentage >= 60 ? 'Good' : 'Needs improvement'}
-          </p>
-        </div>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          cluster.status === 'optimal' ? 'bg-green-500/20 text-green-400' :
+          cluster.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
+          'bg-red-500/20 text-red-400'        }`}>
+          {cluster.status === 'optimal' ? 'Optimal' :
+           cluster.status === 'warning' ? 'Warning' : 'Critical'}
+        </span>
       </div>
 
-      {/* Capacity Bar */}
-      <div className="mt-6">
-        <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-gray-400">Capacity</span>
-          <span className="text-gray-100 font-medium">{cluster.gpuUtilization}%</span>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <Zap className="h-4 w-4" />
+              <span>GPU Utilization</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-100">{(cluster.gpu_utilization || 0).toFixed(1)}%</p>
+            <div className="w-full bg-gray-800 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full ${
+                  (cluster.gpu_utilization || 0) > 90 ? 'bg-green-500' :
+                  (cluster.gpu_utilization || 0) > 75 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${cluster.gpu_utilization || 0}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <Droplet className="h-4 w-4" />
+              <span>Power Draw</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-100">{cluster.power_draw_kw ? `${cluster.power_draw_kw.toFixed(1)} kW` : 'N/A'}</p>
+            <p className="text-xs text-gray-500">${(cluster.power_draw_kw * 0.08 || 0).toFixed(3)}/kWh</p>
+          </div>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-          <div 
-            className={`h-full transition-all duration-500 ${
-              cluster.gpuUtilization > 90 ? 'bg-red-500' :
-              cluster.gpuUtilization > 75 ? 'bg-yellow-500' :
-              'bg-green-500'
-            }`}
-            style={{ width: `${cluster.gpuUtilization}%` }}
-          />
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <TempIcon className={`h-4 w-4 ${tempStatus.color}`} />
+              <span>Temperature</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-100">{cluster.temperature ? `${cluster.temperature.gpu}°C` : 'N/A'}</p>
+            <p className={`text-xs ${tempStatus.color}`}>{tempStatus.label}</p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <Droplet className="h-4 w-4" />
+              <span>Renewable</span>
+            </div>            <p className="text-2xl font-bold text-gray-100">{cluster.renewable ? `${cluster.renewable}%` : 'N/A'}</p>
+            <p className="text-xs text-gray-500">{cluster.renewable && cluster.renewable >= 50 ? 'Good' : 'Low'}</p>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-gray-800">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">Capacity</span>
+            <span className="text-gray-100 font-medium">
+              {cluster.active_gpus || 0}/{cluster.total_gpus || 0} active
+            </span>
+          </div>
+          <div className="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+            <div 
+              className="bg-blue-500 h-1.5 rounded-full"
+              style={{ width: `${((cluster.active_gpus || 0) / (cluster.total_gpus || 1)) * 100}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>
