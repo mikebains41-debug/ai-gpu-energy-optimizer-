@@ -112,18 +112,19 @@ Our optimization engine uses three core AI techniques:
 *Status: ✅ Live & Streaming Real-Time Data*
 
 ---
+## 🤝 Early Access Partners
 
-## 🏆 Trusted By
+**We are currently selecting our founding beta cohort.**
 
-**Currently in Beta Testing With:**
-- 🔬 **3 AI Research Labs** (North America & Europe)
-- 🏢 **2 Enterprise ML Platforms** (Fortune 500)
-- ☁️ **1 Cloud GPU Provider** (Series B startup)
+Rather than claiming partnerships we haven't secured yet, we're focused on building real, measurable results with our first group of users. We're looking for teams that run NVIDIA GPU clusters and want to directly influence how this platform is built.
 
-*"The platform identified $18k in monthly savings we didn't know existed. The thermal prediction alone prevented 3 potential throttling events in the first week."*  
-— **Anonymous, AI Research Lab Director**
+**Who we're looking for:**
+- 🔬 **AI Research Labs** managing H100/A100 clusters
+- 🏢 **Enterprise ML Platforms** optimizing training costs
+- ☁️ **Cloud GPU Providers** improving fleet efficiency
+- 🌍 **Data Center Operators** tracking carbon & energy impact
 
-*Want to be featured here? Join our beta program below.*
+*Selected partners will be featured here as we onboard them and validate results in production.*
 
 ---
 
