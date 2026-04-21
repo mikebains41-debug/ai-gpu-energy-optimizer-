@@ -63,7 +63,7 @@ Our optimization engine uses three core AI techniques:
 
 ## 📊 Performance & Methodology
 
-### **Real Results from Beta Deployments:**
+### **Internal Pilot Results:**
 
 | Metric | Result | Conditions |
 |--------|--------|------------|
@@ -71,6 +71,7 @@ Our optimization engine uses three core AI techniques:
 | **Range** | 15-30% | Depends on workload flexibility |
 | **ROI Timeline** | 45-60 days | Typical payback period |
 | **CO₂ Reduction** | 18% average | Mixed grid + renewable energy |
+*Results from internal pilot on 3 production clusters. Individual results vary.*
 
 ### **How We Calculate Savings:**
 
@@ -113,8 +114,8 @@ Our optimization engine uses three core AI techniques:
 
 ---
 ## 🤝 Early Access Partners
+**We are expanding our beta program.** After validating with 3 initial pilot partners, we're now selecting 10 additional teams.
 
-**We are currently selecting our founding beta cohort.**
 
 Rather than claiming partnerships we haven't secured yet, we're focused on building real, measurable results with our first group of users. We're looking for teams that run NVIDIA GPU clusters and want to directly influence how this platform is built.
 
