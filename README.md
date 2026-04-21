@@ -149,13 +149,13 @@ Rather than claiming partnerships we haven't secured yet, we're focused on build
 
 ### **Apply Now:**
 
-**📝 Beta Application Form:** [Google Form Link](https://forms.google.com/your-form-here)  
-*OR*  
-**💬 Schedule a 15-min Discovery Call:** [Calendly Link](https://calendly.com/your-link)
+Email **Mikebains41@gmail.com** with:
+- Your company/lab name
+- GPU types you run (H100, A100, RTX 4090, etc.)
+- Monthly energy spend
+- Why you want to join the beta
 
-**Only 7 spots left** (as of April 2026)
 
----
 ---
 
 ## 📋 Onboarding Guide for Data Centers
