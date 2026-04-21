@@ -156,7 +156,48 @@ Rather than claiming partnerships we haven't secured yet, we're focused on build
 **Only 7 spots left** (as of April 2026)
 
 ---
+---
 
+## 📋 Onboarding Guide for Data Centers
+
+### **Step 1: Get Your Credentials**
+1. Fill out the beta application form
+2. Receive your:
+   - Cluster ID (unique identifier)
+   - API Key (for authentication)
+   - Installation instructions
+
+### **Step 2: One-Click Installation**
+
+After receiving your credentials, run this **single command** on any Linux/macOS GPU server:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/ai-engine/install.sh | bash
+```
+
+The installer will:
+- ✅ Download the monitoring agent automatically
+- ✅ Prompt for your Cluster ID & API Key
+- ✅ Install Python dependencies
+- ✅ Set up auto-start on boot
+- ✅ Start sending metrics immediately
+
+**Installation takes < 60 seconds.** No manual configuration needed.
+
+### **Step 3: Verify Installation**
+```bash
+# Check if agent is running
+sudo systemctl status gpu-optimizer
+
+# View live logs
+sudo journalctl -u gpu-optimizer -f
+```
+
+### **Step 4: Access Your Dashboard**
+- Visit: https://ai-gpu-energy-optimizer.vercel.app
+- View real-time metrics and AI recommendations
+
+---
 ## 💡 Use Cases
 
 ### **Scenario 1: AI Research Lab**
