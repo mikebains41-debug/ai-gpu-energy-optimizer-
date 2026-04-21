@@ -32,7 +32,7 @@ export default function DashboardPage() {
             <p className="text-gray-400 mt-2">Streaming real-time optimization data</p>
             {!connected && (
               <p className="text-sm text-yellow-500 mt-4">
-                Make sure AI Engine is running on port 8000
+                Make sure AI Engine is running
               </p>
             )}
           </div>
@@ -49,12 +49,25 @@ export default function DashboardPage() {
 
   const carbonReduction = Math.round(totalCostSavings * 0.0055);
 
-  // FIXED: Prepare chart data for EnergyChart component
+  // Prepare chart data for EnergyChart component
   const chartData = data.clusters?.map((cluster: any, index: number) => ({
     timestamp: new Date(Date.now() - (index * 60000)).toISOString(),
     totalPower: (cluster.power_draw || 0) * 1000,
     renewablePower: ((cluster.renewable_pct || 0) / 100) * (cluster.power_draw || 0) * 1000
   })) || [];
+
+  // Convert recommendations to format OptimizationPanel expects
+  const formattedOptimizations = (data.recommendations || []).map((rec: any) => ({
+    id: rec.id,
+    cluster_id: rec.cluster_id,
+    action: rec.action,
+    estimated_savings_monthly: rec.estimated_savings_monthly,
+    priority: rec.priority,
+    type: 'power',
+    description: rec.action,
+    potentialSavings: rec.estimated_savings_monthly,
+    implementation: 'manual'
+  }));
 
   return (
     <DashboardLayout>
@@ -96,7 +109,7 @@ export default function DashboardPage() {
 
         <EnergyChart data={chartData} />
         
-        <OptimizationPanel optimizations={data.recommendations || []} />
+        <OptimizationPanel optimizations={formattedOptimizations} />
       </div>
     </DashboardLayout>
   );
