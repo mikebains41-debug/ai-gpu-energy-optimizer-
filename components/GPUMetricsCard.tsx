@@ -14,7 +14,7 @@ interface ClusterData {
   temperature: number;
   power_draw?: number;
   power_draw_kw?: number;
-  renewable?: number;
+  renewable_pct?: number;
   efficiency_score?: number;
   status?: string;
   total_gpus?: number;
@@ -60,20 +60,20 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
 
   const formatPowerDraw = () => {
     if (cluster.power_draw_kw) {
-      return `${cluster.power_draw_kw.toFixed(2)} kW`;
+      return `${cluster.power_draw_kw.toFixed(0)} kW`;
     }
     if (cluster.power_draw) {
       if (cluster.power_draw < 10) {
         return `${(cluster.power_draw * 1000).toFixed(0)} kW`;
       }
-      return `${cluster.power_draw.toFixed(2)} MW`;
+      return `${cluster.power_draw.toFixed(0)} MW`;
     }
     return 'N/A';
   };
 
   const formatRenewable = () => {
-    if (cluster.renewable !== undefined && cluster.renewable !== null) {
-      return `${cluster.renewable.toFixed(1)}%`;
+    if (cluster.renewable_pct !== undefined && cluster.renewable_pct !== null) {
+      return `${cluster.renewable_pct.toFixed(1)}%`;
     }
     return 'N/A';
   };
@@ -98,7 +98,6 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-6">
-        {/* GPU Utilization */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +116,6 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           </div>
         </div>
 
-        {/* Power Draw */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,10 +126,9 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <div className="text-2xl font-bold text-gray-100">
             {formatPowerDraw()}
           </div>
-          <p className="text-xs text-gray-500">Real-time consumption</p>
+          <p className="text-xs text-gray-500">Real-time</p>
         </div>
 
-        {/* Temperature */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +144,6 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           </p>
         </div>
 
-        {/* Renewable Energy */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,12 +155,11 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
             {formatRenewable()}
           </div>
           <p className="text-xs text-gray-500">
-            {cluster.renewable && cluster.renewable > 50 ? 'Clean Energy' : 'Mixed Grid'}
+            {cluster.renewable_pct && cluster.renewable_pct > 50 ? 'Clean Energy' : 'Mixed Grid'}
           </p>
         </div>
       </div>
 
-      {/* Capacity */}
       <div className="pt-4 border-t border-gray-800">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-gray-400">Capacity</span>
@@ -183,4 +178,4 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
       </div>
     </div>
   );
-}
+            }
