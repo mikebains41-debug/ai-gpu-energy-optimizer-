@@ -1,2 +1,0 @@
-pynvml>=11.5.0
-requests>=2.31.0
