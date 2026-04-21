@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-// Use environment variable or default to Railway URL
+// Use environment variable or default to Render backend
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 
-  'https://ai-gpu-energy-optimizer-production.up.railway.app';
+  'https://ai-gpu-brain-v2.onrender.com';
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 
-  'wss://ai-gpu-energy-optimizer-production.up.railway.app/ws';
+  'wss://ai-gpu-brain-v2.onrender.com/ws';
 
 interface ClusterData {
   id: string;
@@ -38,6 +38,7 @@ export function useOptimizationStream() {
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const pollIntervalRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const connectWebSocket = () => {
@@ -48,9 +49,12 @@ export function useOptimizationStream() {
           console.log('✅ Connected to AI Engine');
           setConnected(true);
         };
+        
         wsRef.current.onmessage = (event) => {
           try {
             const newData = JSON.parse(event.data);
+            // Skip ping messages
+            if (newData.type === 'ping') return;
             setData(newData);
           } catch (error) {
             console.error('❌ Error parsing WebSocket message:', error);
@@ -88,17 +92,20 @@ export function useOptimizationStream() {
       };
 
       fetchData();
-      const interval = setInterval(fetchData, 5000);
-      return () => clearInterval(interval);
+      pollIntervalRef.current = setInterval(fetchData, 5000);
     };
 
     connectWebSocket();
 
     return () => {
       if (wsRef.current) {
-        wsRef.current.close();      }
+        wsRef.current.close();
+      }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
       }
     };
   }, []);
