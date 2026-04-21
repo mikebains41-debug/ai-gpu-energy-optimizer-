@@ -1,6 +1,5 @@
 {
   "name": "ai-gpu-energy-optimizer",
-  "type": "module",
   "version": "0.1.0",
   "private": true,
   "description": "AI + GPU + Energy Optimization Platform",
