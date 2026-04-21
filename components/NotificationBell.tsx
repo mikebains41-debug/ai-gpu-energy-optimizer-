@@ -6,12 +6,12 @@
 'use client';
 
 import { Bell, X, Check } from 'lucide-react';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useNotification } from '@/contexts/NotificationContext';
 import { useState } from 'react';
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
