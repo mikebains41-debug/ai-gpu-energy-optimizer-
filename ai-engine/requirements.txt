@@ -1,3 +1,9 @@
+# Build dependencies (MUST BE FIRST)
+setuptools>=65.0.0
+wheel>=0.40.0
+pip>=23.0.0
+
+# Your existing dependencies
 fastapi==0.115.4
 uvicorn==0.32.0
 websockets==13.1
