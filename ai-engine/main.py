@@ -8,7 +8,6 @@ import json
 
 app = FastAPI(title="AI GPU Energy Optimizer")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,7 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pydantic models
 class GPUInput(BaseModel):
     gpu_utilization: float
     memory_usage: float
@@ -45,12 +43,11 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 def generate_realistic_metrics():
-    """Generate realistic GPU cluster data"""
     clusters = [
-        {            "id": "h100-cluster-1",
+        {
+            "id": "h100-cluster-1",
             "name": "NVIDIA H100 Cluster",
-            "location": "US-West",
-            "gpu_utilization": round(np.random.uniform(85, 98), 1),
+            "location": "US-West",            "gpu_utilization": round(np.random.uniform(85, 98), 1),
             "memory_usage": round(np.random.uniform(12, 15), 2),
             "temperature": round(np.random.uniform(65, 78), 1),
             "power_draw": round(np.random.uniform(1.5, 2.1), 2),
@@ -96,10 +93,10 @@ def generate_realistic_metrics():
     }
 
 @app.get("/health")
-def health_check():    return {
+def health_check():
+    return {
         "status": "ok",
-        "service": "ai-gpu-brain-v2",
-        "timestamp": datetime.now().isoformat()
+        "service": "ai-gpu-brain-v2",        "timestamp": datetime.now().isoformat()
     }
 
 @app.get("/")
@@ -112,12 +109,10 @@ def root():
 
 @app.get("/optimize")
 def get_optimization():
-    """GET endpoint for optimization data"""
     return generate_realistic_metrics()
 
 @app.post("/optimize")
 def post_optimization(input: GPUInput):
-    """POST endpoint with input parameters"""
     metrics = generate_realistic_metrics()
     metrics["input_received"] = input.dict()
     return metrics
