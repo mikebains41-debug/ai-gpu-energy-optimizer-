@@ -2,7 +2,7 @@ services:
   - type: web
     name: ai-gpu-brain-v2
     runtime: python
-    buildCommand: pip install -r ai-engine/requirements.txt
+    buildCommand: cd ai-engine && pip install -r requirements.txt
     startCommand: cd ai-engine && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
