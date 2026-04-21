@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { Zap, Globe, Thermometer, Clock, ArrowRight } from 'lucide-react';
+import { Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Recommendation {
@@ -19,13 +19,6 @@ interface Recommendation {
 interface OptimizationPanelProps {
   optimizations: Recommendation[];
 }
-
-const typeIcons: Record<string, any> = {
-  scheduling: Clock,
-  'load-balancing': Globe,
-  cooling: Thermometer,
-  power: Zap,
-};
 
 const priorityColors = {
   high: 'bg-red-500/10 text-red-400 border-red-500/20',
@@ -43,9 +36,6 @@ const formatCurrency = (value: number) => {
 };
 
 export default function OptimizationPanel({ optimizations }: OptimizationPanelProps) {
-  // Default icon is Zap (power)
-  const Icon = Zap;
-
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -57,7 +47,7 @@ export default function OptimizationPanel({ optimizations }: OptimizationPanelPr
           <div key={opt.id} className="group rounded-lg border border-gray-800 p-4 hover:border-gray-700 hover:bg-gray-800/50 transition-all cursor-pointer">
             <div className="flex items-start gap-4">
               <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", opt.priority === 'high' ? 'bg-red-500/10' : opt.priority === 'medium' ? 'bg-yellow-500/10' : 'bg-blue-500/10')}>
-                <Icon className={cn("h-5 w-5", opt.priority === 'high' ? 'text-red-400' : opt.priority === 'medium' ? 'text-yellow-400' : 'text-blue-400')} />
+                <Zap className={cn("h-5 w-5", opt.priority === 'high' ? 'text-red-400' : opt.priority === 'medium' ? 'text-yellow-400' : 'text-blue-400')} />
               </div>
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4 mb-2">
