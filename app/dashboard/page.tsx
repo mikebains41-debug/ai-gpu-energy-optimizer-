@@ -4,7 +4,6 @@
  * Contact: Mikebains41@gmail.com
  */
 'use client';
-// Force deploy
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -13,7 +12,7 @@ import EnergyChart from '@/components/EnergyChart';
 import OptimizationPanel from '@/components/OptimizationPanel';
 import CostSavings from '@/components/CostSavings';
 import { useOptimizationStream } from '@/hooks/useOptimizationStream';
-import { RefreshCw, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export default function DashboardPage() {
   const { data, connected } = useOptimizationStream();
@@ -42,11 +41,21 @@ export default function DashboardPage() {
     );
   }
 
-  const dashboardData = {
-    clusters: data.clusters,
-    totalCostSavings: 2847500,
-    carbonReduction: 15680,
-  };
+  // Calculate real values from data
+  const totalCostSavings = data.recommendations?.reduce(
+    (sum: number, rec: any) => sum + (rec.estimated_savings_monthly || 0), 
+    0
+  ) || 0;
+
+  const carbonReduction = Math.round(totalCostSavings * 0.0055); // Approximate: $1 saved = 5.5kg CO2
+
+  // Prepare chart data from clusters
+  const chartData = data.clusters?.map((cluster: any) => ({
+    name: cluster.name,
+    power: cluster.power_draw || 0,
+    utilization: cluster.gpu_utilization || 0,
+    temperature: cluster.temperature || 0
+  })) || [];
 
   return (
     <DashboardLayout>
@@ -67,28 +76,28 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500">Last updated: {lastUpdated.toLocaleTimeString()}</p>
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 rounded-lg">
               <Zap className="h-4 w-4 text-blue-400" />
-              <span className="text-sm text-blue-300">{data.total_power_mw.toFixed(2)} MW Total</span>
+              <span className="text-sm text-blue-300">{data.total_power_mw?.toFixed(2) || '0'} MW Total</span>
             </div>
           </div>
         </div>
 
         <CostSavings 
-          totalSavings={dashboardData.totalCostSavings} 
-          carbonReduction={dashboardData.carbonReduction} 
+          totalSavings={totalCostSavings} 
+          carbonReduction={carbonReduction} 
         />
 
         <div>
           <h3 className="text-xl font-semibold text-gray-100 mb-4">GPU Clusters</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {dashboardData.clusters.map((cluster: any) => (
+            {data.clusters?.map((cluster: any) => (
               <GPUMetricsCard key={cluster.id} cluster={cluster} />
             ))}
           </div>
         </div>
 
-        <EnergyChart data={[]} />
+        <EnergyChart data={chartData} />
         
-        <OptimizationPanel optimizations={[]} />
+        <OptimizationPanel optimizations={data.recommendations || []} />
       </div>
     </DashboardLayout>
   );
