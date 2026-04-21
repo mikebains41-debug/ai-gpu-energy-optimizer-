@@ -1,6 +1,5 @@
 #!/bin/bash
 # AI GPU Energy Optimizer - One-Click Installer
-# Run as: curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/ai-engine/install.sh | bash
 
 set -e
 
@@ -11,16 +10,13 @@ REPO="mikebains41-debug/ai-gpu-energy-optimizer-"
 BRANCH="main"
 SUBDIR="ai-engine"
 
-# 1. Create directory
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# 2. Download files from GitHub
 echo "⬇️  Downloading agent files..."
 curl -sSL "https://raw.githubusercontent.com/$REPO/$BRANCH/$SUBDIR/gpu_monitor_agent.py" -o gpu_monitor_agent.py
 curl -sSL "https://raw.githubusercontent.com/$REPO/$BRANCH/$SUBDIR/agent_requirements.txt" -o agent_requirements.txt
 
-# 3. Prompt for credentials
 echo ""
 echo "⚙️  Enter your beta credentials:"
 read -p "Cluster ID: " CLUSTER_ID
@@ -28,7 +24,6 @@ read -p "API Key: " API_KEY
 read -p "Backend URL (press Enter for default): " BACKEND_URL
 BACKEND_URL="${BACKEND_URL:-https://ai-gpu-brain-v2.onrender.com}"
 
-# 4. Create config file
 cat > config.json << EOF
 {
   "backend_url": "$BACKEND_URL",
@@ -38,13 +33,11 @@ cat > config.json << EOF
 }
 EOF
 
-# 5. Install dependencies
 echo "📦 Installing Python dependencies..."
-python3 -m venv venv || { echo "❌ Python 3 required. Install it and try again."; exit 1; }
+python3 -m venv venv
 source venv/bin/activate
 pip install --quiet -r agent_requirements.txt
 
-# 6. Create systemd service (Linux)
 if command -v systemctl &> /dev/null; then
   echo "🔧 Setting up auto-start service..."
   sudo tee /etc/systemd/system/gpu-optimizer.service > /dev/null << EOF
@@ -76,4 +69,3 @@ fi
 echo ""
 echo "🎉 Installation complete!"
 echo "📊 View your dashboard: https://ai-gpu-energy-optimizer.vercel.app"
-echo "📋 Manage service: sudo systemctl status gpu-optimizer"
