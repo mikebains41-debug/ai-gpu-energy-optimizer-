@@ -47,14 +47,13 @@ export default function DashboardPage() {
     0
   ) || 0;
 
-  const carbonReduction = Math.round(totalCostSavings * 0.0055); // Approximate: $1 saved = 5.5kg CO2
+  const carbonReduction = Math.round(totalCostSavings * 0.0055);
 
-  // Prepare chart data from clusters
-  const chartData = data.clusters?.map((cluster: any) => ({
-    name: cluster.name,
-    power: cluster.power_draw || 0,
-    utilization: cluster.gpu_utilization || 0,
-    temperature: cluster.temperature || 0
+  // FIXED: Prepare chart data for EnergyChart component
+  const chartData = data.clusters?.map((cluster: any, index: number) => ({
+    timestamp: new Date(Date.now() - (index * 60000)).toISOString(),
+    totalPower: (cluster.power_draw || 0) * 1000,
+    renewablePower: ((cluster.renewable_pct || 0) / 100) * (cluster.power_draw || 0) * 1000
   })) || [];
 
   return (
