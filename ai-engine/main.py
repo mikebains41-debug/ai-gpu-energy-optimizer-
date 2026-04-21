@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
+import random
 from datetime import datetime
 import asyncio
 import json
@@ -70,20 +71,26 @@ def generate_realistic_metrics():
             "name": "NVIDIA H100 Cluster",
             "location": "US-West",
             "gpu_utilization": round(np.random.uniform(85, 98), 1),
-            "memory_usage": round(np.random.uniform(12, 15), 2),
-            "temperature": round(np.random.uniform(65, 78), 1),
-            "power_draw": round(np.random.uniform(1.5, 2.1), 2),
-            "efficiency_score": round(np.random.uniform(90, 97), 1)
+            "memory_usage": round(np.random.uniform(60, 80), 2),
+            "temperature": round(np.random.uniform(65, 75), 1),
+            "power_draw": round(np.random.uniform(1.8, 2.1), 2),
+            "efficiency_score": round(np.random.uniform(90, 97), 1),
+            "renewable_pct": round(np.random.uniform(60, 75), 1),
+            "active_gpus": random.randint(240, 256),
+            "total_gpus": 256
         },
         {
             "id": "a100-cluster-1",
             "name": "NVIDIA A100 Cluster",
             "location": "US-East",
             "gpu_utilization": round(np.random.uniform(80, 95), 1),
-            "memory_usage": round(np.random.uniform(10, 14), 2),
-            "temperature": round(np.random.uniform(70, 82), 1),
+            "memory_usage": round(np.random.uniform(50, 70), 2),
+            "temperature": round(np.random.uniform(70, 80), 1),
             "power_draw": round(np.random.uniform(0.8, 1.2), 2),
-            "efficiency_score": round(np.random.uniform(85, 93), 1)
+            "efficiency_score": round(np.random.uniform(85, 93), 1),
+            "renewable_pct": round(np.random.uniform(40, 55), 1),
+            "active_gpus": random.randint(100, 128),
+            "total_gpus": 128
         }
     ]
     
@@ -91,15 +98,22 @@ def generate_realistic_metrics():
         {
             "id": "rec-1",
             "cluster_id": "h100-cluster-1",
-            "action": "Shift jobs to off-peak hours",
+            "action": "Shift non-critical jobs to off-peak hours (2am-6am)",
             "estimated_savings_monthly": round(np.random.uniform(15000, 20000), 0),
             "priority": "high"
         },
         {
             "id": "rec-2",
             "cluster_id": "a100-cluster-1",
-            "action": "Improve thermal management",
+            "action": "Optimize cooling system and increase airflow",
             "estimated_savings_monthly": round(np.random.uniform(7000, 10000), 0),
+            "priority": "medium"
+        },
+        {
+            "id": "rec-3",
+            "cluster_id": "h100-cluster-1",
+            "action": "Enable power capping during low utilization periods",
+            "estimated_savings_monthly": round(np.random.uniform(8000, 12000), 0),
             "priority": "medium"
         }
     ]
