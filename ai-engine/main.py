@@ -5,6 +5,9 @@ import numpy as np
 from datetime import datetime
 import asyncio
 import json
+import os
+from typing import List, Optional
+from fastapi import Header, HTTPException
 
 app = FastAPI(title="AI GPU Energy Optimizer")
 
@@ -20,6 +23,19 @@ class GPUInput(BaseModel):
     gpu_utilization: float
     memory_usage: float
     temperature: float
+
+class GPUMetric(BaseModel):
+    gpu_id: int
+    utilization_percent: float
+    memory_used_gb: float
+    memory_total_gb: Optional[float] = 80.0
+    temperature_celsius: float
+    power_draw_watts: float
+
+class ClusterMetrics(BaseModel):
+    cluster_id: str
+    timestamp: float
+    gpus: List[GPUMetric]
 
 class ConnectionManager:
     def __init__(self):
@@ -41,20 +57,23 @@ class ConnectionManager:
                 self.disconnect(connection)
 
 manager = ConnectionManager()
+metrics_store = {}
+VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").split(",")
+
+def validate_api_key(api_key: str) -> bool:
+    return api_key in VALID_API_KEYS
 
 def generate_realistic_metrics():
     clusters = [
         {
-          {
-    "id": "h100-cluster-1",
-    "name": "NVIDIA H100 Cluster",
-    "location": "US-West",
-    "gpu_utilization": round(np.random.uniform(85, 98), 1),
-    "memory_usage": round(np.random.uniform(12, 15), 2),
-    "temperature": round(np.random.uniform(65, 78), 1),
-    "power_draw": round(np.random.uniform(1.5, 2.1), 2),
-    "efficiency_score": round(np.random.uniform(90, 97), 1)
-},  
+            "id": "h100-cluster-1",
+            "name": "NVIDIA H100 Cluster",
+            "location": "US-West",
+            "gpu_utilization": round(np.random.uniform(85, 98), 1),
+            "memory_usage": round(np.random.uniform(12, 15), 2),
+            "temperature": round(np.random.uniform(65, 78), 1),
+            "power_draw": round(np.random.uniform(1.5, 2.1), 2),
+            "efficiency_score": round(np.random.uniform(90, 97), 1)
         },
         {
             "id": "a100-cluster-1",
@@ -99,7 +118,8 @@ def generate_realistic_metrics():
 def health_check():
     return {
         "status": "ok",
-        "service": "ai-gpu-brain-v2",        "timestamp": datetime.now().isoformat()
+        "service": "ai-gpu-brain-v2",
+        "timestamp": datetime.now().isoformat()
     }
 
 @app.get("/")
@@ -120,62 +140,27 @@ def post_optimization(input: GPUInput):
     metrics["input_received"] = input.dict()
     return metrics
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = generate_realistic_metrics()
-            await websocket.send_json(data)
-            await asyncio.sleep(2)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-        manager.disconnect(websocket)
-# ==========================================
-# PHASE 2: API Endpoint for GPU Monitor Agent
-# ==========================================
-
-from pydantic import BaseModel
-from typing import List, Optional
-from fastapi import Header, HTTPException
-
-class GPUMetric(BaseModel):
-    gpu_id: int
-    utilization_percent: float
-    memory_used_gb: float
-    memory_total_gb: float
-    temperature_celsius: float
-    power_draw_watts: float
-
-class ClusterMetrics(BaseModel):
-    cluster_id: str
-    timestamp: float
-    gpus: List[GPUMetric]
-
-# Temporary in-memory storage (replace with DB in production)
-metrics_store = {}
-
 @app.post("/api/v1/metrics")
 async def receive_metrics(
     metrics: ClusterMetrics,
     authorization: Optional[str] = Header(None)
 ):
-    """Receive GPU metrics from data center agents"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
     
-    # Basic API Key validation
-    if not authorization or "Bearer" not in authorization:
-        raise HTTPException(status_code=401, detail="Unauthorized: Missing API key")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid auth format. Use Bearer token")
     
-    # Store metrics
+    api_key = authorization.replace("Bearer ", "")
+    
+    if not validate_api_key(api_key):
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
     if metrics.cluster_id not in metrics_store:
         metrics_store[metrics.cluster_id] = []
     
-    # Convert to dict for safe storage
     metrics_store[metrics.cluster_id].append(metrics.model_dump())
     
-    # Keep only last 500 entries per cluster to prevent memory leaks
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
     
@@ -183,9 +168,28 @@ async def receive_metrics(
     
     return {"status": "ok", "received": True}
 
-# ==========================================
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    last_ping = datetime.now()
+    
+    try:
+        while True:
+            data = generate_realistic_metrics()
+            await websocket.send_json(data)
+            
+            if (datetime.now() - last_ping).seconds > 10:
+                await websocket.send_json({"type": "ping"})
+                last_ping = datetime.now()
+            
+            await asyncio.sleep(2)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket)
+
 if __name__ == "__main__":
     import uvicorn
-    import os
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
