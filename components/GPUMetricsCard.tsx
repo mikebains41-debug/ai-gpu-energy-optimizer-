@@ -1,3 +1,8 @@
+/**
+ * PROPRIETARY & CONFIDENTIAL
+ * Copyright (c) 2026 Mike Bains. All Rights Reserved.
+ * Contact: Mikebains41@gmail.com
+ */
 'use client';
 
 interface ClusterData {
@@ -47,18 +52,17 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
     }
   };
 
-  const getUtilizationColor = (utilization: number) => {    if (utilization >= 90) return 'bg-red-500';
+  const getUtilizationColor = (utilization: number) => {
+    if (utilization >= 90) return 'bg-red-500';
     if (utilization >= 75) return 'bg-yellow-500';
     return 'bg-green-500';
   };
 
-  // Format power draw - handle both kW and MW
   const formatPowerDraw = () => {
     if (cluster.power_draw_kw) {
       return `${cluster.power_draw_kw.toFixed(2)} kW`;
     }
     if (cluster.power_draw) {
-      // If it's in MW (megawatts), convert to kW
       if (cluster.power_draw < 10) {
         return `${(cluster.power_draw * 1000).toFixed(0)} kW`;
       }
@@ -67,7 +71,6 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
     return 'N/A';
   };
 
-  // Format renewable energy percentage
   const formatRenewable = () => {
     if (cluster.renewable !== undefined && cluster.renewable !== null) {
       return `${cluster.renewable.toFixed(1)}%`;
@@ -96,7 +99,8 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
 
       <div className="grid grid-cols-2 gap-4 mb-6">
         {/* GPU Utilization */}
-        <div className="space-y-2">          <div className="flex items-center gap-2 text-gray-400">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -124,7 +128,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <div className="text-2xl font-bold text-gray-100">
             {formatPowerDraw()}
           </div>
-          <p className="text-xs text-gray-500">$0.000/kWh</p>
+          <p className="text-xs text-gray-500">Real-time consumption</p>
         </div>
 
         {/* Temperature */}
@@ -138,14 +142,17 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <div className="text-2xl font-bold text-gray-100">
             {cluster.temperature.toFixed(1)}°C
           </div>
-          <p className="text-xs text-green-400">Normal</p>
+          <p className="text-xs text-green-400">
+            {cluster.temperature > 80 ? '⚠️ High' : 'Normal'}
+          </p>
         </div>
 
         {/* Renewable Energy */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />            </svg>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
             <span className="text-sm">Renewable</span>
           </div>
           <div className="text-2xl font-bold text-gray-100">
