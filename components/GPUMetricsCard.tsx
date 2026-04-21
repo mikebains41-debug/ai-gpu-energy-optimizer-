@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { GPUMetrics } from '@/types';
+//import { GPUMetrics } from '@/types';
 import { AlertTriangle, Thermometer, Zap, Cpu, Droplet } from 'lucide-react';
 
 interface GPUMetricsCardProps {
