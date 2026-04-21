@@ -5,4 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ai-gpu-energy-optimizer"
 version = "1.0.0"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
+
+dependencies = [
+    "fastapi==0.115.4",
+    "uvicorn==0.32.0",
+    "websockets==13.1",
+    "pydantic==2.9.2",
+    "numpy==1.24.3",
+    "requests==2.32.3"
+]
