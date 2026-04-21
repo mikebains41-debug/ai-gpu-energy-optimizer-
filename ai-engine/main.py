@@ -102,6 +102,14 @@ def health_check():    return {
         "timestamp": datetime.now().isoformat()
     }
 
+@app.get("/")
+def root():
+    return {
+        "message": "AI GPU Energy Optimizer API",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
 @app.get("/optimize")
 def get_optimization():
     """GET endpoint for optimization data"""
@@ -111,7 +119,6 @@ def get_optimization():
 def post_optimization(input: GPUInput):
     """POST endpoint with input parameters"""
     metrics = generate_realistic_metrics()
-    # Adjust based on input
     metrics["input_received"] = input.dict()
     return metrics
 
@@ -120,7 +127,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Send real-time data every 2 seconds
             data = generate_realistic_metrics()
             await websocket.send_json(data)
             await asyncio.sleep(2)
