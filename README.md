@@ -45,9 +45,33 @@
 
 ---
 
+## 🧪 Beta Testing Program
+
+**We're looking for 10 AI/data center teams to test our GPU optimization platform.**
+### **What You Get:**
+✅ **Free access** for 90 days (no credit card required)  
+✅ **15-30% energy cost reduction** guaranteed  
+✅ **Real-time monitoring** of your GPU clusters  
+✅ **AI-powered recommendations** to reduce power/cooling costs  
+✅ **Weekly reports** showing $ saved + CO₂ reduced  
+
+### **What We Need:**
+- You run NVIDIA GPUs (H100, A100, RTX 4090, etc.)
+- You can install a lightweight monitoring agent
+- You're willing to share feedback + results (anonymized OK)
+
+### **Apply Now:**
+📧 Email: **Mikebains41@gmail.com**  
+💬 Subject: "GPU Optimizer Beta - [Your Company/Lab Name]"  
+
+**Only 7 spots left** (as of April 2026)
+
+---
+
 ## 💡 Use Cases
 
-**Scenario 1: AI Research Lab**  Managing 128 H100 GPUs training large language models. Platform identifies 23% power savings by shifting non-critical jobs to off-peak hours.
+**Scenario 1: AI Research Lab**  
+Managing 128 H100 GPUs training large language models. Platform identifies 23% power savings by shifting non-critical jobs to off-peak hours.
 
 **Scenario 2: Cloud GPU Provider**  
 Running multi-tenant A100 clusters. Real-time thermal monitoring prevents $50k in potential hardware damage from overheating.
@@ -73,7 +97,6 @@ git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-.git
 cd ai-gpu-energy-optimizer-
 npm install && npm run dev
 ```
-
 **Backend:**
 ```bash
 cd ai-engine
@@ -96,4 +119,5 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 <div align="center">
   <strong>Built for AI Data Centers • Optimized for Sustainability</strong><br>
-  <sub>Deployed on Vercel + Railway</sub></div>
+  <sub>Deployed on Vercel + Railway</sub>
+</div>
