@@ -96,7 +96,11 @@ def generate_realistic_metrics():
     }
 
 @app.get("/health")
-def health_check():    return {"status": "ok", "service": "ai-gpu-brain-v2", "timestamp": datetime.now().isoformat()}
+def health_check():    return {
+        "status": "ok",
+        "service": "ai-gpu-brain-v2",
+        "timestamp": datetime.now().isoformat()
+    }
 
 @app.get("/optimize")
 def get_optimization():
