@@ -1,8 +1,21 @@
+/**
+ * PROPRIETARY & CONFIDENTIAL
+ * Copyright (c) 2026 Mike Bains. All Rights Reserved.
+ * Contact: Mikebains41@gmail.com
+ */
 'use client';
 
 import { Bell, X } from 'lucide-react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useState } from 'react';
+
+interface Notification {
+  id: string;
+  type: 'success' | 'warning' | 'error' | 'info';
+  title: string;
+  message: string;
+  timestamp: string;
+}
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +31,9 @@ export default function NotificationBell() {
     }
   };
 
-  if (!notifications || notifications.length === 0) return null;
+  const notificationList = notifications as Notification[];
+
+  if (!notificationList || notificationList.length === 0) return null;
 
   return (
     <div className="relative">
@@ -27,9 +42,9 @@ export default function NotificationBell() {
         className="relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
       >
         <Bell className="h-5 w-5 text-gray-300" />
-        {notifications.length > 0 && (
+        {notificationList.length > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {notifications.length > 9 ? '9+' : notifications.length}
+            {notificationList.length > 9 ? '9+' : notificationList.length}
           </span>
         )}
       </button>
@@ -44,24 +59,24 @@ export default function NotificationBell() {
           </div>
           
           <div className="divide-y divide-gray-700">
-            {notifications.map((notification: any) => (
+            {notificationList.map((notification) => (
               <div
-                key={(notification as any).id}
+                key={notification.id}
                 className="p-4 hover:bg-gray-800 transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl">{getNotificationIcon((notification as any).type)}</span>
+                  <span className="text-xl">{getNotificationIcon(notification.type)}</span>
                   <div className="flex-1">
                     <h4 className="text-sm font-semibold text-gray-100">
-                      {(notification as any).title || 'Notification'}
+                      {notification.title}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-1">{(notification as any).message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
                     <p className="text-xs text-gray-600 mt-2">
-                      {new Date((notification as any).timestamp).toLocaleTimeString()}
+                      {new Date(notification.timestamp).toLocaleTimeString()}
                     </p>
                   </div>
                   <button
-                    onClick={() => removeNotification((notification as any).id)}
+                    onClick={() => removeNotification(notification.id)}
                     className="text-gray-500 hover:text-gray-300"
                   >
                     <X className="h-4 w-4" />
