@@ -1,7 +1,7 @@
 # 🤖 AI GPU Energy Optimizer
 
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
-[![Backend](https://img.shields.io/badge/Backend-Railway-purple?style=for-the-badge&logo=railway)](https://railway.app)
+[![Backend](https://img.shields.io/badge/Backend-Render-red?style=for-the-badge&logo=render)](https://render.com)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 
@@ -41,7 +41,7 @@
 ## 🌐 Live Demo
 
 **Frontend:** [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app)  
-**Backend API:** [https://alluring-imagination-production.up.railway.app](https://alluring-imagination-production.up.railway.app)
+**Backend API:** [https://ai-gpu-brain-v2.onrender.com](https://ai-gpu-brain-v2.onrender.com)
 
 *Status: ✅ Live & Streaming Real-Time Data*
 
@@ -87,7 +87,7 @@ Tracking carbon footprint across 5 data centers. Achieves 40% renewable energy u
 
 **Frontend:** Next.js 14, TypeScript, Tailwind CSS, Recharts  
 **Backend:** FastAPI, Python, NumPy, WebSockets  
-**Hosting:** Vercel + Railway
+**Hosting:** Vercel + Render
 
 ---
 
@@ -121,5 +121,5 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 <div align="center">
   <strong>Built for AI Data Centers • Optimized for Sustainability</strong><br>
-  <sub>Deployed on Vercel + Railway</sub>
+  <sub>Deployed on Vercel + Render</sub>
 </div>
