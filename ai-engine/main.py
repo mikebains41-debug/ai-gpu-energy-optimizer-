@@ -130,7 +130,57 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
         manager.disconnect(websocket)
+# ==========================================
+# PHASE 2: API Endpoint for GPU Monitor Agent
+# ==========================================
 
+from pydantic import BaseModel
+from typing import List, Optional
+from fastapi import Header, HTTPException
+
+class GPUMetric(BaseModel):
+    gpu_id: int
+    utilization_percent: float
+    memory_used_gb: float
+    memory_total_gb: float
+    temperature_celsius: float
+    power_draw_watts: float
+
+class ClusterMetrics(BaseModel):
+    cluster_id: str
+    timestamp: float
+    gpus: List[GPUMetric]
+
+# Temporary in-memory storage (replace with DB in production)
+metrics_store = {}
+
+@app.post("/api/v1/metrics")
+async def receive_metrics(
+    metrics: ClusterMetrics,
+    authorization: Optional[str] = Header(None)
+):
+    """Receive GPU metrics from data center agents"""
+    
+    # Basic API Key validation
+    if not authorization or "Bearer" not in authorization:
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing API key")
+    
+    # Store metrics
+    if metrics.cluster_id not in metrics_store:
+        metrics_store[metrics.cluster_id] = []
+    
+    # Convert to dict for safe storage
+    metrics_store[metrics.cluster_id].append(metrics.model_dump())
+    
+    # Keep only last 500 entries per cluster to prevent memory leaks
+    if len(metrics_store[metrics.cluster_id]) > 500:
+        metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
+    
+    print(f"✅ Received metrics for cluster: {metrics.cluster_id} ({len(metrics.gpus)} GPUs)")
+    
+    return {"status": "ok", "received": True}
+
+# ==========================================
 if __name__ == "__main__":
     import uvicorn
     import os
