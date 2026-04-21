@@ -1,2 +1,14 @@
-pynvml>=11.5.0
-requests>=2.31.0
+# AI GPU Energy Optimizer - Agent Dependencies
+# Install with: pip install -r agent_requirements.txt
+
+# NVIDIA GPU monitoring
+pynvml>=11.5.0,<12.0.0
+
+# HTTP requests to backend
+requests>=2.31.0,<3.0.0
+
+# Optional: Better retry logic (already handled in code)
+# tenacity>=8.2.0
+
+# Optional: For mocking advanced metrics
+# numpy>=1.24.0
