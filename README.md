@@ -117,40 +117,6 @@ Our optimization engine uses three core AI techniques:
 
 **Currently in Beta Testing With:**
 - 🔬 **3 AI Research Labs** (North America & Europe)
-- 🏢 **2 Enterprise ML Platforms** (Fortune 50
-- **Key Components:**
-- **NVML Integration:** Direct NVIDIA GPU management library access
-- **WebSocket Streaming:** Real-time metrics updates (2-second intervals)
-- **Time-Series Database:** InfluxDB for historical data (optional)
-- **ML Models:** Pre-trained on 10,000+ GPU-hours of operational data
-
----
-
-## ✨ Key Features
-
-- 📊 **Live GPU Metrics** - Utilization, temperature, power draw, memory
-- 🧠 **AI Recommendations** - Automated workload shifting & cooling optimization
-- 💰 **Cost Tracking** - Real-time ROI and annual savings projections
-- 🌍 **Sustainability** - CO₂ reduction & renewable energy percentage
-- 🔔 **Smart Alerts** - Thermal throttling warnings & optimization prompts
-- 📱 **Mobile Dashboard** - Monitor your GPUs from anywhere
-
----
-
-## 🌐 Live Demo
-
-**Frontend:** [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app)  
-**Backend API:** [https://ai-gpu-brain-v2.onrender.com](https://ai-gpu-brain-v2.onrender.com)  
-**API Documentation:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)
-
-*Status: ✅ Live & Streaming Real-Time Data*
-
----
-
-## 🏆 Trusted By
-
-**Currently in Beta Testing With:**
-- 🔬 **3 AI Research Labs** (North America & Europe)
 - 🏢 **2 Enterprise ML Platforms** (Fortune 500)
 - ☁️ **1 Cloud GPU Provider** (Series B startup)
 
@@ -257,7 +223,6 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 **Mike Bains**  
 📧 Mikebains41@gmail.com  
 🔗 [@mikebains41-debug](https://github.com/mikebains41-debug)  
-💼 [LinkedIn](https://linkedin.com/in/your-profile) *(add if you have one)*
 
 ---
 
