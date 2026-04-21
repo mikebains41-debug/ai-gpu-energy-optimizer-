@@ -172,7 +172,8 @@ Email **Mikebains41@gmail.com** with:
 After receiving your credentials, run this **single command** on any Linux/macOS GPU server:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/ai-engine/install.sh | bash
+curl -sSL
+https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/refs/heads/main/ai-engine/install.sh | bash
 ```
 
 The installer will:
