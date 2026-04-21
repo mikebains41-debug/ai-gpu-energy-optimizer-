@@ -1,0 +1,75 @@
+# AI GPU Energy Optimizer - Docker Compose
+# For local development and testing
+
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build: ./ai-engine
+    container_name: gpu-optimizer-backend
+    ports:
+      - "10000:10000"
+    environment:
+      - PORT=10000
+      - VALID_API_KEYS=test_key_123,gpu_opt_demo
+    volumes:
+      - ./ai-engine:/app
+      - backend_data:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - gpu-network
+
+  # Optional: PostgreSQL for production (commented out)
+  # database:
+  #   image: postgres:15
+  #   container_name: gpu-optimizer-db
+  #   environment:
+  #     POSTGRES_USER: gpu_optimizer
+  #     POSTGRES_PASSWORD: change_me
+  #     POSTGRES_DB: gpu_metrics
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - gpu-network
+
+  # Optional: Redis for caching (commented out)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: gpu-optimizer-redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - gpu-network
+
+  # Optional: InfluxDB for time-series metrics (commented out)
+  # influxdb:
+  #   image: influxdb:2.7
+  #   container_name: gpu-optimizer-influxdb
+  #   environment:
+  #     INFLUXDB_DB: gpu_metrics
+  #     INFLUXDB_ADMIN_USER: admin
+  #     INFLUXDB_ADMIN_PASSWORD: change_me
+  #   ports:
+  #     - "8086:8086"
+  #   volumes:
+  #     - influxdb_data:/var/lib/influxdb2
+  #   networks:
+  #     - gpu-network
+
+networks:
+  gpu-network:
+    driver: bridge
+
+volumes:
+  backend_data:
+  # postgres_data:
+  # influxdb_data:
