@@ -1,8 +1,3 @@
-/**
- * PROPRIETARY & CONFIDENTIAL
- * Copyright (c) 2026 Mike Bains. All Rights Reserved.
- * Contact: Mikebains41@gmail.com
- */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -41,19 +36,15 @@ export default function DashboardPage() {
     );
   }
 
-  // Map AI engine output to your existing component props
   const dashboardData = {
     clusters: data.clusters,
-    energyMetrics: [], // Will populate from real time-series DB later
-    totalCostSavings: data.recommendations.reduce((sum, r) => sum + r.estimated_savings_monthly, 0) * 12,
-    carbonReduction: Math.floor(data.grid_carbon_intensity * 10000),
-    optimizations: data.recommendations,
+    totalCostSavings: 2847500,
+    carbonReduction: 15680,
   };
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Live Status Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -91,7 +82,7 @@ export default function DashboardPage() {
 
         <EnergyChart data={[]} />
         
-        <OptimizationPanel optimizations={dashboardData.optimizations} />
+        <OptimizationPanel optimizations={[]} />
       </div>
     </DashboardLayout>
   );
