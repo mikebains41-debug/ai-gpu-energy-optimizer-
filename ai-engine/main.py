@@ -45,13 +45,16 @@ manager = ConnectionManager()
 def generate_realistic_metrics():
     clusters = [
         {
-            "id": "h100-cluster-1",
-            "name": "NVIDIA H100 Cluster",
-            "location": "US-West",            "gpu_utilization": round(np.random.uniform(85, 98), 1),
-            "memory_usage": round(np.random.uniform(12, 15), 2),
-            "temperature": round(np.random.uniform(65, 78), 1),
-            "power_draw": round(np.random.uniform(1.5, 2.1), 2),
-            "efficiency_score": round(np.random.uniform(90, 97), 1)
+          {
+    "id": "h100-cluster-1",
+    "name": "NVIDIA H100 Cluster",
+    "location": "US-West",
+    "gpu_utilization": round(np.random.uniform(85, 98), 1),
+    "memory_usage": round(np.random.uniform(12, 15), 2),
+    "temperature": round(np.random.uniform(65, 78), 1),
+    "power_draw": round(np.random.uniform(1.5, 2.1), 2),
+    "efficiency_score": round(np.random.uniform(90, 97), 1)
+},  
         },
         {
             "id": "a100-cluster-1",
