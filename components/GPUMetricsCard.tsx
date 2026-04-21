@@ -1,119 +1,177 @@
 'use client';
 
-import { AlertTriangle, Thermometer, Zap, Cpu, Droplet } from 'lucide-react';
-
-interface GPUMetricsCardProps {
-  cluster: any;
+interface ClusterData {
+  id: string;
+  name: string;
+  location?: string;
+  gpu_utilization: number;
+  memory_usage?: number;
+  temperature: number;
+  power_draw?: number;
+  power_draw_kw?: number;
+  renewable?: number;
+  efficiency_score?: number;
+  status?: string;
+  total_gpus?: number;
+  active_gpus?: number;
 }
 
-const getTempStatus = (temp: number) => {
-  if (temp > 85) return {
-    color: 'text-red-500',
-    bg: 'bg-red-500/20',
-    border: 'border-red-500',
-    label: 'Critical',
-    icon: AlertTriangle
-  };
-  if (temp > 75) return {
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-500/20',
-    border: 'border-yellow-500',
-    label: 'Warning',
-    icon: AlertTriangle
-  };
-  return {
-    color: 'text-green-500',
-    bg: 'bg-green-500/20',
-    border: 'border-green-500',
-    label: 'Normal',
-    icon: Thermometer
-  };
-};
+interface GPUMetricsCardProps {
+  cluster: ClusterData;
+}
 
 export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
-  const tempStatus = getTempStatus(cluster.temperature.gpu || 65);
-  const TempIcon = tempStatus.icon;
+  const getStatusColor = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case 'optimal':
+        return 'bg-green-500/20 text-green-400';
+      case 'warning':
+        return 'bg-yellow-500/20 text-yellow-400';
+      case 'critical':
+        return 'bg-red-500/20 text-red-400';
+      default:
+        return 'bg-blue-500/20 text-blue-400';
+    }
+  };
+
+  const getStatusLabel = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case 'optimal':
+        return 'Optimal';
+      case 'warning':
+        return 'Warning';
+      case 'critical':
+        return 'Critical';
+      default:
+        return 'Normal';
+    }
+  };
+
+  const getUtilizationColor = (utilization: number) => {    if (utilization >= 90) return 'bg-red-500';
+    if (utilization >= 75) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
+  // Format power draw - handle both kW and MW
+  const formatPowerDraw = () => {
+    if (cluster.power_draw_kw) {
+      return `${cluster.power_draw_kw.toFixed(2)} kW`;
+    }
+    if (cluster.power_draw) {
+      // If it's in MW (megawatts), convert to kW
+      if (cluster.power_draw < 10) {
+        return `${(cluster.power_draw * 1000).toFixed(0)} kW`;
+      }
+      return `${cluster.power_draw.toFixed(2)} MW`;
+    }
+    return 'N/A';
+  };
+
+  // Format renewable energy percentage
+  const formatRenewable = () => {
+    if (cluster.renewable !== undefined && cluster.renewable !== null) {
+      return `${cluster.renewable.toFixed(1)}%`;
+    }
+    return 'N/A';
+  };
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 hover:border-gray-700 transition-colors">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition-colors">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Cpu className="h-6 w-6 text-blue-500" />
+          <div className="p-2 bg-blue-500/20 rounded-lg">
+            <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-100">{cluster.name || 'GPU Cluster'}</h3>
-            <p className="text-sm text-gray-400">{cluster.location || 'US-West'}</p>
+            <h3 className="text-xl font-semibold text-gray-100">{cluster.name}</h3>
+            <p className="text-sm text-gray-400">{cluster.location || 'Location N/A'}</p>
           </div>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          cluster.status === 'optimal' ? 'bg-green-500/20 text-green-400' :
-          cluster.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
-          'bg-red-500/20 text-red-400'        }`}>
-          {cluster.status === 'optimal' ? 'Optimal' :
-           cluster.status === 'warning' ? 'Warning' : 'Critical'}
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(cluster.status)}`}>
+          {getStatusLabel(cluster.status)}
         </span>
       </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <Zap className="h-4 w-4" />
-              <span>GPU Utilization</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-100">{(cluster.gpu_utilization || 0).toFixed(1)}%</p>
-            <div className="w-full bg-gray-800 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full ${
-                  (cluster.gpu_utilization || 0) > 90 ? 'bg-green-500' :
-                  (cluster.gpu_utilization || 0) > 75 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${cluster.gpu_utilization || 0}%` }}
-              />
-            </div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* GPU Utilization */}
+        <div className="space-y-2">          <div className="flex items-center gap-2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="text-sm">GPU Utilization</span>
           </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <Droplet className="h-4 w-4" />
-              <span>Power Draw</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-100">{cluster.power_draw_kw ? `${cluster.power_draw_kw.toFixed(1)} kW` : 'N/A'}</p>
-            <p className="text-xs text-gray-500">${(cluster.power_draw_kw * 0.08 || 0).toFixed(3)}/kWh</p>
+          <div className="text-2xl font-bold text-gray-100">
+            {cluster.gpu_utilization.toFixed(1)}%
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <TempIcon className={`h-4 w-4 ${tempStatus.color}`} />
-              <span>Temperature</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-100">{cluster.temperature ? `${cluster.temperature.gpu}°C` : 'N/A'}</p>
-            <p className={`text-xs ${tempStatus.color}`}>{tempStatus.label}</p>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <Droplet className="h-4 w-4" />
-              <span>Renewable</span>
-            </div>            <p className="text-2xl font-bold text-gray-100">{cluster.renewable ? `${cluster.renewable}%` : 'N/A'}</p>
-            <p className="text-xs text-gray-500">{cluster.renewable && cluster.renewable >= 50 ? 'Good' : 'Low'}</p>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-gray-800">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">Capacity</span>
-            <span className="text-gray-100 font-medium">
-              {cluster.active_gpus || 0}/{cluster.total_gpus || 0} active
-            </span>
-          </div>
-          <div className="w-full bg-gray-800 rounded-full h-1.5 mt-2">
-            <div 
-              className="bg-blue-500 h-1.5 rounded-full"
-              style={{ width: `${((cluster.active_gpus || 0) / (cluster.total_gpus || 1)) * 100}%` }}
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${getUtilizationColor(cluster.gpu_utilization)}`}
+              style={{ width: `${cluster.gpu_utilization}%` }}
             />
           </div>
+        </div>
+
+        {/* Power Draw */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="text-sm">Power Draw</span>
+          </div>
+          <div className="text-2xl font-bold text-gray-100">
+            {formatPowerDraw()}
+          </div>
+          <p className="text-xs text-gray-500">$0.000/kWh</p>
+        </div>
+
+        {/* Temperature */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="text-sm">Temperature</span>
+          </div>
+          <div className="text-2xl font-bold text-gray-100">
+            {cluster.temperature.toFixed(1)}°C
+          </div>
+          <p className="text-xs text-green-400">Normal</p>
+        </div>
+
+        {/* Renewable Energy */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />            </svg>
+            <span className="text-sm">Renewable</span>
+          </div>
+          <div className="text-2xl font-bold text-gray-100">
+            {formatRenewable()}
+          </div>
+          <p className="text-xs text-gray-500">
+            {cluster.renewable && cluster.renewable > 50 ? 'Clean Energy' : 'Mixed Grid'}
+          </p>
+        </div>
+      </div>
+
+      {/* Capacity */}
+      <div className="pt-4 border-t border-gray-800">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="text-gray-400">Capacity</span>
+          <span className="text-gray-300">
+            {cluster.active_gpus || 0}/{cluster.total_gpus || 0} active
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-1.5">
+          <div
+            className="bg-blue-500 h-1.5 rounded-full transition-all"
+            style={{
+              width: `${cluster.total_gpus ? ((cluster.active_gpus || 0) / cluster.total_gpus) * 100 : 0}%`
+            }}
+          />
         </div>
       </div>
     </div>
