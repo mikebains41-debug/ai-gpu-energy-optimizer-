@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-// Use environment variable or default to Render URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai-gpu-brain-v2.onrender.com';
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://ai-gpu-brain-v2.onrender.com/ws';
+// Use environment variable or default to Railway URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 
+  'https://ai-gpu-energy-optimizer-production.up.railway.app';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 
+  'wss://ai-gpu-energy-optimizer-production.up.railway.app/ws';
 
 interface ClusterData {
   id: string;
@@ -46,8 +48,8 @@ export function useOptimizationStream() {
           console.log('✅ Connected to AI Engine');
           setConnected(true);
         };
-
-        wsRef.current.onmessage = (event) => {          try {
+        wsRef.current.onmessage = (event) => {
+          try {
             const newData = JSON.parse(event.data);
             setData(newData);
           } catch (error) {
@@ -94,9 +96,9 @@ export function useOptimizationStream() {
 
     return () => {
       if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimeoutRef.current) {        clearTimeout(reconnectTimeoutRef.current);
+        wsRef.current.close();      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
       }
     };
   }, []);
