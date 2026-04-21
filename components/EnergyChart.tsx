@@ -1,3 +1,8 @@
+/**
+ * PROPRIETARY & CONFIDENTIAL
+ * Copyright (c) 2026 Mike Bains. All Rights Reserved.
+ * Contact: Mikebains41@gmail.com
+ */
 'use client';
 
 import { useState } from 'react';
@@ -12,7 +17,27 @@ interface EnergyChartProps {
 }
 
 export default function EnergyChart({ data }: EnergyChartProps) {
-  const [showRenewable, setShowRenewable] = useState(true);
+  const [showRenewable, setShowRenewable] = useState(false);
+
+  // If no data, show placeholder
+  if (!data || data.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-100">Energy Consumption</h3>
+          <button
+            onClick={() => setShowRenewable(!showRenewable)}
+            className="px-3 py-1 text-sm rounded-lg bg-gray-800 text-gray-400"
+          >
+            Renewable
+          </button>
+        </div>
+        <div className="h-[300px] flex items-center justify-center text-gray-500">
+          No energy data available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
