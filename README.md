@@ -1,4 +1,4 @@
-# 🤖 AI GPU Energy Optimizer 
+# 🤖 AI GPU Energy Optimizer
 
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=for-the-badge&logo=vercel)](https://ai-gpu-energy-optimizer.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Render-red?style=for-the-badge&logo=render)](https://ai-gpu-brain-v2.onrender.com)
