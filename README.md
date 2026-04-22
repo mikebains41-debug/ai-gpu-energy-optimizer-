@@ -269,6 +269,23 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 🔗 [@mikebains41-debug](https://github.com/mikebains41-debug)  
 
 ---
+## 🚀 Built Different
+
+**One person. One phone. Zero dollars.**
+
+This entire platform - the AI, the dashboard, the one-command install - was built:
+
+- **Alone** (no team)
+- **On a Samsung S25 Ultra** (no computer)
+- **With $0 funding** (just curiosity)
+
+Live dashboard. Real-time GPU monitoring. AI-powered optimization. Carbon tracking.
+
+All from a phone.
+
+**If I can do this on a phone, imagine what I can do with NVIDIA's resources.**
+
+---
 
 ## 📄 License
 
