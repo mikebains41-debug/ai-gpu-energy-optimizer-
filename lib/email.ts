@@ -1,13 +1,13 @@
-// Email service for sending beta credentials
-// For production, use Resend, SendGrid, or AWS SES
+import { Resend } from 'resend';
 
-interface EmailData {
-  to: string;
-  subject: string;
-  html: string;
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendCredentialsEmail(email: string, companyName: string, clusterId: string, apiKey: string) {
+export async function sendCredentialsEmail(
+  email: string, 
+  companyName: string, 
+  clusterId: string, 
+  apiKey: string
+) {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -60,15 +60,17 @@ export async function sendCredentialsEmail(email: string, companyName: string, c
     </html>
   `;
 
-  // For now, log to console (no actual email in development)
-  console.log('📧 Email would be sent to:', email);
-  console.log('📧 Subject: Your AI GPU Optimizer Beta Credentials');
-  console.log('📧 Cluster ID:', clusterId);
-  console.log('📧 API Key:', apiKey);
-  
-  // TODO: Add actual email sending with Resend or SendGrid
-  // const resend = new Resend(process.env.RESEND_API_KEY);
-  // await resend.emails.send({ from: 'onboarding@yourdomain.com', to: email, subject: '...', html });
-  
-  return true;
+  try {
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: email,
+      subject: 'Your AI GPU Optimizer Beta Credentials',
+      html: html,
+    });
+    console.log('Email sent to:', email);
+    return true;
+  } catch (error) {
+    console.error('Email error:', error);
+    return false;
+  }
 }
