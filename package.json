@@ -21,7 +21,8 @@
     "recharts": "^2.12.7",
     "lucide-react": "^0.400.0",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "resend": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
