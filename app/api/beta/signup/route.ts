@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendCredentialsEmail } from '@/lib/email';
 
 // In-memory storage (use a database in production)
 const betaApplications: any[] = [];
@@ -34,6 +35,9 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString()
     };
     betaApplications.push(application);
+
+    // Send email with credentials
+    await sendCredentialsEmail(email, companyName, clusterId, apiKey);
 
     return NextResponse.json({ success: true, message: 'Application submitted' });
   } catch (error) {
