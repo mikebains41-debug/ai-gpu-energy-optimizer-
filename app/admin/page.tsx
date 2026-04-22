@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, CheckCircle, XCircle, Eye, Copy, Lock } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Eye, Copy, Lock, EyeOff } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -24,14 +24,15 @@ interface Application {
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Check against environment variable
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    // Hardcoded password
+    const adminPassword = '#Cyrusbains2025';
     if (password === adminPassword) {
       setIsAuthenticated(true);
       fetchApplications();
@@ -70,13 +71,22 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-gray-100 text-center mb-2">Admin Access</h1>
           <p className="text-gray-400 text-center mb-6">Enter password to access admin dashboard</p>
           <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:border-blue-500 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
             <button
               type="submit"
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
