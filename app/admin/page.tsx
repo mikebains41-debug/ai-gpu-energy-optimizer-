@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, CheckCircle, XCircle, Eye, Copy } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Eye, Copy, Lock } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -23,12 +23,22 @@ interface Application {
 }
 
 export default function AdminPage() {
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Check against environment variable
+    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    if (password === adminPassword) {
+      setIsAuthenticated(true);
+      fetchApplications();
+    } else {
+      alert('Incorrect password');
+    }
+  };
 
   const fetchApplications = async () => {
     try {
@@ -46,6 +56,38 @@ export default function AdminPage() {
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
   };
+
+  // Password screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-gray-900/50 border border-gray-800 rounded-xl p-8">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-blue-500/20 rounded-full">
+              <Lock className="h-12 w-12 text-blue-400" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-100 text-center mb-2">Admin Access</h1>
+          <p className="text-gray-400 text-center mb-6">Enter password to access admin dashboard</p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter admin password"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
