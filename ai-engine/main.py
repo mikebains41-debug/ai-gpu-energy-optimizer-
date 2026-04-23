@@ -182,6 +182,11 @@ async def receive_metrics(
     
     return {"status": "ok", "received": True}
 
+# NEW ENDPOINT - View stored real metrics from A100 and H100
+@app.get("/metrics")
+def get_metrics():
+    return metrics_store
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
