@@ -45,6 +45,7 @@ COPY main.py .
 COPY optimizer.py .
 COPY metrics_simulator.py .
 COPY generate_credentials.py .
+COPY database.py .
 
 # Create directory for config
 RUN mkdir -p /app/config
