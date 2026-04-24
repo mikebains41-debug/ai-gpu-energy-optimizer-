@@ -1,9 +1,7 @@
 services:
   - type: web
     name: ai-gpu-brain-v2
-    runtime: python
+    env: docker
     plan: free
-    buildCommand: pip install --no-cache-dir -r requirements.txt && python -c "import numpy; print('numpy version:', numpy.__version__)"
-    startCommand: cd ai-engine && uvicorn main:app --host 0.0.0.0 --port $PORT
-    env:
-      PYTHON_VERSION: "3.11"
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
