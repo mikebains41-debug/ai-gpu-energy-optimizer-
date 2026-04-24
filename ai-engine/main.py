@@ -91,7 +91,30 @@ def generate_realistic_metrics():
             "efficiency_score": round(random.uniform(85, 93), 1)
         }
     ]
-    recommendations = []
+    # ========== UPDATED: Add mock recommendations ==========
+    recommendations = [
+        {
+            "id": "rec-1",
+            "cluster_id": "h100-cluster-1",
+            "action": "Shift non-critical jobs to off-peak hours (2am-6am)",
+            "estimated_savings_monthly": round(random.uniform(15000, 20000), 0),
+            "priority": "high"
+        },
+        {
+            "id": "rec-2",
+            "cluster_id": "a100-cluster-1",
+            "action": "Optimize cooling system and increase airflow",
+            "estimated_savings_monthly": round(random.uniform(7000, 10000), 0),
+            "priority": "medium"
+        },
+        {
+            "id": "rec-3",
+            "cluster_id": "h100-cluster-1",
+            "action": "Enable power capping during low utilization periods",
+            "estimated_savings_monthly": round(random.uniform(8000, 12000), 0),
+            "priority": "medium"
+        }
+    ]
     total_power = sum(c["power_draw"] for c in clusters)
     return {
         "clusters": clusters,
