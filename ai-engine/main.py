@@ -67,7 +67,7 @@ VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").s
 def validate_api_key(api_key: str) -> bool:
     return api_key in VALID_API_KEYS
 
-# ========== MOCK DATA FOR DASHBOARD (fallback) ==========
+# ========== MOCK DATA (fallback) ==========
 def generate_realistic_metrics():
     clusters = [
         {
@@ -131,16 +131,15 @@ def generate_realistic_metrics():
 # ========== API ENDPOINTS ==========
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "ai-gpu-brain-v4"}
+    return {"status": "ok", "service": "ai-gpu-brain-v2"}
 
 @app.get("/")
 def root():
     return {"message": "AI GPU Energy Optimizer API", "docs": "/docs", "health": "/health"}
 
-# ========== NEW /optimize endpoint that returns real stored metrics if available ==========
 @app.get("/optimize")
 def get_optimization():
-    # If we have stored metrics, return the latest one for each cluster
+    # If we have stored real metrics, return them
     if metrics_store:
         clusters = []
         for cluster_id, measurements in metrics_store.items():
@@ -156,7 +155,7 @@ def get_optimization():
                     "temperature": gpu_data.get("temperature_celsius", 0),
                     "power_draw": gpu_data.get("power_draw_watts", 0) / 1000,
                     "efficiency_score": 90 + (gpu_data.get("utilization_percent", 0) / 10),
-                    "active_gpus": 1,      # you can improve later
+                    "active_gpus": 1,
                     "total_gpus": 1,
                     "renewable_pct": 50
                 })
@@ -167,7 +166,7 @@ def get_optimization():
             "grid_carbon_intensity": 0.45
         }
     else:
-        # fallback to mock data if no real metrics yet
+        # No real metrics yet – fallback to mock data
         return generate_realistic_metrics()
 
 @app.post("/api/v1/metrics")
