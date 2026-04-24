@@ -9,7 +9,7 @@ import json
 import os
 from typing import List, Optional
 from fastapi import Header, HTTPException
-from database import SessionLocal, GPUMetric
+# from database import SessionLocal, GPUMetric
 
 app = FastAPI(title="AI GPU Energy Optimizer")
 
