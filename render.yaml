@@ -1,7 +1,9 @@
 services:
   - type: web
     name: ai-gpu-brain-v2
-    env: docker
+    env: python
+    pythonVersion: "3.11"  <-- ADD THIS LINE
+    region: oregon
     plan: free
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    buildCommand: "cd ai-engine && pip install -r requirements.txt"
+    startCommand: "cd ai-engine && uvicorn main:app --host 0.0.0.0 --port 10000"
