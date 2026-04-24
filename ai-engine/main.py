@@ -9,6 +9,8 @@ import json
 import os
 from typing import List, Optional
 from fastapi import Header, HTTPException
+
+# Database disabled – mock data only
 # from database import SessionLocal, GPUMetric
 
 app = FastAPI(title="AI GPU Energy Optimizer")
@@ -65,6 +67,40 @@ VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").s
 def validate_api_key(api_key: str) -> bool:
     return api_key in VALID_API_KEYS
 
+# ========== MOCK DATA FOR DASHBOARD ==========
+def generate_realistic_metrics():
+    clusters = [
+        {
+            "id": "h100-cluster-1",
+            "name": "NVIDIA H100 Cluster",
+            "location": "US-West",
+            "gpu_utilization": round(random.uniform(85, 98), 1),
+            "memory_usage": round(random.uniform(12, 15), 2),
+            "temperature": round(random.uniform(65, 78), 1),
+            "power_draw": round(random.uniform(1.5, 2.1), 2),
+            "efficiency_score": round(random.uniform(90, 97), 1)
+        },
+        {
+            "id": "a100-cluster-1",
+            "name": "NVIDIA A100 Cluster",
+            "location": "US-East",
+            "gpu_utilization": round(random.uniform(80, 95), 1),
+            "memory_usage": round(random.uniform(10, 14), 2),
+            "temperature": round(random.uniform(70, 82), 1),
+            "power_draw": round(random.uniform(0.8, 1.2), 2),
+            "efficiency_score": round(random.uniform(85, 93), 1)
+        }
+    ]
+    recommendations = []
+    total_power = sum(c["power_draw"] for c in clusters)
+    return {
+        "clusters": clusters,
+        "recommendations": recommendations,
+        "total_power_mw": round(total_power, 2),
+        "grid_carbon_intensity": round(random.uniform(0.3, 0.6), 3)
+    }
+
+# ========== API ENDPOINTS ==========
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "ai-gpu-brain-v4"}
@@ -72,6 +108,10 @@ def health_check():
 @app.get("/")
 def root():
     return {"message": "AI GPU Energy Optimizer API", "docs": "/docs", "health": "/health"}
+
+@app.get("/optimize")
+def get_optimization():
+    return generate_realistic_metrics()
 
 @app.post("/api/v1/metrics")
 async def receive_metrics(
@@ -92,25 +132,17 @@ async def receive_metrics(
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
     
-    try:
-        db = SessionLocal()
-        for gpu in metrics.gpus:
-            db_metric = GPUMetric(
-                cluster=metrics.cluster_id,
-                gpu_index=gpu.gpu_id,
-                power_draw=gpu.power_draw_watts,
-                power_limit=700.0,
-                temperature=gpu.temperature_celsius,
-                memory_used=gpu.memory_used_gb,
-                memory_total=gpu.memory_total_gb,
-                gpu_util=gpu.utilization_percent
-            )
-            db.add(db_metric)
-        db.commit()
-    except Exception as e:
-        print(f"DB error: {e}")
-    finally:
-        db.close()
+    # Database disabled – mock data only
+    # try:
+    #     db = SessionLocal()
+    #     for gpu in metrics.gpus:
+    #         db_metric = GPUMetric(...)
+    #         db.add(db_metric)
+    #     db.commit()
+    # except Exception as e:
+    #     print(f"DB error: {e}")
+    # finally:
+    #     db.close()
     
     return {"status": "ok", "received": True}
 
@@ -127,3 +159,8 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json({"type": "ping", "timestamp": datetime.now().isoformat()})
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
