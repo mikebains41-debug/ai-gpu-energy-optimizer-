@@ -78,7 +78,10 @@ def generate_realistic_metrics():
             "memory_usage": round(random.uniform(12, 15), 2),
             "temperature": round(random.uniform(65, 78), 1),
             "power_draw": round(random.uniform(1.5, 2.1), 2),
-            "efficiency_score": round(random.uniform(90, 97), 1)
+            "efficiency_score": round(random.uniform(90, 97), 1),
+            "active_gpus": random.randint(240, 256),
+            "total_gpus": 256,
+            "renewable_pct": round(random.uniform(60, 75), 1)
         },
         {
             "id": "a100-cluster-1",
@@ -88,10 +91,12 @@ def generate_realistic_metrics():
             "memory_usage": round(random.uniform(10, 14), 2),
             "temperature": round(random.uniform(70, 82), 1),
             "power_draw": round(random.uniform(0.8, 1.2), 2),
-            "efficiency_score": round(random.uniform(85, 93), 1)
+            "efficiency_score": round(random.uniform(85, 93), 1),
+            "active_gpus": random.randint(100, 128),
+            "total_gpus": 128,
+            "renewable_pct": round(random.uniform(40, 55), 1)
         }
     ]
-    # ========== UPDATED: Add mock recommendations ==========
     recommendations = [
         {
             "id": "rec-1",
