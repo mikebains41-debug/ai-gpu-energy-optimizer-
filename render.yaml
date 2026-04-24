@@ -1,9 +1,14 @@
 services:
   - type: web
-    name: ai-gpu-brain-v2
+    name: ai-gpu-brain-v5   # or keep v2 but better a new name
     env: python
-    pythonVersion: "3.11"  <-- ADD THIS LINE
+    pythonVersion: "3.11"
     region: oregon
     plan: free
     buildCommand: "cd ai-engine && pip install -r requirements.txt"
     startCommand: "cd ai-engine && uvicorn main:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://db1_ruh3_user:BWtx9foABOzIRLUAuuwfCtCdWtR3oYnw@dpg-d7l5fjhj2pic73ckgbp0-a.oregon-postgres.render.com:5432/db1_ruh3
+      - key: PORT
+        value: 10000
