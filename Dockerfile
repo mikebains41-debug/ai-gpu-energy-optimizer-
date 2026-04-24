@@ -2,16 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ libpq-dev && \
-    rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ai-engine/requirements.txt .
+# Copy and install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ai-engine/ .
+# Copy application code
+COPY . .
 
-ENV PORT=10000
+# Expose port
 EXPOSE 10000
 
+# Run the app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
