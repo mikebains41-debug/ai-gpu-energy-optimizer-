@@ -7,6 +7,8 @@ from datetime import datetime
 import asyncio
 import json
 import os
+import subprocess
+import glob
 from typing import List, Optional
 from fastapi import Header, HTTPException
 
@@ -282,7 +284,6 @@ def power_headroom(gpu_power: float, cpu_power: float):
 # ========== CPU POWER READING ==========
 @app.get("/cpu-power")
 def cpu_power():
-    import glob
     try:
         power_files = glob.glob("/sys/bus/i2c/devices/*/hwmon/hwmon*/power")
         if power_files:
@@ -313,7 +314,6 @@ def system_power(gpu_power: float = None):
 # ========== GPU POWER MODE (Max-Q / Max-P) ==========
 @app.get("/gpu-power-mode")
 def gpu_power_mode(gpu_id: int = 0):
-    import subprocess
     try:
         result = subprocess.run(
             ["nvidia-smi", "-q", "-d", "PERFORMANCE"],
@@ -355,6 +355,127 @@ def mission_control_optimize(robot_id: str, mission_type: str = "transport"):
             "duration_minutes": "unknown",
             "expected_energy_savings_percent": 15
         }
+
+# ========== PROCESS-LEVEL ACCOUNTING ==========
+@app.get("/gpu/processes")
+def get_gpu_processes():
+    """Lists all running processes on GPU with utilization stats"""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory,gpu_uuid", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10
+        )
+        processes = []
+        if result.stdout:
+            for line in result.stdout.strip().split('\n'):
+                if line:
+                    parts = line.split(', ')
+                    if len(parts) >= 3:
+                        processes.append({
+                            "pid": int(parts[0]),
+                            "process_name": parts[1],
+                            "used_memory_mb": float(parts[2]) if parts[2].replace('.', '').isdigit() else 0,
+                            "gpu_uuid": parts[3] if len(parts) > 3 else "N/A"
+                        })
+        return {"processes": processes, "count": len(processes)}
+    except Exception as e:
+        return {"error": str(e), "processes": [], "count": 0}
+
+@app.get("/gpu/process/{pid}")
+def get_process_stats(pid: int):
+    """Get detailed accounting stats for a specific process ID"""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory,gpu_uuid,gpu_name", "--format=csv"],
+            capture_output=True, text=True, timeout=10
+        )
+        for line in result.stdout.split('\n'):
+            if str(pid) in line:
+                parts = line.split(', ')
+                return {
+                    "pid": pid,
+                    "process_name": parts[1] if len(parts) > 1 else "Unknown",
+                    "used_memory_mb": float(parts[2]) if len(parts) > 2 and parts[2].replace('.', '').isdigit() else 0,
+                    "gpu_uuid": parts[3] if len(parts) > 3 else "N/A",
+                    "gpu_name": parts[4] if len(parts) > 4 else "Unknown"
+                }
+        return {"error": f"Process {pid} not found running on any GPU", "pid": pid}
+    except Exception as e:
+        return {"error": str(e), "pid": pid}
+
+# ========== GPU DIAGNOSTIC HEALTH CHECKS ==========
+@app.post("/gpu/diagnose/{level}")
+def gpu_diagnose(level: int):
+    """Runs GPU diagnostic health check (Level 1-4)"""
+    if level < 1 or level > 4:
+        return {"error": "Invalid level. Use 1, 2, 3, or 4"}
+    
+    try:
+        # Try DCGM first
+        result = subprocess.run(
+            ["dcgmi", "diag", "-r", str(level), "-j"],
+            capture_output=True, text=True, timeout=300
+        )
+        if result.returncode == 0:
+            return {"success": True, "diagnostic_level": level, "result": json.loads(result.stdout) if result.stdout else {"status": "PASS"}}
+    except:
+        pass
+    
+    # Fallback to nvidia-smi health check
+    return {"success": False, "diagnostic_level": level, "fallback": True, "result": nvidia_smi_health_check()}
+
+def nvidia_smi_health_check():
+    """Basic health check using nvidia-smi"""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=index,name,temperature.gpu,power.draw,power.limit,clocks_throttle_reasons.gpu_idle", "--format=csv"],
+            capture_output=True, text=True, timeout=10
+        )
+        gpus = []
+        for line in result.stdout.split('\n')[1:]:
+            if line:
+                parts = line.split(', ')
+                gpus.append({
+                    "gpu_id": parts[0] if parts else "N/A",
+                    "gpu_name": parts[1] if len(parts) > 1 else "Unknown",
+                    "temperature_celsius": parts[2] if len(parts) > 2 else "N/A",
+                    "power_draw_watts": parts[3] if len(parts) > 3 else "N/A",
+                    "power_limit_watts": parts[4] if len(parts) > 4 else "N/A",
+                    "throttling_active": parts[5] != "Not Active" if len(parts) > 5 else False
+                })
+        return {"status": "PASS" if not any(g.get("throttling_active") for g in gpus) else "WARN", "gpus": gpus}
+    except Exception as e:
+        return {"status": "ERROR", "error": str(e)}
+
+@app.get("/gpu/health")
+def gpu_health():
+    """Quick GPU health summary"""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=index,name,temperature.gpu,power.draw,power.limit,clocks_throttle_reasons.gpu_idle", "--format=csv"],
+            capture_output=True, text=True, timeout=10
+        )
+        gpus = []
+        issues = []
+        for line in result.stdout.split('\n')[1:]:
+            if line:
+                parts = line.split(', ')
+                throttling = parts[5] != "Not Active" if len(parts) > 5 else False
+                gpus.append({
+                    "gpu_id": parts[0],
+                    "temperature_celsius": parts[2],
+                    "power_draw_watts": parts[3],
+                    "throttling_active": throttling
+                })
+                if throttling:
+                    issues.append(f"GPU {parts[0]} is throttling")
+        return {
+            "health_status": "healthy" if not issues else "degraded",
+            "issues": issues,
+            "gpus": gpus
+        }
+    except Exception as e:
+        return {"health_status": "unknown", "error": str(e)}
 
 @app.post("/api/v1/metrics")
 async def receive_metrics(
