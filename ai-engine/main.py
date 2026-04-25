@@ -27,6 +27,7 @@ class GPUInput(BaseModel):
     gpu_utilization: float
     memory_usage: float
     temperature: float
+    power_draw: float = 250.0  # added for savings calculations
 
 class GPUMetric(BaseModel):
     gpu_id: int
@@ -168,6 +169,90 @@ def get_optimization():
     else:
         # No real metrics yet – fallback to mock data
         return generate_realistic_metrics()
+
+@app.post("/optimize")
+def post_optimization(input: GPUInput):
+    # Current realistic metrics (simulated or real)
+    metrics = generate_realistic_metrics()
+    
+    # Add dynamic recommendations based on input
+    recommendations = []
+    
+    # Temperature check
+    if input.temperature > 75:
+        recommendations.append({
+            "action": "Reduce GPU frequency by 10-15%",
+            "estimated_savings_per_hour": round(input.power_draw * 0.12, 2),
+            "priority": "high"
+        })
+    
+    # Utilization check
+    if input.gpu_utilization < 40:
+        recommendations.append({
+            "action": "Consolidate workloads or enable power capping",
+            "estimated_savings_per_hour": round(input.power_draw * 0.25, 2),
+            "priority": "medium"
+        })
+    
+    # Memory check
+    if input.memory_usage > 85:
+        recommendations.append({
+            "action": "Move data to shared memory or reduce batch size",
+            "estimated_savings_per_hour": 0,
+            "priority": "low"
+        })
+    
+    metrics["recommendations"] = recommendations
+    metrics["input_received"] = input.dict()
+    return metrics
+
+@app.post("/recommend-power-cap")
+def recommend_power_cap(gpu_id: int, workload_type: str = "inference"):
+    """
+    Returns a recommended power cap for a given GPU based on workload.
+    """
+    if workload_type == "training":
+        recommended_power = 400   # Watts – needs full power
+    else:  # inference or low intensity
+        recommended_power = 250   # Watts – saves energy
+    
+    estimated_savings = (450 - recommended_power) * 0.12  # $0.12 per kWh
+    
+    return {
+        "gpu_id": gpu_id,
+        "workload_type": workload_type,
+        "recommended_power_cap_watts": recommended_power,
+        "estimated_savings_per_hour_usd": round(estimated_savings, 2)
+    }
+
+@app.get("/thermal-alerts")
+def get_thermal_alerts(threshold_celsius: int = 80):
+    """
+    Scans stored metrics for GPUs exceeding temperature threshold.
+    Returns alerts for immediate action.
+    """
+    alerts = []
+    
+    for cluster_id, cluster_metrics in metrics_store.items():
+        # Check last 10 metrics per cluster
+        for metric in cluster_metrics[-10:]:
+            for gpu in metric.get('gpus', []):
+                temp = gpu.get('temperature_celsius', 0)
+                if temp > threshold_celsius:
+                    alerts.append({
+                        "cluster_id": cluster_id,
+                        "gpu_id": gpu.get('gpu_id'),
+                        "temperature_celsius": temp,
+                        "timestamp": metric.get('timestamp'),
+                        "action": "Reduce workload or increase cooling immediately",
+                        "estimated_risk": "High – potential throttling or shutdown" if temp > 85 else "Medium"
+                    })
+    
+    return {
+        "alert_count": len(alerts),
+        "threshold_celsius": threshold_celsius,
+        "alerts": alerts
+    }
 
 @app.post("/api/v1/metrics")
 async def receive_metrics(
