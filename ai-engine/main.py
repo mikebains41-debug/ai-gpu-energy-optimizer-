@@ -359,7 +359,6 @@ def mission_control_optimize(robot_id: str, mission_type: str = "transport"):
 # ========== PROCESS-LEVEL ACCOUNTING ==========
 @app.get("/gpu/processes")
 def get_gpu_processes():
-    """Lists all running processes on GPU with utilization stats"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory,gpu_uuid", "--format=csv,noheader,nounits"],
@@ -383,7 +382,6 @@ def get_gpu_processes():
 
 @app.get("/gpu/process/{pid}")
 def get_process_stats(pid: int):
-    """Get detailed accounting stats for a specific process ID"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory,gpu_uuid,gpu_name", "--format=csv"],
@@ -406,12 +404,10 @@ def get_process_stats(pid: int):
 # ========== GPU DIAGNOSTIC HEALTH CHECKS ==========
 @app.post("/gpu/diagnose/{level}")
 def gpu_diagnose(level: int):
-    """Runs GPU diagnostic health check (Level 1-4)"""
     if level < 1 or level > 4:
         return {"error": "Invalid level. Use 1, 2, 3, or 4"}
     
     try:
-        # Try DCGM first
         result = subprocess.run(
             ["dcgmi", "diag", "-r", str(level), "-j"],
             capture_output=True, text=True, timeout=300
@@ -421,11 +417,9 @@ def gpu_diagnose(level: int):
     except:
         pass
     
-    # Fallback to nvidia-smi health check
     return {"success": False, "diagnostic_level": level, "fallback": True, "result": nvidia_smi_health_check()}
 
 def nvidia_smi_health_check():
-    """Basic health check using nvidia-smi"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=index,name,temperature.gpu,power.draw,power.limit,clocks_throttle_reasons.gpu_idle", "--format=csv"],
@@ -449,7 +443,6 @@ def nvidia_smi_health_check():
 
 @app.get("/gpu/health")
 def gpu_health():
-    """Quick GPU health summary"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=index,name,temperature.gpu,power.draw,power.limit,clocks_throttle_reasons.gpu_idle", "--format=csv"],
@@ -476,6 +469,105 @@ def gpu_health():
         }
     except Exception as e:
         return {"health_status": "unknown", "error": str(e)}
+
+# ========== KUBERNETES POWER CAPPING ENDPOINTS ==========
+
+@app.post("/k8s/power-cap")
+def kubernetes_power_cap(gpu_id: int, power_limit_watts: int, workload_type: str = "inference"):
+    """
+    Called by Kubernetes controller to apply power cap to GPU.
+    Returns status for the controller to update CRD status.
+    """
+    try:
+        # First, validate the power limit
+        if power_limit_watts < 100:
+            return {
+                "success": False,
+                "error": f"Power limit {power_limit_watts}W is too low (minimum 100W)",
+                "gpu_id": gpu_id
+            }
+        
+        # Apply power cap via nvidia-smi
+        result = subprocess.run(
+            ["nvidia-smi", "-i", str(gpu_id), "-pl", str(power_limit_watts)],
+            capture_output=True, text=True, timeout=10
+        )
+        
+        if result.returncode == 0:
+            return {
+                "success": True,
+                "message": f"Power cap {power_limit_watts}W applied to GPU {gpu_id}",
+                "gpu_id": gpu_id,
+                "power_limit_watts": power_limit_watts,
+                "workload_type": workload_type
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.stderr,
+                "gpu_id": gpu_id
+            }
+    except subprocess.TimeoutExpired:
+        return {"success": False, "error": "Command timed out", "gpu_id": gpu_id}
+    except Exception as e:
+        return {"success": False, "error": str(e), "gpu_id": gpu_id}
+
+@app.get("/k8s/power-metrics")
+def kubernetes_power_metrics():
+    """
+    Returns power metrics in Prometheus format for KEDA autoscaling.
+    This endpoint is scraped by Prometheus.
+    """
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=index,power.draw,power.limit,temperature.gpu,utilization.gpu", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=5
+        )
+        
+        # Prepare Prometheus output
+        output = "# HELP gpu_power_draw_watts Current GPU power draw in watts\n"
+        output += "# TYPE gpu_power_draw_watts gauge\n"
+        output += "# HELP gpu_power_limit_watts Current GPU power limit in watts\n"
+        output += "# TYPE gpu_power_limit_watts gauge\n"
+        output += "# HELP gpu_temperature_celsius Current GPU temperature in Celsius\n"
+        output += "# TYPE gpu_temperature_celsius gauge\n"
+        output += "# HELP gpu_utilization_percent Current GPU utilization percent\n"
+        output += "# TYPE gpu_utilization_percent gauge\n"
+        
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split(', ')
+                if len(parts) >= 5:
+                    gpu_id = parts[0]
+                    power_draw = float(parts[1]) if parts[1].replace('.', '').replace('-', '').isdigit() else 0
+                    power_limit = float(parts[2]) if parts[2].replace('.', '').isdigit() else 0
+                    temperature = float(parts[3]) if parts[3].replace('.', '').isdigit() else 0
+                    utilization = float(parts[4]) if parts[4].replace('.', '').isdigit() else 0
+                    
+                    output += f'gpu_power_draw_watts{{gpu_id="{gpu_id}"}} {power_draw}\n'
+                    output += f'gpu_power_limit_watts{{gpu_id="{gpu_id}"}} {power_limit}\n'
+                    output += f'gpu_temperature_celsius{{gpu_id="{gpu_id}"}} {temperature}\n'
+                    output += f'gpu_utilization_percent{{gpu_id="{gpu_id}"}} {utilization}\n'
+        
+        return Response(content=output, media_type="text/plain")
+    except Exception as e:
+        return Response(content=f"# Error collecting metrics: {str(e)}", media_type="text/plain")
+
+@app.get("/k8s/namespace-power")
+def kubernetes_namespace_power(namespace: str = "default"):
+    """
+    Returns total power usage for a namespace (for ResourceQuota enforcement).
+    This is called by the Kubernetes admission webhook.
+    """
+    # In production, you would aggregate metrics based on namespace labels
+    # For now, return a mock response
+    return {
+        "namespace": namespace,
+        "current_power_watts": 1250.0,
+        "quota_watts": 5000.0,
+        "remaining_watts": 3750.0,
+        "utilization_percent": 25.0
+    }
 
 @app.post("/api/v1/metrics")
 async def receive_metrics(
