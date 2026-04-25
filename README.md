@@ -15,9 +15,9 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
 
 | Link | URL |
 |------|-----|
-| **Backend API** | [https://ai-gpu-brain-v2.onrender.com](https://ai-gpu-brain-v2.onrender.com) |
-| **API Docs** | [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs) |
-| **Frontend Dashboard** | [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app) |
+| **Backend API** | https://ai-gpu-brain-v2.onrender.com |
+| **API Docs** | https://ai-gpu-brain-v2.onrender.com/docs |
+| **Frontend Dashboard** | https://ai-gpu-energy-optimizer.vercel.app |
 
 ---
 
