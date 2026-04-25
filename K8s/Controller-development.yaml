@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-power-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gpu-power-controller
+  template:
+    metadata:
+      labels:
+        app: gpu-power-controller
+    spec:
+      containers:
+      - name: controller
+        image: mikebains41/gpu-power-controller:latest
+        env:
+        - name: GPU_OPTIMIZER_URL
+          value: "http://ai-gpu-brain-v2:10000"
