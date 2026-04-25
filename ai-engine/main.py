@@ -254,6 +254,28 @@ def get_thermal_alerts(threshold_celsius: int = 80):
         "alerts": alerts
     }
 
+@app.get("/power-headroom")
+def power_headroom(gpu_power: float, cpu_power: float):
+    total_power = gpu_power + cpu_power
+    
+    if total_power > 168:
+        return {
+            "action": "Reduce GPU frequency immediately",
+            "urgency": "critical",
+            "time_to_throttle_seconds": 0
+        }
+    elif total_power > 144:
+        return {
+            "action": "Schedule workload reduction",
+            "urgency": "high",
+            "time_to_throttle_seconds": 30
+        }
+    else:
+        return {
+            "action": "Normal operation",
+            "urgency": "none"
+        }
+
 @app.post("/api/v1/metrics")
 async def receive_metrics(
     metrics: ClusterMetrics,
