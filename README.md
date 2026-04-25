@@ -36,19 +36,50 @@ Real-time GPU energy optimization for A100, H100, and AI factories. Monitor powe
 | NVIDIA H100 80GB | 80 GB | 78W - 450W | ✅ Yes |
 
 ## 🏗️ Architecture
+| Component | Technology |
+|-----------|------------|
+| **Frontend** | Next.js (Vercel) – Dashboard, WebSocket, Charts |
+| **Backend** | FastAPI (Render) – API, PostgreSQL, Prometheus |
+| **Monitoring** | Power, temperature, utilization, memory |
+| **Throttling** | OC1-OC4 prediction with reduction % |
+| **Kubernetes** | CRD for power capping, KEDA autoscaling |
+| **MIG Support** | Per-partition monitoring,
 
 ## 🔧 Installation
 
 ### 60-Second Quick Start
 
 ```bash
-# Clone the repository
 git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer
 cd ai-gpu-energy-optimizer
 
-# Deploy to Render
-# Click "New +" → Web Service → Connect GitHub → Python 3 → Create
+### Deploy to Render
 
-# Set environment variables
-DATABASE_URL=postgresql://...
-docker run -d -p 10000:10000 --gpus all mikebains41/gpu-optimizer:latest
+1. Click **New +** → **Web Service**
+2. Connect your GitHub repository
+3. Select **Python 3** runtime
+4. Set **Root Directory** to `ai-engine`
+5. Add `DATABASE_URL` environment variable
+6. Click **Create Web Service**
+
+## 📡 API Endpoints
+## 🧪 Testing
+
+### Send test metrics from A100
+
+```bash
+nvidia-smi --query-gpu=index,power.draw,power.limit,temperature.gpu,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits | while IFS=', ' read idx power power_limit temp mem_used mem_total util; do
+    curl -X POST https://ai-gpu-brain-v2.onrender.com/api/v1/metrics \
+        -H "Authorization: Bearer test_key_123" \
+        -H "Content-Type: application/json" \
+        -d "{\"cluster_id\":\"a100-lambda\",\"timestamp\":$(date +%s),\"gpus\":[{\"gpu_id\":$idx,\"utilization_percent\":$util,\"memory_used_gb\":$mem_used,\"memory_total_gb\":$mem_total,\"temperature_celsius\":$temp,\"power_draw_watts\":$power}]}"
+done
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/metrics` | View stored GPU metrics |
+| POST | `/api/v1/metrics` | Send GPU metrics |
+| GET | `/thermal-alerts` | Get overheating alerts |
+| GET | `/power-headroom` | Predict throttling (OC1-OC4) |
+| GET | `/k8s/power-metrics` | Prometheus metrics for KEDA |
