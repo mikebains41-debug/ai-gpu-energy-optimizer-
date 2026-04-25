@@ -1,0 +1,17 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: gpu-power-scaler
+spec:
+  scaleTargetRef:
+    name: your-inference-deployment
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus:9090
+      metricName: gpu_power_draw_watts
+      query: avg(gpu_power_draw_watts)
+      threshold: "250"
+      activationThreshold: "200"
