@@ -59,16 +59,16 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
   };
 
   const formatPowerDraw = () => {
-    if (cluster.power_draw_kw) {
-      return `${cluster.power_draw_kw.toFixed(0)} kW`;
+    // Use power_draw_kw if available, otherwise power_draw (which is in kW)
+    let powerKw = cluster.power_draw_kw ?? cluster.power_draw ?? 0;
+    if (powerKw < 0.1) {
+      // Values less than 0.1 kW (100 W) – show in watts
+      const watts = Math.round(powerKw * 1000);
+      return `${watts} W`;
+    } else {
+      // Show in kilowatts with two decimals
+      return `${powerKw.toFixed(2)} kW`;
     }
-    if (cluster.power_draw) {
-      if (cluster.power_draw < 10) {
-        return `${(cluster.power_draw * 1000).toFixed(0)} kW`;
-      }
-      return `${cluster.power_draw.toFixed(0)} MW`;
-    }
-    return 'N/A';
   };
 
   const formatRenewable = () => {
@@ -98,6 +98,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* GPU Utilization */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,6 +117,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           </div>
         </div>
 
+        {/* Power Draw */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,6 +131,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <p className="text-xs text-gray-500">Real-time</p>
         </div>
 
+        {/* Temperature */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,6 +147,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           </p>
         </div>
 
+        {/* Renewable */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,6 +164,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
         </div>
       </div>
 
+      {/* Capacity */}
       <div className="pt-4 border-t border-gray-800">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-gray-400">Capacity</span>
@@ -178,4 +183,4 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
       </div>
     </div>
   );
-            }
+}
