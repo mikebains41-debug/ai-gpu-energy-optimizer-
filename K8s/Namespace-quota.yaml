@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gpu-power-quota
+spec:
+  hard:
+    gpu-power-watts: "5000"
