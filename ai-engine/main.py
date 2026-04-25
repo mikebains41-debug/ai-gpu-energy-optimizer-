@@ -27,7 +27,7 @@ class GPUInput(BaseModel):
     gpu_utilization: float
     memory_usage: float
     temperature: float
-    power_draw: float = 250.0  # added for savings calculations
+    power_draw: float = 250.0
 
 class GPUMetric(BaseModel):
     gpu_id: int
@@ -140,7 +140,6 @@ def root():
 
 @app.get("/optimize")
 def get_optimization():
-    # If we have stored real metrics, return them
     if metrics_store:
         clusters = []
         for cluster_id, measurements in metrics_store.items():
@@ -167,18 +166,13 @@ def get_optimization():
             "grid_carbon_intensity": 0.45
         }
     else:
-        # No real metrics yet – fallback to mock data
         return generate_realistic_metrics()
 
 @app.post("/optimize")
 def post_optimization(input: GPUInput):
-    # Current realistic metrics (simulated or real)
     metrics = generate_realistic_metrics()
-    
-    # Add dynamic recommendations based on input
     recommendations = []
     
-    # Temperature check
     if input.temperature > 75:
         recommendations.append({
             "action": "Reduce GPU frequency by 10-15%",
@@ -186,7 +180,6 @@ def post_optimization(input: GPUInput):
             "priority": "high"
         })
     
-    # Utilization check
     if input.gpu_utilization < 40:
         recommendations.append({
             "action": "Consolidate workloads or enable power capping",
@@ -194,7 +187,6 @@ def post_optimization(input: GPUInput):
             "priority": "medium"
         })
     
-    # Memory check
     if input.memory_usage > 85:
         recommendations.append({
             "action": "Move data to shared memory or reduce batch size",
@@ -208,15 +200,12 @@ def post_optimization(input: GPUInput):
 
 @app.post("/recommend-power-cap")
 def recommend_power_cap(gpu_id: int, workload_type: str = "inference"):
-    """
-    Returns a recommended power cap for a given GPU based on workload.
-    """
     if workload_type == "training":
-        recommended_power = 400   # Watts – needs full power
-    else:  # inference or low intensity
-        recommended_power = 250   # Watts – saves energy
+        recommended_power = 400
+    else:
+        recommended_power = 250
     
-    estimated_savings = (450 - recommended_power) * 0.12  # $0.12 per kWh
+    estimated_savings = (450 - recommended_power) * 0.12
     
     return {
         "gpu_id": gpu_id,
@@ -227,14 +216,9 @@ def recommend_power_cap(gpu_id: int, workload_type: str = "inference"):
 
 @app.get("/thermal-alerts")
 def get_thermal_alerts(threshold_celsius: int = 80):
-    """
-    Scans stored metrics for GPUs exceeding temperature threshold.
-    Returns alerts for immediate action.
-    """
     alerts = []
     
     for cluster_id, cluster_metrics in metrics_store.items():
-        # Check last 10 metrics per cluster
         for metric in cluster_metrics[-10:]:
             for gpu in metric.get('gpus', []):
                 temp = gpu.get('temperature_celsius', 0)
@@ -254,26 +238,122 @@ def get_thermal_alerts(threshold_celsius: int = 80):
         "alerts": alerts
     }
 
+# ========== ENHANCED POWER HEADROOM (OC1-OC4 Throttling Levels) ==========
 @app.get("/power-headroom")
 def power_headroom(gpu_power: float, cpu_power: float):
     total_power = gpu_power + cpu_power
     
-    if total_power > 168:
+    if total_power > 210:
         return {
-            "action": "Reduce GPU frequency immediately",
+            "action": "CRITICAL: Reduce GPU frequency immediately",
+            "throttle_level": "OC4",
             "urgency": "critical",
-            "time_to_throttle_seconds": 0
+            "time_to_throttle_seconds": 0,
+            "gpu_reduction_percent": 75,
+            "cpu_reduction_percent": 75
+        }
+    elif total_power > 168:
+        return {
+            "action": "Schedule urgent workload reduction",
+            "throttle_level": "OC2",
+            "urgency": "high",
+            "time_to_throttle_seconds": 30,
+            "gpu_reduction_percent": 50,
+            "cpu_reduction_percent": 50
         }
     elif total_power > 144:
         return {
-            "action": "Schedule workload reduction",
-            "urgency": "high",
-            "time_to_throttle_seconds": 30
+            "action": "Reduce GPU frequency by 15%",
+            "throttle_level": "OC1",
+            "urgency": "medium",
+            "time_to_throttle_seconds": 60,
+            "gpu_reduction_percent": 25,
+            "cpu_reduction_percent": 0
         }
     else:
         return {
             "action": "Normal operation",
-            "urgency": "none"
+            "throttle_level": "None",
+            "urgency": "none",
+            "gpu_reduction_percent": 0,
+            "cpu_reduction_percent": 0
+        }
+
+# ========== CPU POWER READING ==========
+@app.get("/cpu-power")
+def cpu_power():
+    import glob
+    try:
+        power_files = glob.glob("/sys/bus/i2c/devices/*/hwmon/hwmon*/power")
+        if power_files:
+            with open(power_files[0], 'r') as f:
+                power_mw = int(f.read().strip())
+                return {"cpu_power_watts": power_mw / 1000, "source": "real"}
+    except:
+        pass
+    return {"cpu_power_watts": 45.0, "source": "mock", "note": "Replace with actual IGX power reading"}
+
+# ========== SYSTEM POWER (GPU + CPU + I/O) ==========
+@app.get("/system-power")
+def system_power(gpu_power: float = None):
+    cpu_result = cpu_power()
+    cpu_watts = cpu_result.get("cpu_power_watts", 45.0)
+    gpu_watts = gpu_power if gpu_power is not None else 150.0
+    io_watts = 10.0
+    total_watts = gpu_watts + cpu_watts + io_watts
+    
+    return {
+        "gpu_power_watts": gpu_watts,
+        "cpu_power_watts": cpu_watts,
+        "io_power_watts": io_watts,
+        "total_power_watts": round(total_watts, 1),
+        "thermal_risk": "high" if total_watts > 168 else "medium" if total_watts > 144 else "low"
+    }
+
+# ========== GPU POWER MODE (Max-Q / Max-P) ==========
+@app.get("/gpu-power-mode")
+def gpu_power_mode(gpu_id: int = 0):
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "-q", "-d", "PERFORMANCE"],
+            capture_output=True, text=True, timeout=5
+        )
+        if "Max-Q" in result.stdout:
+            return {"gpu_id": gpu_id, "power_mode": "Max-Q", "description": "Power efficient", "recommended_workload": "inference"}
+        elif "Max-P" in result.stdout:
+            return {"gpu_id": gpu_id, "power_mode": "Max-P", "description": "Maximum performance", "recommended_workload": "training"}
+        else:
+            return {"gpu_id": gpu_id, "power_mode": "Unknown"}
+    except:
+        return {"gpu_id": gpu_id, "power_mode": "Max-P (mock)", "description": "Testing mode - no GPU detected", "recommended_workload": "training"}
+
+# ========== MISSION CONTROL INTEGRATION ==========
+@app.post("/mission-control/power-optimize")
+def mission_control_optimize(robot_id: str, mission_type: str = "transport"):
+    if mission_type == "transport":
+        return {
+            "robot_id": robot_id,
+            "mission_type": mission_type,
+            "recommended_power_cap_watts": 150,
+            "duration_minutes": 30,
+            "expected_energy_savings_percent": 35
+        }
+    elif mission_type == "charging":
+        return {
+            "robot_id": robot_id,
+            "mission_type": mission_type,
+            "recommended_power_cap_watts": 50,
+            "duration_minutes": "idle",
+            "expected_energy_savings_percent": 70
+        }
+    else:
+        return {
+            "robot_id": robot_id,
+            "mission_type": mission_type,
+            "recommended_power_cap_watts": 250,
+            "duration_minutes": "unknown",
+            "expected_energy_savings_percent": 15
         }
 
 @app.post("/api/v1/metrics")
@@ -294,18 +374,6 @@ async def receive_metrics(
     
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
-    
-    # Database disabled – mock data only
-    # try:
-    #     db = SessionLocal()
-    #     for gpu in metrics.gpus:
-    #         db_metric = GPUMetric(...)
-    #         db.add(db_metric)
-    #     db.commit()
-    # except Exception as e:
-    #     print(f"DB error: {e}")
-    # finally:
-    #     db.close()
     
     return {"status": "ok", "received": True}
 
