@@ -106,11 +106,11 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 | Kubernetes auto-scaler integration |
 ##
 
-📊 24-Hour Test Validation
+📊 24-Hour Test Validation coming soon
 
 | # | Metric / Feature | Status |
 |---|-----------------|--------|
-| **CURRENT METRICS** |
+| **CURRENT METRICS**were tested over 8 hrs|
 | 1 | Power monitoring (watts) | ✅ 
 | 2 | Temperature monitoring (°C) 
 | 3 | GPU utilization (%) | ✅ 
