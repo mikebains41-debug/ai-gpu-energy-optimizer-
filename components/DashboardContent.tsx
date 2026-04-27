@@ -8,26 +8,29 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch real live data from /metrics endpoint
-    fetch('https://ai-gpu-brain-v3.onrender.com/metrics')
+    // Fetch A100 live data
+    fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100')
       .then(res => res.json())
       .then(data => {
-        // Get latest A100 data
         if (data['a100-80gb-runpod'] && data['a100-80gb-runpod'].length > 0) {
           const latest = data['a100-80gb-runpod'][data['a100-80gb-runpod'].length - 1];
           setA100Data(latest.gpus[0]);
         }
-        
-        // Get latest H100 data
+      })
+      .catch(err => console.error('A100 fetch error:', err));
+
+    // Fetch H100 live data
+    fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100')
+      .then(res => res.json())
+      .then(data => {
         if (data['h100-runpod'] && data['h100-runpod'].length > 0) {
           const latest = data['h100-runpod'][data['h100-runpod'].length - 1];
           setH100Data(latest.gpus[0]);
         }
-        
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error fetching metrics:', err);
+      .catch(err => {
+        console.error('H100 fetch error:', err);
         setLoading(false);
       });
   }, []);
@@ -35,13 +38,14 @@ export default function DashboardContent() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-400">Loading live GPU data from Render...</div>
+        <div className="text-gray-400">Loading live GPU data...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 p-6">
+      {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
         <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
@@ -53,6 +57,7 @@ export default function DashboardContent() {
         </p>
       </div>
 
+      {/* GPU Clusters */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* A100 Cluster */}
         <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
@@ -129,6 +134,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
+      {/* Legend */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">GPU Cluster Legend</h3>
         <div className="flex gap-4">
