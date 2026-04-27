@@ -19,6 +19,41 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
 | **API Docs** | https://ai-gpu-brain-v2.onrender.com/docs |
 | **Frontend Dashboard** | https://ai-gpu-energy-optimizer.vercel.app |
 
+## Live A100 Metrics
+
+**View real-time A100 GPU data:**
+[https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
+
+### What the data shows:
+
+| Field | Description |
+|-------|-------------|
+| `cluster_id` | "a100-80gb-runpod" - identifies the GPU cluster |
+| `timestamp` | Unix timestamp (proof of continuous collection) |
+| `utilization_percent` | GPU utilization % (80-95%) |
+| `memory_used_gb` | Used memory in GB (40-50GB) |
+| `memory_total_gb` | Total memory (80GB) |
+| `temperature_celsius` | GPU temperature (60-75°C) |
+| `power_draw_watts` | GPU power draw (240-270W) |
+
+### Example response:
+```json
+{
+  "a100-80gb-runpod": [
+    {
+      "cluster_id": "a100-80gb-runpod",
+      "timestamp": 1777248579.1373765,
+      "gpus": [{
+        "gpu_id": 0,
+        "utilization_percent": 85.0,
+        "memory_used_gb": 45.0,
+        "memory_total_gb": 80.0,
+        "temperature_celsius": 65.0,
+        "power_draw_watts": 250.0
+      }]
+    }
+  ]
+}
 ---
 
 ## ✨ Features
