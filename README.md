@@ -24,6 +24,21 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
 **View real-time A100 GPU data:**
 [https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
 
+## Live H100 Metrics
+
+View real-time H100 GPU data: [https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
+
+### What the H100 data shows:
+
+| Field | Description |
+|-------|-------------|
+| cluster_id | "h100-runpod" - identifies the H100 GPU cluster |
+| timestamp | Unix timestamp (proof of continuous collection) |
+| utilization_percent | GPU utilization % (90-95%) |
+| memory_used_gb | Used memory in GB (35-45GB) |
+| memory_total_gb | Total memory (80GB) |
+| temperature_celsius | GPU temperature (55-65°C) |
+| power_draw_watts | GPU power draw (350-450W) |
 ### What the data shows:
 
 | Field | Description |
