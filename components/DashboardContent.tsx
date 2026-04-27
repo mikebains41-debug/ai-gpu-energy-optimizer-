@@ -7,53 +7,15 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch real live data from /metrics endpoint
-    fetch('https://ai-gpu-brain-v3.onrender.com/metrics')
+    fetch('https://ai-gpu-brain-v3.onrender.com/optimize')
       .then(res => res.json())
       .then(data => {
-        const clusterList = [];
-        
-        // Parse A100 data from /metrics response
-        if (data['a100-80gb-runpod'] && data['a100-80gb-runpod'].length > 0) {
-          const latestA100 = data['a100-80gb-runpod'][data['a100-80gb-runpod'].length - 1];
-          const gpu = latestA100.gpus[0];
-          clusterList.push({
-            id: 'a100',
-            name: 'NVIDIA A100 Cluster',
-            location: 'US-East',
-            gpu_utilization: gpu.utilization_percent || 85,
-            power_draw: (gpu.power_draw_watts || 250) / 1000,
-            temperature: gpu.temperature_celsius || 65,
-            renewable_pct: 50,
-            active_gpus: 1,
-            total_gpus: 1,
-          });
+        if (data.clusters) {
+          setClusters(data.clusters);
         }
-        
-        // Parse H100 data from /metrics response
-        if (data['h100-runpod'] && data['h100-runpod'].length > 0) {
-          const latestH100 = data['h100-runpod'][data['h100-runpod'].length - 1];
-          const gpu = latestH100.gpus[0];
-          clusterList.push({
-            id: 'h100',
-            name: 'NVIDIA H100 Cluster',
-            location: 'US-West',
-            gpu_utilization: gpu.utilization_percent || 94,
-            power_draw: (gpu.power_draw_watts || 380) / 1000,
-            temperature: gpu.temperature_celsius || 58,
-            renewable_pct: 50,
-            active_gpus: 1,
-            total_gpus: 1,
-          });
-        }
-        
-        setClusters(clusterList);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error:', err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -79,7 +41,7 @@ export default function DashboardContent() {
 
       <div className="grid md:grid-cols-2 gap-6">
         {clusters.map((cluster: any) => {
-          const isH100 = cluster.location === 'US-West';
+          const isH100 = cluster.location === 'US-West' || cluster.id?.includes('h100');
           return (
             <div key={cluster.id} className="bg-gray-900 rounded-lg p-6 border border-gray-800">
               <div className="flex justify-between items-start mb-4">
@@ -94,10 +56,10 @@ export default function DashboardContent() {
                       {isH100 ? 'H100' : 'A100'}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mt-1">{cluster.location}</p>
+                  <p className="text-sm text-gray-400 mt-1">{cluster.location || 'Cluster'}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-100">{cluster.active_gpus}/{cluster.total_gpus}</div>
+                  <div className="text-2xl font-bold text-gray-100">{cluster.active_gpus || 256}/{cluster.total_gpus || 256}</div>
                   <div className="text-xs text-gray-500">Active GPUs</div>
                 </div>
               </div>
@@ -105,20 +67,20 @@ export default function DashboardContent() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400">GPU Utilization</div>
-                  <div className="text-2xl font-bold text-gray-100">{cluster.gpu_utilization}%</div>
+                  <div className="text-2xl font-bold text-gray-100">{cluster.gpu_utilization || 0}%</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400">Power Draw</div>
-                  <div className="text-2xl font-bold text-gray-100">{cluster.power_draw.toFixed(2)} MW</div>
+                  <div className="text-2xl font-bold text-gray-100">{cluster.power_draw || 0} MW</div>
                   <div className="text-xs text-gray-500">Real-time</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400">Temperature</div>
-                  <div className="text-2xl font-bold text-gray-100">{cluster.temperature}°C</div>
+                  <div className="text-2xl font-bold text-gray-100">{cluster.temperature || 0}°C</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400">Clean Energy</div>
-                  <div className="text-2xl font-bold text-gray-100">{cluster.renewable_pct}%</div>
+                  <div className="text-2xl font-bold text-gray-100">{cluster.renewable_pct || 0}%</div>
                 </div>
               </div>
             </div>
