@@ -2,20 +2,8 @@
 
 import { useState, useEffect } from 'react';
 
-interface Cluster {
-  id: string;
-  name: string;
-  gpu_type: string;
-  gpu_utilization: number;
-  power_draw: number;
-  temperature: number;
-  renewable_pct: number;
-  active_gpus: number;
-  total_gpus: number;
-}
-
 export default function DashboardContent() {
-  const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [clusters, setClusters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +11,7 @@ export default function DashboardContent() {
       .then(res => res.json())
       .then(data => {
         if (data.clusters) {
-          const updatedClusters = data.clusters.map((c: any) => ({
-            ...c,
-            gpu_type: c.id.includes('h100') || c.location === 'US-West' ? 'H100' : 'A100',
-            name: c.id.includes('h100') || c.location === 'US-West' ? 'H100 Cluster' : 'A100 Cluster'
-          }));
-          setClusters(updatedClusters);
+          setClusters(data.clusters);
         }
         setLoading(false);
       })
@@ -44,57 +27,59 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
       
       <div className="grid md:grid-cols-2 gap-6">
-        {clusters.map((cluster) => (
-          <div key={cluster.id} className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                {/* CLEAR GPU TYPE LABEL - H100 vs A100 */}
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold text-gray-100">{cluster.name}</h2>
-                  <span className={`px-2 py-1 text-xs font-bold rounded ${
-                    cluster.gpu_type === 'H100' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-blue-600 text-white'
-                  }`}>
-                    {cluster.gpu_type}
-                  </span>
+        {clusters.map((cluster: any) => {
+          const isH100 = cluster.location === 'US-West' || cluster.id?.includes('h100');
+          return (
+            <div key={cluster.id} className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold text-gray-100">
+                      {isH100 ? 'NVIDIA H100 Cluster' : 'NVIDIA A100 Cluster'}
+                    </h2>
+                    <span className={`px-2 py-1 text-xs font-bold rounded ${
+                      isH100 ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                    }`}>
+                      {isH100 ? 'H100' : 'A100'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1">{cluster.location || 'Cluster'}</p>
                 </div>
-                <p className="text-sm text-gray-400 mt-1">{cluster.location || 'Cluster'}</p>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-100">{cluster.active_gpus || 256}/{cluster.total_gpus || 256}</div>
+                  <div className="text-xs text-gray-500">Active GPUs</div>
+                </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-100">{cluster.active_gpus || 256}/{cluster.total_gpus || 256}</div>
-                <div className="text-xs text-gray-500">Active GPUs</div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-100">{cluster.gpu_utilization || 0}%</div>
-                <div className="text-xs text-gray-400">GPU Utilization</div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-100">{cluster.power_draw || 0} MW</div>
-                <div className="text-xs text-gray-400">Power Draw</div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-100">{cluster.temperature || 0}°C</div>
-                <div className="text-xs text-gray-400">Temperature</div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-100">{cluster.renewable_pct || 0}%</div>
-                <div className="text-xs text-gray-400">Clean Energy</div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-gray-800 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-gray-100">{cluster.gpu_utilization || 0}%</div>
+                  <div className="text-xs text-gray-400">GPU Utilization</div>
+                </div>
+                <div className="bg-gray-800 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-gray-100">{cluster.power_draw || 0} MW</div>
+                  <div className="text-xs text-gray-400">Power Draw</div>
+                </div>
+                <div className="bg-gray-800 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-gray-100">{cluster.temperature || 0}°C</div>
+                  <div className="text-xs text-gray-400">Temperature</div>
+                </div>
+                <div className="bg-gray-800 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-gray-100">{cluster.renewable_pct || 0}%</div>
+                  <div className="text-xs text-gray-400">Clean Energy</div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Legend */}
-      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800 mt-4">
+      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">GPU Cluster Legend</h3>
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
