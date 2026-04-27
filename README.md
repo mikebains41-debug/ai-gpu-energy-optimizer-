@@ -77,6 +77,24 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
     }
   ]
 }
+### Example response (H100):
+
+{
+  "h100-runpod": [
+    {
+      "cluster_id": "h100-runpod",
+      "timestamp": 1777267236.1624715,
+      "gpus": [{
+        "gpu_id": 0,
+        "utilization_percent": 94.0,
+        "memory_used_gb": 38.0,
+        "memory_total_gb": 80.0,
+        "temperature_celsius": 58.0,
+        "power_draw_watts": 380.0
+      }]
+    }
+  ]
+}
 
 ## 🔜 Roadmap (Next Phase)
 
