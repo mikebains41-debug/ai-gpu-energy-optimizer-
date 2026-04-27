@@ -19,6 +19,7 @@ interface ClusterData {
   status?: string;
   total_gpus?: number;
   active_gpus?: number;
+  gpu_type?: string;  // Added for H100/A100 identification
 }
 
 interface GPUMetricsCardProps {
@@ -26,6 +27,30 @@ interface GPUMetricsCardProps {
 }
 
 export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
+  // Determine GPU type based on location or ID
+  const getGPUType = (): 'H100' | 'A100' => {
+    if (cluster.gpu_type) {
+      return cluster.gpu_type === 'H100' ? 'H100' : 'A100';
+    }
+    // Fallback: US-West is H100, US-East is A100
+    if (cluster.location === 'US-West' || cluster.id?.includes('h100')) {
+      return 'H100';
+    }
+    return 'A100';
+  };
+
+  const getGPUDisplayName = (): string => {
+    const gpuType = getGPUType();
+    return gpuType === 'H100' ? 'NVIDIA H100 Cluster' : 'NVIDIA A100 Cluster';
+  };
+
+  const getGPUBadgeColor = (): string => {
+    const gpuType = getGPUType();
+    return gpuType === 'H100' 
+      ? 'bg-purple-600 text-white' 
+      : 'bg-blue-600 text-white';
+  };
+
   const getStatusColor = (status?: string) => {
     switch (status?.toLowerCase()) {
       case 'optimal':
@@ -59,14 +84,11 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
   };
 
   const formatPowerDraw = () => {
-    // Use power_draw_kw if available, otherwise power_draw (which is in kW)
     let powerKw = cluster.power_draw_kw ?? cluster.power_draw ?? 0;
     if (powerKw < 0.1) {
-      // Values less than 0.1 kW (100 W) – show in watts
       const watts = Math.round(powerKw * 1000);
       return `${watts} W`;
     } else {
-      // Show in kilowatts with two decimals
       return `${powerKw.toFixed(2)} kW`;
     }
   };
@@ -78,17 +100,24 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
     return 'N/A';
   };
 
+  const gpuType = getGPUType();
+
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition-colors">
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-500/20 rounded-lg">
-            <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`p-2 rounded-lg ${gpuType === 'H100' ? 'bg-purple-500/20' : 'bg-blue-500/20'}`}>
+            <svg className={`w-6 h-6 ${gpuType === 'H100' ? 'text-purple-400' : 'text-blue-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-100">{cluster.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-gray-100">{getGPUDisplayName()}</h3>
+              <span className={`px-2 py-0.5 text-xs font-bold rounded ${getGPUBadgeColor()}`}>
+                {gpuType}
+              </span>
+            </div>
             <p className="text-sm text-gray-400">{cluster.location || 'Location N/A'}</p>
           </div>
         </div>
@@ -142,8 +171,8 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <div className="text-2xl font-bold text-gray-100">
             {cluster.temperature.toFixed(1)}°C
           </div>
-          <p className="text-xs text-green-400">
-            {cluster.temperature > 80 ? '⚠️ High' : 'Normal'}
+          <p className={`text-xs ${cluster.temperature > 80 ? 'text-red-400' : 'text-green-400'}`}>
+            {cluster.temperature > 80 ? '⚠️ High - Throttling Risk' : 'Normal'}
           </p>
         </div>
 
@@ -174,7 +203,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
         </div>
         <div className="w-full bg-gray-700 rounded-full h-1.5">
           <div
-            className="bg-blue-500 h-1.5 rounded-full transition-all"
+            className={`h-1.5 rounded-full transition-all ${gpuType === 'H100' ? 'bg-purple-500' : 'bg-blue-500'}`}
             style={{
               width: `${cluster.total_gpus ? ((cluster.active_gpus || 0) / cluster.total_gpus) * 100 : 0}%`
             }}
