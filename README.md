@@ -82,7 +82,7 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 {
   "h100-runpod": [
     {
-      "cluster_id": "h100-80Gb-runpod",
+      "cluster_id": "h100-runpod",
       "timestamp": 1777267236.1624715,
       "gpus": [{
         "gpu_id": 0,
