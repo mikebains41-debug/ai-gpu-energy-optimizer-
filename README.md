@@ -25,20 +25,18 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
 [https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
 
 ## Live H100 Metrics
+29  View real-time H100 GPU data: [https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
+30  ### What the H100 data shows:
+31  | Field | Description |
+32  |---|----------|
+33  | cluster_id | "h100-runpod" - identifies the H100 GPU cluster |
+34  | timestamp | Unix timestamp (proof of continuous collection) |
+35  | utilization_percent | GPU utilization % (90-95%) |
+36  | memory_used_gb | Used memory in GB (35-45GB) |
+37  | memory_total_gb | Total memory (80GB) |
+38  | temperature_celsius | GPU temperature (55-65°C) |
+39  | power_draw_watts | GPU power draw (350-450W) |
 
-View real-time H100 GPU data: [https://ai-gpu-brain-v3.onrender.com/metrics](https://ai-gpu-brain-v3.onrender.com/metrics)
-
-### What the H100 data shows:
-
-| Field | Description |
-|-------|-------------|
-| cluster_id | "h100-runpod" - identifies the H100 GPU cluster |
-| timestamp | Unix timestamp (proof of continuous collection) |
-| utilization_percent | GPU utilization % (90-95%) |
-| memory_used_gb | Used memory in GB (35-45GB) |
-| memory_total_gb | Total memory (80GB) |
-| temperature_celsius | GPU temperature (55-65°C) |
-| power_draw_watts | GPU power draw (350-450W) |
 ### What the data shows:
 
 | Field | Description |
