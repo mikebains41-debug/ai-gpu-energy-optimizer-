@@ -133,7 +133,7 @@ def generate_realistic_metrics():
 # ========== EXISTING ENDPOINTS (kept) ==========
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "ai-gpu-brain-v2"}
+    return {"status": "ok", "service": "ai-gpu-brain-v3"}
 
 @app.get("/")
 def root():
@@ -306,14 +306,12 @@ def mig_status():
 def mig_instances():
     """List all MIG instances with their profiles and metrics"""
     try:
-        # Get MIG instance info
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=mig.devices", "--format=csv"],
             capture_output=True, text=True
         )
         
         instances = []
-        # Parse nvidia-smi output for MIG instances
         for line in result.stdout.split('\n'):
             if 'MIG-' in line:
                 parts = line.split(',')
@@ -336,14 +334,11 @@ def mig_instances():
 def mig_instance_metrics(instance_id: str):
     """Get power, temperature, utilization for a specific MIG partition"""
     try:
-        # Query metrics for the specific MIG instance
-        # Note: Not all metrics are available per-partition; some are shared
         result = subprocess.run(
             ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader"],
             capture_output=True, text=True
         )
         
-        # For demo, return mock data
         return {
             "instance_id": instance_id,
             "power_draw_watts": round(random.uniform(5, 20), 1),
@@ -409,7 +404,7 @@ def kubernetes_namespace_power(namespace: str = "default"):
         "utilization_percent": 25.0
     }
 
-# ========== EXISTING ENDPOINTS (continued) ==========
+# ========== METRICS ENDPOINTS ==========
 @app.post("/api/v1/metrics")
 async def receive_metrics(
     metrics: ClusterMetrics,
@@ -432,7 +427,18 @@ async def receive_metrics(
 
 @app.get("/metrics")
 def get_metrics():
+    """Return all metrics (both A100 and H100)"""
     return metrics_store
+
+@app.get("/metrics/a100")
+def get_a100_metrics():
+    """Return only A100 metrics"""
+    return {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
+
+@app.get("/metrics/h100")
+def get_h100_metrics():
+    """Return only H100 metrics"""
+    return {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
