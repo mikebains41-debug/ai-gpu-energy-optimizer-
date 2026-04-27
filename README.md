@@ -107,13 +107,9 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 
 ---
 
-## 🤝 Open for Partnership
-
-This project is currently a **live monitoring and throttling prediction platform**. The next phase — automatic power capping and energy optimization — is ready for development with the right partner.
-
-If your organization wants to accelerate this roadmap, I am open to:
-- Licensing the current codebase
-- Joint development of power capping features
-- Acquisition discussions
+This project is currently a
+**live monitoring and throttling prediction platform**. The next
+phase — automatic power capping
+and energy optimization — is ready for development with the right partner.
 
 Contact: mikebains41@gmail.com
