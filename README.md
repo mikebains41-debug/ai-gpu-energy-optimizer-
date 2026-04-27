@@ -7,7 +7,7 @@
 
 **Real-time GPU energy optimization for A100, H100, and AI factories.** Monitor power, temperature, and throttling. Predict OC levels before hardware throttling occurs. Deploy in 60 seconds.
 
-Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
+Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curiosity.
 
 ---
 
