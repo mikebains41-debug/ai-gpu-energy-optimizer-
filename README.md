@@ -77,3 +77,25 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
     }
   ]
 }
+
+## 🔜 Roadmap (Next Phase)
+
+| Feature | Status | Target |
+|---------|--------|--------|
+| Power capping via API | 📋 Planned | Q3 2026 |
+| Auto-optimization (reduction logic) | 📋 Planned | Q4 2026 |
+| Real-time power adjustment | 📋 Planned | Q1 2027 |
+| Kubernetes auto-scaler integration | 📋 Planned | Q2 2027 |
+
+---
+
+## 🤝 Open for Partnership
+
+This project is currently a **live monitoring and throttling prediction platform**. The next phase — automatic power capping and energy optimization — is ready for development with the right partner.
+
+If your organization wants to accelerate this roadmap, I am open to:
+- Licensing the current codebase
+- Joint development of power capping features
+- Acquisition discussions
+
+Contact: mikebains41@gmail.com
