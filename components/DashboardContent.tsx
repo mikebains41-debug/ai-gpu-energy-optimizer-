@@ -28,8 +28,19 @@ export default function DashboardContent() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
-      
+      {/* HERO SECTION - THIS IS WHAT YOU WANT TO ADD */}
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
+        <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
+          Real-time power, temperature, and utilization monitoring for A100 and H100 GPUs.
+          Predict throttling. Optimize energy use. Deploy in 60 seconds.
+        </p>
+        <p className="text-gray-500 text-sm mt-4">
+          Built on Samsung S25 Ultra | No laptop, no desktop
+        </p>
+      </div>
+      {/* END OF HERO SECTION */}
+
       <div className="grid md:grid-cols-2 gap-6">
         {clusters.map((cluster: any) => {
           const isH100 = cluster.location === 'US-West' || cluster.id?.includes('h100');
@@ -78,7 +89,6 @@ export default function DashboardContent() {
         })}
       </div>
 
-      {/* Legend */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">GPU Cluster Legend</h3>
         <div className="flex gap-4">
