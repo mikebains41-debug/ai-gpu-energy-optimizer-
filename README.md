@@ -111,6 +111,7 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 | # | Metric / Feature | Status |
 |---|-----------------|--------|
 | **CURRENT METRICS**were tested over 8 hrs|
+
 | 1 | Power monitoring (watts) | ✅ 
 | 2 | Temperature monitoring (°C) 
 | 3 | GPU utilization (%) | ✅ 
@@ -119,7 +120,8 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 | 6 | A100 live data | ✅ 
 | 7 | H100 live data | ✅ 
 | 8 | Dashboard display | ✅
-| 9 | API endpoints | ✅ 
+| 9 | API endpoints | ✅
+
 | **NEW FEATURES** |
 | 10 | Throttling prediction | 📋 Planned |
 | 11 | Cost calculator ($ savings) | 📋 Planned |
