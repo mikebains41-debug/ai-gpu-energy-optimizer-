@@ -13,35 +13,29 @@ import glob
 from typing import List, Optional
 from fastapi import Header, HTTPException
 
-# ========== PERSISTENT DISK SETUP ==========
-# CHANGE THIS TO "/data" AFTER ADDING DISK IN RENDER
-# FOR NOW, USE "persistent_data" (no disk needed)
+# ========== PERSISTENT STORAGE ==========
 DATA_DIR = "persistent_data"
 METRICS_FILE = os.path.join(DATA_DIR, "metrics.json")
 
-# Create directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
 
-def load_metrics_from_disk():
-    """Load existing metrics from persistent storage"""
+def load_metrics():
     if os.path.exists(METRICS_FILE):
         try:
             with open(METRICS_FILE, 'r') as f:
                 return json.load(f)
-        except Exception as e:
-            print(f"Error loading metrics: {e}")
+        except:
             return {}
     return {}
 
-def save_metrics_to_disk(metrics):
-    """Save metrics to persistent storage"""
+def save_metrics(metrics):
     try:
         with open(METRICS_FILE, 'w') as f:
             json.dump(metrics, f, indent=2)
     except Exception as e:
-        print(f"Error saving metrics: {e}")
+        print(f"Error saving: {e}")
 
-# ========== APP INITIALIZATION ==========
+# ========== APP ==========
 app = FastAPI(title="AI GPU Energy Optimizer")
 
 app.add_middleware(
@@ -52,8 +46,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load existing metrics from disk (survives restarts!)
-metrics_store = load_metrics_from_disk()
+metrics_store = load_metrics()
 
 # ========== MODELS ==========
 class GPUInput(BaseModel):
@@ -161,7 +154,7 @@ def generate_realistic_metrics():
         "grid_carbon_intensity": round(random.uniform(0.3, 0.6), 3)
     }
 
-# ========== EXISTING ENDPOINTS ==========
+# ========== ENDPOINTS ==========
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "ai-gpu-brain-v3"}
@@ -443,24 +436,20 @@ async def receive_metrics(
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
     
-    # Save to persistent storage after every update
-    save_metrics_to_disk(metrics_store)
+    save_metrics(metrics_store)
     
     return {"status": "ok", "received": True}
 
 @app.get("/metrics")
 def get_metrics():
-    """Return all metrics (both A100 and H100)"""
     return metrics_store
 
 @app.get("/metrics/a100")
 def get_a100_metrics():
-    """Return only A100 metrics"""
     return {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
 
 @app.get("/metrics/h100")
 def get_h100_metrics():
-    """Return only H100 metrics"""
     return {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
 
 @app.websocket("/ws")
