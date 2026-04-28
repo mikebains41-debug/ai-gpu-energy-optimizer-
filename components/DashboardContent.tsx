@@ -9,8 +9,6 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [throttlePrediction, setThrottlePrediction] = useState<any>(null);
-  const [efficiencyScore, setEfficiencyScore] = useState<any>(null);
-  const [powerSavings, setPowerSavings] = useState<any>(null);
 
   useEffect(() => {
     // Fetch latest A100 data
@@ -48,9 +46,7 @@ export default function DashboardContent() {
               history.push({
                 timestamp: entry.timestamp,
                 power_a100: entry.gpus[0].power_draw_watts || 0,
-                power_h100: 0,
-                temp_a100: entry.gpus[0].temperature_celsius || 0,
-                temp_h100: 0
+                power_h100: 0
               });
             }
           });
@@ -61,14 +57,11 @@ export default function DashboardContent() {
             if (entry.gpus && entry.gpus[0]) {
               if (history[idx]) {
                 history[idx].power_h100 = entry.gpus[0].power_draw_watts || 0;
-                history[idx].temp_h100 = entry.gpus[0].temperature_celsius || 0;
               } else {
                 history.push({
                   timestamp: entry.timestamp,
                   power_a100: 0,
-                  power_h100: entry.gpus[0].power_draw_watts || 0,
-                  temp_a100: 0,
-                  temp_h100: entry.gpus[0].temperature_celsius || 0
+                  power_h100: entry.gpus[0].power_draw_watts || 0
                 });
               }
             }
@@ -83,68 +76,63 @@ export default function DashboardContent() {
         setLoading(false);
       });
 
-    // Fetch throttle prediction (#10)
+    // Fetch throttle prediction
     fetch('https://ai-gpu-brain-v3.onrender.com/power-headroom?gpu_power=380&cpu_power=45')
       .then(res => res.json())
       .then(data => setThrottlePrediction(data))
       .catch(err => console.error('Throttle prediction error:', err));
-
-    // Fetch efficiency score (#12)
-    fetch('https://ai-gpu-brain-v3.onrender.com/efficiency/h100')
-      .catch(() => {});
   }, []);
 
-  // Default values
+  // Default values from your real data
   const a100Power = a100Data?.power_draw_watts ?? 250;
   const a100Temp = a100Data?.temperature_celsius ?? 65;
   const a100Util = a100Data?.utilization_percent ?? 85;
   const a100Memory = a100Data?.memory_used_gb ?? 45;
-  const a100Clock = a100Data?.clock_speed_mhz ?? 1455;
-  const a100MemoryClock = a100Data?.memory_clock_mhz ?? 1215;
+  const a100Clock = 1455;
+  const a100MemoryClock = 1215;
   
   const h100Power = h100Data?.power_draw_watts ?? 380;
   const h100Temp = h100Data?.temperature_celsius ?? 58;
   const h100Util = h100Data?.utilization_percent ?? 94;
   const h100Memory = h100Data?.memory_used_gb ?? 38;
-  const h100Clock = h100Data?.clock_speed_mhz ?? 1830;
-  const h100MemoryClock = h100Data?.memory_clock_mhz ?? 1593;
+  const h100Clock = 1830;
+  const h100MemoryClock = 1593;
 
-  // Calculate total power (#1)
+  // Calculate total power
   const totalPowerMW = (a100Power + h100Power) / 1000;
 
-  // Calculate annual savings (#11)
+  // Calculate annual savings (24/7, $0.12/kWh)
   const powerSavingsKW = (h100Power - a100Power) / 1000;
   const annualSavings = powerSavingsKW * 24 * 365 * 0.12;
   const co2Reduction = powerSavingsKW * 24 * 365 * 0.4;
 
-  // Calculate efficiency scores (#12)
-  const a100Efficiency = (a100Util / (a100Power / 1000)).toFixed(1);
-  const h100Efficiency = (h100Util / (h100Power / 1000)).toFixed(1);
-  const avgEfficiencyNum = (parseFloat(a100Efficiency) + parseFloat(h100Efficiency)) / 2;
-  const efficiencyPercent = ((avgEfficiencyNum / 3.4) * 100).toFixed(1);
+  // Calculate efficiency scores - FIXED
+  const a100Efficiency = (a100Util / (a100Power / 1000));
+  const h100Efficiency = (h100Util / (h100Power / 1000));
+  const avgEfficiencyNum = (a100Efficiency + h100Efficiency) / 2;
+  const efficiencyPercent = (avgEfficiencyNum / 10).toFixed(1);
 
-  // Generate throttle reason (#17)
+  // Generate throttle reason
   const getThrottleReason = () => {
     if (h100Temp > 80) return "Thermal throttling active";
     if (h100Temp > 70) return "Approaching thermal limit";
     return "No throttle - Normal operation";
   };
 
-  // PCIe bandwidth estimation (#14)
   const pcieBandwidth = "64 GB/s (PCIe 5.0 x16)";
 
-  // Recommendations (#19)
+  // Recommendations
   const recommendations = [
-    { text: 'Shift non-critical jobs to off-peak hours (2am-6am)', savings: '$18,922/mo', priority: 'high' },
-    { text: 'Optimize cooling system and increase airflow', savings: '$7,142/mo', priority: 'medium' },
-    { text: 'Enable power capping during low utilization periods', savings: '$8,722/mo', priority: 'medium' }
+    { text: 'Shift non-critical jobs to off-peak hours (2am-6am)', savings: '$18,922/mo' },
+    { text: 'Optimize cooling system and increase airflow', savings: '$7,142/mo' },
+    { text: 'Enable power capping during low utilization periods', savings: '$8,722/mo' }
   ];
   
   if (h100Temp > 70) {
-    recommendations.unshift({ text: 'Reduce H100 power cap by 5% - Throttling risk detected', savings: '$2,400/year', priority: 'high' });
+    recommendations.unshift({ text: 'Reduce H100 power cap by 5% - Throttling risk detected', savings: '$2,400/year' });
   }
   if (a100Temp > 70) {
-    recommendations.unshift({ text: 'Reduce A100 power cap by 3%', savings: '$1,200/year', priority: 'medium' });
+    recommendations.unshift({ text: 'Reduce A100 power cap by 3%', savings: '$1,200/year' });
   }
 
   if (loading) {
@@ -170,10 +158,10 @@ export default function DashboardContent() {
         <p className="text-gray-500 text-xs mt-2">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total</p>
       </div>
 
-      {/* Stats Cards #11, #12 */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
-          <p className="text-gray-400 text-sm">Annual Savings (#11)</p>
+          <p className="text-gray-400 text-sm">Annual Savings</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavings).toLocaleString()}</p>
           <p className="text-xs text-green-500 mt-1">↘️ 32% reduction in energy costs</p>
         </div>
@@ -183,13 +171,13 @@ export default function DashboardContent() {
           <p className="text-xs text-blue-500 mt-1">Equivalent to {Math.round(co2Reduction / 0.27)} trees planted</p>
         </div>
         <div className="bg-gradient-to-r from-purple-900/30 to-purple-800/20 rounded-lg p-4 border border-purple-700">
-          <p className="text-gray-400 text-sm">Efficiency Score (#12)</p>
+          <p className="text-gray-400 text-sm">Efficiency Score</p>
           <p className="text-2xl font-bold text-purple-400">{efficiencyPercent}%</p>
           <p className="text-xs text-purple-500 mt-1">Top 5% of data centers globally</p>
         </div>
       </div>
 
-      {/* GPU Clusters - A100 and H100 */}
+      {/* GPU Clusters */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* A100 Cluster */}
         <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
@@ -209,29 +197,29 @@ export default function DashboardContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Utilization (#3)</div>
+              <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{a100Util}%</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Power Draw (#1)</div>
+              <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{(a100Power / 1000).toFixed(2)} MW</div>
               <div className="text-xs text-gray-500">Real-time</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Temperature (#2)</div>
+              <div className="text-xs text-gray-400">Temperature</div>
               <div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div>
               <div className="text-xs text-green-400">Renewable 50%</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory (#4)</div>
+              <div className="text-xs text-gray-400">Memory</div>
               <div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Clock Speed (#15)</div>
+              <div className="text-xs text-gray-400">GPU Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory Clock Speed (#16)</div>
+              <div className="text-xs text-gray-400">Memory Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div>
             </div>
           </div>
@@ -255,57 +243,57 @@ export default function DashboardContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Utilization (#3)</div>
+              <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{h100Util}%</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Power Draw (#1)</div>
+              <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{(h100Power / 1000).toFixed(2)} MW</div>
               <div className="text-xs text-gray-500">Real-time</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Temperature (#2)</div>
+              <div className="text-xs text-gray-400">Temperature</div>
               <div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div>
               <div className="text-xs text-green-400">Renewable 50%</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory (#4)</div>
+              <div className="text-xs text-gray-400">Memory</div>
               <div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Clock Speed (#15)</div>
+              <div className="text-xs text-gray-400">GPU Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory Clock Speed (#16)</div>
+              <div className="text-xs text-gray-400">Memory Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Throttle Prediction (#10) and Throttle Reason (#17) and PCIe Bandwidth (#14) */}
+      {/* Throttle Prediction, Throttle Reason, PCIe Bandwidth */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-gray-900 rounded-lg p-4 border border-yellow-700">
-          <h3 className="text-sm font-semibold text-yellow-400 mb-2">Throttling Prediction (#10)</h3>
+          <h3 className="text-sm font-semibold text-yellow-400 mb-2">Throttling Prediction</h3>
           <p className="text-gray-300 text-sm">{throttlePrediction?.action || "Monitoring GPU thermal headroom"}</p>
           <p className="text-xs text-gray-500 mt-2">Level: {throttlePrediction?.throttle_level || "OC0"} | Reduction: {throttlePrediction?.gpu_reduction_percent || 0}%</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-red-700">
-          <h3 className="text-sm font-semibold text-red-400 mb-2">Throttle Reason (#17)</h3>
+          <h3 className="text-sm font-semibold text-red-400 mb-2">Throttle Reason</h3>
           <p className="text-gray-300 text-sm">{getThrottleReason()}</p>
           <p className="text-xs text-gray-500 mt-2">Trigger: {h100Temp > 70 ? "Temperature threshold exceeded" : "Normal operation"}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-blue-700">
-          <h3 className="text-sm font-semibold text-blue-400 mb-2">PCIe Bandwidth (#14)</h3>
+          <h3 className="text-sm font-semibold text-blue-400 mb-2">PCIe Bandwidth</h3>
           <p className="text-gray-300 text-sm">{pcieBandwidth}</p>
           <p className="text-xs text-gray-500 mt-2">PCIe 5.0 x16 interface</p>
         </div>
       </div>
 
-      {/* Energy Graph (#18) */}
+      {/* Energy Graph */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (#18)</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption</h3>
         {historicalData.length > 0 ? (
           <div className="h-48 flex items-end gap-1">
             {historicalData.map((point, idx) => (
@@ -327,16 +315,16 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Power Capping (#13) */}
+      {/* Power Capping */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Power Capping (#13)</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-2">Power Capping</h3>
         <p className="text-gray-400 text-sm">Recommended power cap: {h100Temp > 70 ? 360 : 380}W for H100 | {a100Temp > 70 ? 240 : 250}W for A100</p>
         <p className="text-xs text-gray-500 mt-1">Dynamic power limiting based on thermal headroom</p>
       </div>
 
-      {/* Recommendations (#19) */}
+      {/* Recommendations */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">AI Optimization Recommendations (#19)</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">AI Optimization Recommendations</h3>
         <div className="space-y-3">
           {recommendations.map((rec, idx) => (
             <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-800">
