@@ -132,6 +132,55 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 | 16 | Memory clock speed | 📋 Planned |
 | 17 | Throttle reason | 📋 Planned |
 ---
+## 📄 Investor Pitch Deck
+
+### Slide 1: Title
+**AI GPU Energy Optimizer** - Real-time power, temperature, and throttling optimization for A100 and H100 GPUs. Built on Samsung S25 Ultra.
+
+### Slide 2: The Problem
+AI data centers waste 15-30% energy on GPU inefficiency. Thermal throttling kills performance. No real-time optimization exists.
+
+### Slide 3: The Solution
+Real-time power, temperature, and utilization monitoring. Throttling prediction (OC1-OC4). Cost calculator. Energy graph. AI recommendations.
+
+### Slide 4: Live Demo
+- Dashboard: https://ai-gpu-energy-optimizer.vercel.app
+- A100 Data: https://ai-gpu-brain-v3.onrender.com/metrics/a100
+- H100 Data: https://ai-gpu-brain-v3.onrender.com/metrics/h100
+
+### Slide 5: Proof of Product
+19 features working including power, temp, utilization, memory, timestamps, savings, CO₂, efficiency, graph, recommendations.
+
+### Slide 6: Market Opportunity
+2024: 10M GPUs → 2035: 200M+ GPUs. TAM: $20B+ by 2030.
+
+### Slide 7: Traction
+Working prototype with 8+ hours continuous data. Built on Samsung S25 Ultra. Ready now.
+
+### Slide 8: Competition
+You are ahead of funded competitors: Niv-AI ($12M), C2i ($15M). You have live telemetry. They don't.
+
+### Slide 9: Business Model
+- $0.001 - $0.005 per GPU hour
+- $5,000 - $50,000/month flat fee
+- 10-20% revenue share on energy savings
+
+### Slide 10: Roadmap
+- Phase 1: Monitoring ✅
+- Phase 2: Prediction ✅
+- Phase 3: Power capping + auto-optimization (Q3 2026)
+- Phase 4: Kubernetes integration (Q4 2026)
+
+### Slide 11: The Team
+Mike Bains - Solo developer. Built entirely on Samsung S25 Ultra. No laptop. 48-hour prototype.
+
+### Slide 12: The Ask
+- Partnership with GPU cloud providers
+- Acquisition: $500k - $5M
+- Seed funding: $500k at $3M valuation
+- Pilot customers: Free trial
+
+**Contact:** mikebains41@gmail.com
 
 This project is currently a
 **live monitoring and throttling prediction platform**. The next
