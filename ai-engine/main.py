@@ -13,6 +13,33 @@ import glob
 from typing import List, Optional
 from fastapi import Header, HTTPException
 
+# ========== PERSISTENT DISK SETUP ==========
+DATA_DIR = "/data"
+METRICS_FILE = os.path.join(DATA_DIR, "metrics.json")
+
+# Create data directory if it doesn't exist
+os.makedirs(DATA_DIR, exist_ok=True)
+
+def load_metrics_from_disk():
+    """Load existing metrics from persistent disk"""
+    if os.path.exists(METRICS_FILE):
+        try:
+            with open(METRICS_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading metrics: {e}")
+            return {}
+    return {}
+
+def save_metrics_to_disk(metrics):
+    """Save metrics to persistent disk"""
+    try:
+        with open(METRICS_FILE, 'w') as f:
+            json.dump(metrics, f, indent=2)
+    except Exception as e:
+        print(f"Error saving metrics: {e}")
+
+# ========== APP INITIALIZATION ==========
 app = FastAPI(title="AI GPU Energy Optimizer")
 
 app.add_middleware(
@@ -22,6 +49,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Load existing metrics from disk (survives restarts!)
+metrics_store = load_metrics_from_disk()
 
 # ========== MODELS ==========
 class GPUInput(BaseModel):
@@ -63,7 +93,6 @@ class ConnectionManager:
                 self.disconnect(connection)
 
 manager = ConnectionManager()
-metrics_store = {}
 VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").split(",")
 
 def validate_api_key(api_key: str) -> bool:
@@ -130,7 +159,7 @@ def generate_realistic_metrics():
         "grid_carbon_intensity": round(random.uniform(0.3, 0.6), 3)
     }
 
-# ========== EXISTING ENDPOINTS (kept) ==========
+# ========== EXISTING ENDPOINTS ==========
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "ai-gpu-brain-v3"}
@@ -295,7 +324,6 @@ def mission_control_optimize(robot_id: str, mission_type: str = "transport"):
 # ========== MIG SUPPORT ==========
 @app.get("/mig/status")
 def mig_status():
-    """Check if MIG is enabled on the GPU"""
     result = subprocess.run(
         ["nvidia-smi", "--query-gpu=mig.mode.current", "--format=csv,noheader"],
         capture_output=True, text=True
@@ -304,7 +332,6 @@ def mig_status():
 
 @app.get("/mig/instances")
 def mig_instances():
-    """List all MIG instances with their profiles and metrics"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=mig.devices", "--format=csv"],
@@ -332,7 +359,6 @@ def mig_instances():
 
 @app.get("/mig/instance/{instance_id}/metrics")
 def mig_instance_metrics(instance_id: str):
-    """Get power, temperature, utilization for a specific MIG partition"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader"],
@@ -353,7 +379,6 @@ def mig_instance_metrics(instance_id: str):
 # ========== KUBERNETES POWER CAPPING ==========
 @app.post("/k8s/power-cap")
 def kubernetes_power_cap(gpu_id: int, power_limit_watts: int):
-    """Called by Kubernetes controller to apply power cap"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "-i", str(gpu_id), "-pl", str(power_limit_watts)],
@@ -368,7 +393,6 @@ def kubernetes_power_cap(gpu_id: int, power_limit_watts: int):
 
 @app.get("/k8s/power-metrics")
 def kubernetes_power_metrics():
-    """Prometheus metrics for KEDA autoscaling"""
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=index,power.draw,power.limit,temperature.gpu,utilization.gpu", "--format=csv,noheader,nounits"],
@@ -395,7 +419,6 @@ def kubernetes_power_metrics():
 
 @app.get("/k8s/namespace-power")
 def kubernetes_namespace_power(namespace: str = "default"):
-    """Namespace power usage for quota enforcement"""
     return {
         "namespace": namespace,
         "current_power_watts": 1250.0,
@@ -422,6 +445,9 @@ async def receive_metrics(
     
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
+    
+    # Save to persistent disk after every update
+    save_metrics_to_disk(metrics_store)
     
     return {"status": "ok", "received": True}
 
