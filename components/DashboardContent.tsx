@@ -196,32 +196,12 @@ export default function DashboardContent() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Utilization</div>
-              <div className="text-2xl font-bold text-gray-100">{a100Util}%</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Power Draw</div>
-              <div className="text-2xl font-bold text-gray-100">{(a100Power / 1000).toFixed(2)} MW</div>
-              <div className="text-xs text-gray-500">Real-time</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Temperature</div>
-              <div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div>
-              <div className="text-xs text-green-400">Renewable 50%</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory</div>
-              <div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Clock Speed</div>
-              <div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory Clock Speed</div>
-              <div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div>
-            </div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Utilization</div><div className="text-2xl font-bold text-gray-100">{a100Util}%</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Power Draw</div><div className="text-2xl font-bold text-gray-100">{(a100Power / 1000).toFixed(2)} MW</div><div className="text-xs text-gray-500">Real-time</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Temperature</div><div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div><div className="text-xs text-green-400">Renewable 50%</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory</div><div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Clock Speed</div><div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory Clock Speed</div><div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div></div>
           </div>
         </div>
 
@@ -242,32 +222,12 @@ export default function DashboardContent() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Utilization</div>
-              <div className="text-2xl font-bold text-gray-100">{h100Util}%</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Power Draw</div>
-              <div className="text-2xl font-bold text-gray-100">{(h100Power / 1000).toFixed(2)} MW</div>
-              <div className="text-xs text-gray-500">Real-time</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Temperature</div>
-              <div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div>
-              <div className="text-xs text-green-400">Renewable 50%</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory</div>
-              <div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">GPU Clock Speed</div>
-              <div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Memory Clock Speed</div>
-              <div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div>
-            </div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Utilization</div><div className="text-2xl font-bold text-gray-100">{h100Util}%</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Power Draw</div><div className="text-2xl font-bold text-gray-100">{(h100Power / 1000).toFixed(2)} MW</div><div className="text-xs text-gray-500">Real-time</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Temperature</div><div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div><div className="text-xs text-green-400">Renewable 50%</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory</div><div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Clock Speed</div><div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div></div>
+            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory Clock Speed</div><div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div></div>
           </div>
         </div>
       </div>
@@ -333,25 +293,17 @@ export default function DashboardContent() {
             </div>
           ))}
         </div>
-        <div className="mt-4 text-xs text-gray-500">
-          Based on real-time temperature and utilization data
-        </div>
+        <div className="mt-4 text-xs text-gray-500">Based on real-time temperature and utilization data</div>
       </div>
 
       {/* Legend */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">GPU Cluster Legend</h3>
         <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-600"></div>
-            <span className="text-sm text-gray-400">H100 (Higher Power, Higher Performance)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-            <span className="text-sm text-gray-400">A100 (Standard Power, Efficient)</span>
-          </div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-purple-600"></div><span className="text-sm text-gray-400">H100 (Higher Power, Higher Performance)</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-600"></div><span className="text-sm text-gray-400">A100 (Standard Power, Efficient)</span></div>
         </div>
       </div>
     </div>
   );
-              }
+}
