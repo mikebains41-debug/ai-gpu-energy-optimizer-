@@ -14,8 +14,8 @@ from typing import List, Optional
 from fastapi import Header, HTTPException
 
 # ========== PERSISTENT DISK SETUP ==========
-# Use /app/data instead of /data (permission fix)
-DATA_DIR = "/app/data"
+# Use a directory inside the project (no permission issues)
+DATA_DIR = "persistent_data"
 METRICS_FILE = os.path.join(DATA_DIR, "metrics.json")
 
 # Create data directory if it doesn't exist
