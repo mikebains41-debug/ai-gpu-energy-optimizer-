@@ -60,7 +60,7 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 ---
 
 ### Example response (A100):
-```json
+
 {
   "a100-80gb-runpod": [
     {
@@ -77,21 +77,24 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
     }
   ]
 }
-### Example response (H100):
-
 {
-  "h100-runpod": [
+{
+{
+{
+  "h100-80gb-runpod": [
     {
-      "cluster_id": "h100-runpod",
+      "cluster_id": "h100-80gb-runpod",
       "timestamp": 1777267236.1624715,
-      "gpus": [{
-        "gpu_id": 0,
-        "utilization_percent": 94.0,
-        "memory_used_gb": 38.0,
-        "memory_total_gb": 80.0,
-        "temperature_celsius": 58.0,
-        "power_draw_watts": 380.0
-      }]
+      "gpus": [
+        {
+          "gpu_id": 0,
+          "utilization_percent": 94.0,
+          "memory_used_gb": 38.0,
+          "memory_total_gb": 80.0,
+          "temperature_celsius": 58.0,
+          "power_draw_watts": 380.0
+        }
+      ]
     }
   ]
 }
@@ -100,29 +103,26 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 
 | Feature | Status | Target |
 |---------|--------|--------|
-| Power capping via API | 
-| Auto-optimization (reduction logic) |
-| Real-time power adjustment |
-| Kubernetes auto-scaler integration |
+| Power capping via API | 📋 Planned | Q3 2026 |
+| Auto-optimization (reduction logic) | 📋 Planned | Q4 2026 |
+| Real-time power adjustment | 📋 Planned | Q1 2027 |
+| Kubernetes auto-scaler integration | 📋 Planned | Q2 2027 |
 ##
-
-📊 24-Hour Test Validation coming soon
+## 📊 24-Hour Test Validation
 
 | # | Metric / Feature | Status |
 |---|-----------------|--------|
-| **CURRENT METRICS**were tested over 8 hrs|
-
-| 1 | Power monitoring (watts) | ✅ 
-| 2 | Temperature monitoring (°C) 
-| 3 | GPU utilization (%) | ✅ 
-| 4 | Memory monitoring (GB) | ✅ 
-| 5 | Timestamps (every 10 sec) | ✅
-| 6 | A100 live data | ✅ 
-| 7 | H100 live data | ✅ 
-| 8 | Dashboard display | ✅
-| 9 | API endpoints | ✅
-
-| **NEW FEATURES** |
+| **CURRENT METRICS (8+ hours tested)** |
+| 1 | Power monitoring (watts) | ✅ |
+| 2 | Temperature monitoring (°C) | ✅ |
+| 3 | GPU utilization (%) | ✅ |
+| 4 | Memory monitoring (GB) | ✅ |
+| 5 | Timestamps (every 10 sec) | ✅ |
+| 6 | A100 live data | ✅ |
+| 7 | H100 live data | ✅ |
+| 8 | Dashboard display | ✅ |
+| 9 | API endpoints | ✅ |
+| **NEW FEATURES (Planned)** |
 | 10 | Throttling prediction | 📋 Planned |
 | 11 | Cost calculator ($ savings) | 📋 Planned |
 | 12 | Efficiency score (util/W) | 📋 Planned |
