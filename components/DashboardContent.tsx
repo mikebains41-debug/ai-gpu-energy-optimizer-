@@ -13,6 +13,9 @@ export default function DashboardContent() {
   // NEW: Auto mode and action logs
   const [autoMode, setAutoMode] = useState(false);
   const [actionLogs, setActionLogs] = useState<string[]>([]);
+  
+  // NEW: Stability metrics
+  const [stabilityMetrics, setStabilityMetrics] = useState<any>(null);
 
   useEffect(() => {
     // Fetch latest A100 data
@@ -95,7 +98,25 @@ export default function DashboardContent() {
       .then(res => res.json())
       .then(data => setThrottlePrediction(data))
       .catch(err => console.error('Throttle prediction error:', err));
-  }, [autoMode]); // NEW: Re-run when autoMode changes
+  }, [autoMode]);
+
+  // NEW: Calculate performance stability from historical data
+  useEffect(() => {
+    if (historicalData.length > 10) {
+      const powers = historicalData.map(d => d.power_a100 + d.power_h100);
+      const mean = powers.reduce((a, b) => a + b, 0) / powers.length;
+      const variance = powers.map(p => Math.pow(p - mean, 2)).reduce((a, b) => a + b, 0) / powers.length;
+      const stdDev = Math.sqrt(variance);
+      const stabilityScore = Math.max(0, 100 - (stdDev / mean) * 100);
+      
+      setStabilityMetrics({
+        stability_score: stabilityScore.toFixed(1),
+        variance: variance.toFixed(0),
+        std_dev: stdDev.toFixed(0),
+        status: stabilityScore > 90 ? "Excellent" : stabilityScore > 70 ? "Good" : "Needs improvement"
+      });
+    }
+  }, [historicalData]);
 
   // Default values from your real data
   const a100Power = a100Data?.power_draw_watts ?? 250;
@@ -212,12 +233,11 @@ export default function DashboardContent() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
           <p className="text-gray-400 text-sm">Annual Savings</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavings).toLocaleString()}</p>
           <p className="text-xs text-green-500 mt-1">↘️ 32% reduction in energy costs</p>
-          {/* NEW: Daily savings */}
           <p className="text-xs text-green-400 mt-2">≈ ${dailySavings} saved per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
@@ -230,6 +250,14 @@ export default function DashboardContent() {
           <p className="text-2xl font-bold text-purple-400">{efficiencyPercent}%</p>
           <p className="text-xs text-purple-500 mt-1">Top 5% of data centers globally</p>
         </div>
+        {/* NEW: Performance Stability Card */}
+        {stabilityMetrics && (
+          <div className="bg-gradient-to-r from-indigo-900/30 to-indigo-800/20 rounded-lg p-4 border border-indigo-700">
+            <p className="text-gray-400 text-sm">Performance Stability</p>
+            <p className="text-2xl font-bold text-indigo-400">{stabilityMetrics.stability_score}%</p>
+            <p className="text-xs text-indigo-500 mt-1">{stabilityMetrics.status}</p>
+          </div>
+        )}
       </div>
 
       {/* GPU Clusters */}
@@ -361,4 +389,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-}
+            }
