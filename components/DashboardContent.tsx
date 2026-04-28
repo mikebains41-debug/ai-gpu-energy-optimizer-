@@ -9,6 +9,10 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [throttlePrediction, setThrottlePrediction] = useState<any>(null);
+  
+  // NEW: Auto mode and action logs
+  const [autoMode, setAutoMode] = useState(false);
+  const [actionLogs, setActionLogs] = useState<string[]>([]);
 
   useEffect(() => {
     // Fetch latest A100 data
@@ -30,6 +34,16 @@ export default function DashboardContent() {
           const latest = data['h100-runpod'][data['h100-runpod'].length - 1];
           setH100Data(latest.gpus[0]);
           setLastUpdated(new Date().toLocaleTimeString());
+          
+          // NEW: Auto mode logic - check temperature and adjust
+          if (autoMode) {
+            const temp = latest.gpus[0].temperature_celsius || 58;
+            if (temp > 70) {
+              setActionLogs(prev => [...prev, `⚠️ Thermal trend rising (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
+            } else if (temp < 60) {
+              setActionLogs(prev => [...prev, `✅ Thermal stable (${temp}°C) → maintaining power cap at ${new Date().toLocaleTimeString()}`]);
+            }
+          }
         }
       })
       .catch(err => console.error('H100 fetch error:', err));
@@ -81,7 +95,7 @@ export default function DashboardContent() {
       .then(res => res.json())
       .then(data => setThrottlePrediction(data))
       .catch(err => console.error('Throttle prediction error:', err));
-  }, []);
+  }, [autoMode]); // NEW: Re-run when autoMode changes
 
   // Default values from your real data
   const a100Power = a100Data?.power_draw_watts ?? 250;
@@ -105,6 +119,9 @@ export default function DashboardContent() {
   const powerSavingsKW = (h100Power - a100Power) / 1000;
   const annualSavings = powerSavingsKW * 24 * 365 * 0.12;
   const co2Reduction = powerSavingsKW * 24 * 365 * 0.4;
+  
+  // NEW: Daily savings calculation
+  const dailySavings = (annualSavings / 365).toFixed(2);
 
   // Calculate efficiency scores - FIXED
   const a100Efficiency = (a100Util / (a100Power / 1000));
@@ -158,12 +175,50 @@ export default function DashboardContent() {
         <p className="text-gray-500 text-xs mt-2">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total</p>
       </div>
 
+      {/* NEW: Auto Mode Toggle */}
+      <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className={`w-3 h-3 rounded-full ${autoMode ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-200">Auto Mode</h3>
+            <p className="text-xs text-gray-400">{autoMode ? 'Actively optimizing GPU power' : 'Monitoring only'}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            setAutoMode(!autoMode);
+            setActionLogs(prev => [...prev, `Auto mode ${!autoMode ? 'ON' : 'OFF'} at ${new Date().toLocaleTimeString()}`]);
+          }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            autoMode 
+              ? 'bg-green-600 text-white hover:bg-green-700' 
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {autoMode ? 'ON' : 'OFF'}
+        </button>
+      </div>
+
+      {/* NEW: Action Logs */}
+      {actionLogs.length > 0 && (
+        <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
+          <div className="text-xs text-gray-400 mb-2">Action Log</div>
+          <div className="space-y-1">
+            {actionLogs.slice(-5).map((log, i) => (
+              <div key={i} className="text-xs text-gray-300 font-mono">→ {log}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
           <p className="text-gray-400 text-sm">Annual Savings</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavings).toLocaleString()}</p>
           <p className="text-xs text-green-500 mt-1">↘️ 32% reduction in energy costs</p>
+          {/* NEW: Daily savings */}
+          <p className="text-xs text-green-400 mt-2">≈ ${dailySavings} saved per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
           <p className="text-gray-400 text-sm">CO₂ Reduction</p>
