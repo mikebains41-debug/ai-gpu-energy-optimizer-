@@ -136,3 +136,109 @@ class OptimizationEngine:
 
 # Global instance
 engine = OptimizationEngine()
+# ============================================================
+# H100 vs A100 Benchmark Integration (Added for PoP)
+# ============================================================
+
+import json
+import os
+import subprocess
+from pathlib import Path
+
+class BenchmarkIntegration:
+    """
+    Adds GPU performance benchmarking to the Optimization Engine.
+    Measures real TFLOPS, memory bandwidth, and FP8 capability.
+    """
+    
+    def __init__(self, engine_instance):
+        self.engine = engine_instance
+        self.benchmark_results = {}
+        self.benchmark_file = "pop_results.json"
+    
+    def run_benchmark(self, gpu_id: str = "all"):
+        """
+        Run H100_benchmark.py on specified GPU(s)
+        """
+        print(f"[Benchmark] Running performance test on {gpu_id}")
+        
+        # Check if benchmark script exists
+        script_path = Path(__file__).parent / "H100_benchmark.py"
+        if not script_path.exists():
+            print("[Benchmark] ERROR: H100_benchmark.py not found in ai-engine/")
+            return None
+        
+        # Run the benchmark
+        result = subprocess.run(
+            ["python3", str(script_path)],
+            capture_output=True,
+            text=True
+        )
+        
+        # Load results
+        if os.path.exists(self.benchmark_file):
+            with open(self.benchmark_file, 'r') as f:
+                self.benchmark_results = json.load(f)
+            print(f"[Benchmark] Complete: {self.benchmark_results.get('gpu')} - {self.benchmark_results.get('tflops', 0):.1f} TFLOPS")
+            return self.benchmark_results
+        
+        print(f"[Benchmark] Failed: {result.stderr}")
+        return None
+    
+    def get_gpu_capabilities(self) -> dict:
+        """
+        Return GPU performance data for optimization decisions
+        """
+        if not self.benchmark_results:
+            return {"benchmark_available": False}
+        
+        gpu_name = self.benchmark_results.get("gpu", "Unknown")
+        
+        return {
+            "benchmark_available": True,
+            "gpu_type": "H100" if "H100" in gpu_name else "A100" if "A100" in gpu_name else "Unknown",
+            "tflops_fp16": self.benchmark_results.get("tflops", 0),
+            "has_native_fp8": "H100" in gpu_name,
+            "timestamp": self.benchmark_results.get("timestamp", ""),
+            "expected_speedup_vs_other": "3.0x" if "H100" in gpu_name else "baseline"
+        }
+    
+    def enhance_recommendations(self, original_recommendations: list) -> list:
+        """
+        Add benchmark-aware recommendations to the existing ones
+        """
+        caps = self.get_gpu_capabilities()
+        
+        if not caps["benchmark_available"]:
+            return original_recommendations
+        
+        benchmark_recs = []
+        
+        # Add FP8 recommendation for H100
+        if caps["has_native_fp8"]:
+            benchmark_recs.append({
+                "type": "fp8_optimization",
+                "priority": "high",
+                "title": "⚡ Enable FP8 Quantization",
+                "description": f"H100 detected (TFLOPS: {caps['tflops_fp16']:.1f}). Enable FP8 for 2x inference throughput.",
+                "estimated_savings": "2x speed, half energy"
+            })
+        
+        # Add compute vs memory bound guidance
+        if caps["tflops_fp16"] < 400 and caps["gpu_type"] == "H100":
+            benchmark_recs.append({
+                "type": "bottleneck_detected",
+                "priority": "medium",
+                "title": "⚠️ Performance Below Expectation",
+                "description": "H100 TFLOPS lower than expected. Check: CPU data loading, PCIe bandwidth, or batch size.",
+                "estimated_savings": "Up to 3x improvement"
+            })
+        
+        return original_recommendations + benchmark_recs
+
+
+# Attach benchmark to your existing engine
+benchmark = BenchmarkIntegration(engine)
+
+# Optional: Run benchmark once on startup
+# benchmark.run_benchmark()
