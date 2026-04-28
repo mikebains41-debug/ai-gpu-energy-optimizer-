@@ -76,11 +76,7 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
       }]
     }
   ]
-}
-{
-{
-{
-{
+
   "h100-80gb-runpod": [
     {
       "cluster_id": "h100-80gb-runpod",
