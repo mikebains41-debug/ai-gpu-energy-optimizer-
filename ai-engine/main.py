@@ -14,15 +14,16 @@ from typing import List, Optional
 from fastapi import Header, HTTPException
 
 # ========== PERSISTENT DISK SETUP ==========
-# Use a directory inside the project (no permission issues)
+# CHANGE THIS TO "/data" AFTER ADDING DISK IN RENDER
+# FOR NOW, USE "persistent_data" (no disk needed)
 DATA_DIR = "persistent_data"
 METRICS_FILE = os.path.join(DATA_DIR, "metrics.json")
 
-# Create data directory if it doesn't exist
+# Create directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
 
 def load_metrics_from_disk():
-    """Load existing metrics from persistent disk"""
+    """Load existing metrics from persistent storage"""
     if os.path.exists(METRICS_FILE):
         try:
             with open(METRICS_FILE, 'r') as f:
@@ -33,7 +34,7 @@ def load_metrics_from_disk():
     return {}
 
 def save_metrics_to_disk(metrics):
-    """Save metrics to persistent disk"""
+    """Save metrics to persistent storage"""
     try:
         with open(METRICS_FILE, 'w') as f:
             json.dump(metrics, f, indent=2)
@@ -442,7 +443,7 @@ async def receive_metrics(
     if len(metrics_store[metrics.cluster_id]) > 500:
         metrics_store[metrics.cluster_id] = metrics_store[metrics.cluster_id][-500:]
     
-    # Save to persistent disk after every update
+    # Save to persistent storage after every update
     save_metrics_to_disk(metrics_store)
     
     return {"status": "ok", "received": True}
