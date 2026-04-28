@@ -14,7 +14,8 @@ from typing import List, Optional
 from fastapi import Header, HTTPException
 
 # ========== PERSISTENT DISK SETUP ==========
-DATA_DIR = "/data"
+# Use /app/data instead of /data (permission fix)
+DATA_DIR = "/app/data"
 METRICS_FILE = os.path.join(DATA_DIR, "metrics.json")
 
 # Create data directory if it doesn't exist
@@ -360,11 +361,6 @@ def mig_instances():
 @app.get("/mig/instance/{instance_id}/metrics")
 def mig_instance_metrics(instance_id: str):
     try:
-        result = subprocess.run(
-            ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader"],
-            capture_output=True, text=True
-        )
-        
         return {
             "instance_id": instance_id,
             "power_draw_watts": round(random.uniform(5, 20), 1),
