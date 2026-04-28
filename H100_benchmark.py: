@@ -7,16 +7,13 @@ print("=" * 60)
 print("H100 vs A100 Proof of Product Benchmark")
 print("=" * 60)
 
-# GPU Info
 print(f"\nGPU: {torch.cuda.get_device_name(0)}")
 print(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
 print(f"CUDA: {torch.version.cuda}")
 
-# Test 1: Compute-Bound MatMul
 print("\n[TEST 1] FP16 MatMul 4096x4096")
 a = torch.randn(4096, 4096, device='cuda', dtype=torch.float16)
 b = torch.randn(4096, 4096, device='cuda', dtype=torch.float16)
-
 torch.cuda.synchronize()
 start = time.time()
 for _ in range(100):
@@ -26,12 +23,10 @@ t = (time.time() - start) / 100
 tflops = (2 * 4096**3) / (t * 1e12)
 print(f"  Time: {t*1000:.2f} ms | TFLOPS: {tflops:.1f}")
 
-# Test 2: Memory-Bound Attention
 print("\n[TEST 2] Attention (seq_len=8192)")
 seq, batch, heads, dim = 8192, 4, 32, 128
 q = torch.randn(seq, batch*heads, dim, device='cuda', dtype=torch.float16)
 k = torch.randn(seq, batch*heads, dim, device='cuda', dtype=torch.float16)
-
 torch.cuda.synchronize()
 start = time.time()
 for _ in range(20):
@@ -40,7 +35,6 @@ for _ in range(20):
 torch.cuda.synchronize()
 print(f"  Time: {(time.time()-start)*50:.2f} ms")
 
-# Test 3: FP8 Capability
 print("\n[TEST 3] FP8 Capability")
 gpu_name = torch.cuda.get_device_name(0)
 if "H100" in gpu_name:
@@ -48,12 +42,10 @@ if "H100" in gpu_name:
 else:
     print("  Native FP8: NO (A100 - emulation only)")
 
-# Save results
 results = {
     "gpu": gpu_name,
     "timestamp": datetime.now().isoformat(),
-    "tflops": tflops,
-    "notes": "H100: 3x compute, 1.6x memory, 2x FP8 | A100: baseline"
+    "tflops": tflops
 }
 with open("pop_results.json", "w") as f:
     json.dump(results, f, indent=2)
