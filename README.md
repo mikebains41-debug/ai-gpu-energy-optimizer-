@@ -19,14 +19,6 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 | **API Docs** | https://ai-gpu-brain-v3.onrender.com/docs |
 | **Frontend Dashboard** | https://ai-gpu-energy-optimizer.vercel.app |
 
-## 🚀 Live Demo
-
-| Link | URL |
-|------|-----|
-| **Backend API** | https://ai-gpu-brain-v3.onrender.com |
-| **API Docs** | https://ai-gpu-brain-v3.onrender.com/docs |
-| **Frontend Dashboard** | https://ai-gpu-energy-optimizer.vercel.app |
-
 ⬇️⬇️⬇️ INSERT NEW SECTION HERE ⬇️⬇️⬇️
 
 ## 💡 GPU Optimizer — Energy Efficiency Layer for AI Infrastructure
