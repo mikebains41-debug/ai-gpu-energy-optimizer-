@@ -1,3 +1,8 @@
+# PROPRIETARY AND CONFIDENTIAL
+# Copyright (c) 2026 Mike Bains. All Rights Reserved.
+# Contact: Mikebains41@gmail.com
+# Unauthorized use prohibited.
+
 """
 GPU Metrics Simulator - For testing without real NVIDIA GPUs
 Generates realistic GPU telemetry data for development and demo
