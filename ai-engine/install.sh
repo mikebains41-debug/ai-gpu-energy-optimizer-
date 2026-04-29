@@ -1,3 +1,8 @@
+# PROPRIETARY AND CONFIDENTIAL
+# Copyright (c) 2026 Mike Bains. All Rights Reserved.
+# Contact: Mikebains41@gmail.com
+# Unauthorized use prohibited.
+
 #!/bin/bash
 # AI GPU Energy Optimizer - One-Click Installer
 # Version: 2.0
