@@ -1,6 +1,6 @@
 # AI GPU Energy Optimizer
 
-**Render** | **Live** | **License** | **MIT** | **Python**  
+[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
 FastAPI 0.115  
 
 ---
