@@ -53,107 +53,20 @@ Results vary by environment, but improvements are typically observable in both e
 
 ---
 
-## ⚡ Deployment
+## ⚡ 60-Second Deployment
 
-- No hardware changes required
-- No retraining or model adjustments
-- Minimal setup time (≈60 seconds)
-- Designed to integrate with existing systems
+GPU Optimizer is designed for fast, low-friction deployment across existing GPU nodes.
 
----
+### ✅ Prerequisites
 
-## 🎯 Use Cases
-
-- AI training clusters
-- Inference infrastructure
-- GPU-intensive compute environments
-- Data centers optimizing cost and efficiency
+- NVIDIA GPU (A100 / H100)
+- Docker or Kubernetes (optional but recommended)
+- Network access to backend API
 
 ---
 
-## 🔭 Product Direction
+### 🚀 Step 1 — Clone Repository
 
-GPU Optimizer can evolve into a broader system for managing compute efficiency:
-
-- GPU efficiency scoring and analytics
-- Energy-aware workload scheduling
-- Cross-cluster optimization
-- Integration with power cost and availability signals
-
----
-
-## 📊 Live A100 Metrics
-
-**View real-time A100 GPU data:**  
-[https://ai-gpu-brain-v3.onrender.com/metrics/a100](https://ai-gpu-brain-v3.onrender.com/metrics/a100)
-
-### What the A100 data shows:
-
-| Field | Description |
-|-------|-------------|
-| `cluster_id` | "a100-80gb-runpod" - identifies the A100 GPU cluster |
-| `timestamp` | Unix timestamp (proof of continuous collection) |
-| `utilization_percent` | GPU utilization % (80-95%) |
-| `memory_used_gb` | Used memory in GB (40-50GB) |
-| `memory_total_gb` | Total memory (80GB) |
-| `temperature_celsius` | GPU temperature (60-75°C) |
-| `power_draw_watts` | GPU power draw (240-270W) |
-
----
-
-## 📊 Live H100 Metrics
-
-**View real-time H100 GPU data:**  
-[https://ai-gpu-brain-v3.onrender.com/metrics/h100](https://ai-gpu-brain-v3.onrender.com/metrics/h100)
-
-### What the H100 data shows:
-
-| Field | Description |
-|-------|-------------|
-| `cluster_id` | "h100-runpod" - identifies the H100 GPU cluster |
-| `timestamp` | Unix timestamp (proof of continuous collection) |
-| `utilization_percent` | GPU utilization % (90-95%) |
-| `memory_used_gb` | Used memory in GB (35-45GB) |
-| `memory_total_gb` | Total memory (80GB) |
-| `temperature_celsius` | GPU temperature (55-65°C) |
-| `power_draw_watts` | GPU power draw (350-450W) |
-
----
-
-## 📊 Sample Data Structure
-
-### A100 Example
-
-```json
-{
-  "cluster_id": "a100-80gb-runpod",
-  "timestamp": 1777248579.1373765,
-  "gpus": [
-    {
-      "gpu_id": 0,
-      "utilization_percent": 85.0,
-      "memory_used_gb": 45.0,
-      "memory_total_gb": 80.0,
-      "temperature_celsius": 65.0,
-      "power_draw_watts": 250.0
-    }
-  ]
-}
-{
-  "h100-80gb-runpod": [
-    {
-      "cluster_id": "h100-80gb-runpod",
-      "timestamp": 1777267236.1624715,
-      "gpus": [
-        {
-          "gpu_id": 0,
-          "utilization_percent": 94.0,
-          "memory_used_gb": 38.0,
-          "memory_total_gb": 80.0,
-          "temperature_celsius": 58.0,
-          "power_draw_watts": 380.0
-        }
-      ]
-    }
-  ]
-}
+```bash
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer
+cd ai-gpu-energy-optimizer
