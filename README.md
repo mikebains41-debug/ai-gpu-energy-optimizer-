@@ -5,134 +5,111 @@
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com)
 
-**Real-time GPU energy optimization for A100, H100, and AI factories.** Monitor power, temperature, and throttling. Predict OC levels before hardware throttling occurs. Deploy in 60 seconds.
+**Real-time GPU energy optimization for A100 and H100 clusters.** Monitor power, temperature, and utilization. Detect and anticipate thermal or power-related throttling before it occurs.
 
-Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curiosity.
+Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
 
 ---
 
 ## 🚀 Live Demo
 
-| Link | URL |
-|------|-----|
-| **Backend API** | https://ai-gpu-brain-v3.onrender.com |
-| **API Docs** | https://ai-gpu-brain-v3.onrender.com/docs |
-| **Frontend Dashboard** | https://ai-gpu-energy-optimizer.vercel.app |
+| Component | Link |
+|-----------|------|
+| Backend API | https://ai-gpu-brain-v3.onrender.com |
+| API Docs | https://ai-gpu-brain-v3.onrender.com/docs |
+| Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
 
 ---
 
-## 💡 GPU Optimizer — Energy Efficiency Layer for AI Infrastructure
+## 💡 Overview
 
-### Overview
+GPU Optimizer is a lightweight software layer designed to improve energy efficiency across existing GPU infrastructure.
 
-GPU Optimizer is a lightweight software layer designed to improve energy efficiency across existing GPU clusters.
+It integrates with current environments and does not require hardware upgrades or changes to training or inference workflows.
 
-It works with current infrastructure (including A100 and H100 GPUs) and can be deployed quickly without requiring hardware changes or workload modifications.
+---
 
-### What It Does
+## ⚙️ Core Capabilities
 
-GPU Optimizer helps reduce unnecessary power usage by improving how GPUs are utilized in real time.
+- Real-time monitoring of GPU utilization, power draw, and temperature
+- Detection of inefficiencies across workloads
+- Early identification of conditions that lead to GPU throttling
+- Dynamic adjustment of GPU behavior based on demand
+- Compatibility with orchestration systems such as Kubernetes and Slurm
 
-Key capabilities include:
+---
 
-- Adjusting GPU power states based on workload demand
-- Reducing idle or underutilized GPU consumption
-- Improving workload distribution across available resources
-- Supporting existing schedulers such as Kubernetes or Slurm
+## 📊 What It Improves
 
-### Expected Impact
+GPU environments often lose efficiency due to uneven workloads and idle capacity.
 
-Results will vary depending on workload and infrastructure, but typical outcomes may include:
+GPU Optimizer helps by:
 
-- Lower overall energy consumption
-- Improved GPU utilization
-- Reduced cooling and thermal load
+- Reducing unnecessary power usage
+- Improving overall GPU utilization
+- Lowering thermal output and cooling demand
 
-In some environments, this can translate into meaningful cost savings over time.
+Results vary by environment, but improvements are typically observable in both efficiency and system stability.
 
-### Deployment
+---
 
-- No hardware upgrades required
-- No changes to existing models or training pipelines
-- Minimal setup time (typically under a minute)
+## ⚡ Deployment
+
+- No hardware changes required
+- No retraining or model adjustments
+- Minimal setup time (≈60 seconds)
 - Designed to integrate with existing systems
 
-### Who It's For
+---
 
-- Teams operating GPU clusters for AI training or inference
-- Data center operators looking to improve efficiency
-- Organizations managing large-scale compute workloads
+## 🎯 Use Cases
 
-### Longer-Term Direction
+- AI training clusters
+- Inference infrastructure
+- GPU-intensive compute environments
+- Data centers optimizing cost and efficiency
 
-Over time, GPU Optimizer could expand into a broader system for managing energy efficiency across compute environments, including:
+---
 
-- Monitoring and reporting GPU efficiency
+## 🔭 Product Direction
+
+GPU Optimizer can evolve into a broader system for managing compute efficiency:
+
+- GPU efficiency scoring and analytics
 - Energy-aware workload scheduling
-- Optimization across multiple clusters or regions
-
-### Summary
-
-GPU Optimizer is intended to be a simple, low-friction way to improve efficiency in GPU-based systems—without requiring changes to existing infrastructure.
-
-The goal is to provide measurable improvements while fitting naturally into current workflows.
+- Cross-cluster optimization
+- Integration with power cost and availability signals
 
 ---
 
-## 📊 Live A100 Metrics
+## 📡 Live Metrics
 
-**View real-time A100 GPU data:**  
-[https://ai-gpu-brain-v3.onrender.com/metrics/a100](https://ai-gpu-brain-v3.onrender.com/metrics/a100)
+### A100 Metrics
 
-### What the A100 data shows:
+https://ai-gpu-brain-v3.onrender.com/metrics/a100
 
-| Field | Description |
-|-------|-------------|
-| `cluster_id` | "a100-80gb-runpod" - identifies the A100 GPU cluster |
-| `timestamp` | Unix timestamp (proof of continuous collection) |
-| `utilization_percent` | GPU utilization % (80-95%) |
-| `memory_used_gb` | Used memory in GB (40-50GB) |
-| `memory_total_gb` | Total memory (80GB) |
-| `temperature_celsius` | GPU temperature (60-75°C) |
-| `power_draw_watts` | GPU power draw (240-270W) |
+### H100 Metrics
+
+https://ai-gpu-brain-v3.onrender.com/metrics/h100
 
 ---
 
-## 📊 Live H100 Metrics
+## 📊 Sample Data Structure
 
-**View real-time H100 GPU data:**  
-[https://ai-gpu-brain-v3.onrender.com/metrics/h100](https://ai-gpu-brain-v3.onrender.com/metrics/h100)
-
-### What the H100 data shows:
-
-| Field | Description |
-|-------|-------------|
-| `cluster_id` | "h100-runpod" - identifies the H100 GPU cluster |
-| `timestamp` | Unix timestamp (proof of continuous collection) |
-| `utilization_percent` | GPU utilization % (90-95%) |
-| `memory_used_gb` | Used memory in GB (35-45GB) |
-| `memory_total_gb` | Total memory (80GB) |
-| `temperature_celsius` | GPU temperature (55-65°C) |
-| `power_draw_watts` | GPU power draw (350-450W) |
-
----
-
-### Example response (A100):
+### A100 Example
 
 ```json
 {
-  "a100-80gb-runpod": [
+  "cluster_id": "a100-80gb-runpod",
+  "timestamp": 1777248579.1373765,
+  "gpus": [
     {
-      "cluster_id": "a100-80gb-runpod",
-      "timestamp": 1777248579.1373765,
-      "gpus": [{
-        "gpu_id": 0,
-        "utilization_percent": 85.0,
-        "memory_used_gb": 45.0,
-        "memory_total_gb": 80.0,
-        "temperature_celsius": 65.0,
-        "power_draw_watts": 250.0
-      }]
+      "gpu_id": 0,
+      "utilization_percent": 85.0,
+      "memory_used_gb": 45.0,
+      "memory_total_gb": 80.0,
+      "temperature_celsius": 65.0,
+      "power_draw_watts": 250.0
     }
   ]
 }
