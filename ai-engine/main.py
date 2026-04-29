@@ -2,7 +2,6 @@
 # Copyright (c) 2026 Mike Bains. All Rights Reserved.
 # Contact: Mikebains41@gmail.com
 # Unauthorized use prohibited.
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
