@@ -1,3 +1,8 @@
+# PROPRIETARY AND CONFIDENTIAL
+# Copyright (c) 2026 Mike Bains. All Rights Reserved.
+# Contact: Mikebains41@gmail.com
+# Unauthorized use prohibited.
+
 """
 AI Optimization Engine for GPU Data Centers
 Rule-based decision engine with ML-ready architecture
