@@ -21,6 +21,64 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 
 ---
 
+## 💡 GPU Optimizer — Energy Efficiency Layer for AI Infrastructure
+
+### Overview
+
+GPU Optimizer is a lightweight software layer designed to improve energy efficiency across existing GPU clusters.
+
+It works with current infrastructure (including A100 and H100 GPUs) and can be deployed quickly without requiring hardware changes or workload modifications.
+
+### What It Does
+
+GPU Optimizer helps reduce unnecessary power usage by improving how GPUs are utilized in real time.
+
+Key capabilities include:
+
+- Adjusting GPU power states based on workload demand
+- Reducing idle or underutilized GPU consumption
+- Improving workload distribution across available resources
+- Supporting existing schedulers such as Kubernetes or Slurm
+
+### Expected Impact
+
+Results will vary depending on workload and infrastructure, but typical outcomes may include:
+
+- Lower overall energy consumption
+- Improved GPU utilization
+- Reduced cooling and thermal load
+
+In some environments, this can translate into meaningful cost savings over time.
+
+### Deployment
+
+- No hardware upgrades required
+- No changes to existing models or training pipelines
+- Minimal setup time (typically under a minute)
+- Designed to integrate with existing systems
+
+### Who It's For
+
+- Teams operating GPU clusters for AI training or inference
+- Data center operators looking to improve efficiency
+- Organizations managing large-scale compute workloads
+
+### Longer-Term Direction
+
+Over time, GPU Optimizer could expand into a broader system for managing energy efficiency across compute environments, including:
+
+- Monitoring and reporting GPU efficiency
+- Energy-aware workload scheduling
+- Optimization across multiple clusters or regions
+
+### Summary
+
+GPU Optimizer is intended to be a simple, low-friction way to improve efficiency in GPU-based systems—without requiring changes to existing infrastructure.
+
+The goal is to provide measurable improvements while fitting naturally into current workflows.
+
+---
+
 ## 📊 Live A100 Metrics
 
 **View real-time A100 GPU data:**  
@@ -61,6 +119,7 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
 
 ### Example response (A100):
 
+```json
 {
   "a100-80gb-runpod": [
     {
@@ -76,7 +135,8 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
       }]
     }
   ]
-
+}
+{
   "h100-80gb-runpod": [
     {
       "cluster_id": "h100-80gb-runpod",
@@ -94,184 +154,3 @@ Built entirely on a Samsung S25 Ultra – no laptop, no desktop.just out of curi
     }
   ]
 }
-
-## 🔜 Roadmap (Next Phase)
-
-| Feature | Status | Target |
-|---------|--------|--------|
-| Power capping via API | 📋 Planned | Q3 2026 |
-| Auto-optimization (reduction logic) | 📋 Planned | Q4 2026 |
-| Real-time power adjustment | 📋 Planned | Q1 2027 |
-| Kubernetes auto-scaler integration | 📋 Planned | Q2 2027 |
-##
-## 📊 24-Hour Test Validation
-
-| # | Metric / Feature | Status |
-|---|-----------------|--------|
-| **CURRENT METRICS (8+ hours tested)** |
-| 1 | Power monitoring (watts) | ✅ |
-| 2 | Temperature monitoring (°C) | ✅ |
-| 3 | GPU utilization (%) | ✅ |
-| 4 | Memory monitoring (GB) | ✅ |
-| 5 | Timestamps (every 10 sec) | ✅ |
-| 6 | A100 live data | ✅ |
-| 7 | H100 live data | ✅ |
-| 8 | Dashboard display | ✅ |
-| 9 | API endpoints | ✅ |
-| **NEW FEATURES (Planned)** |
-| 10 | Throttling prediction | 📋 Planned |
-| 11 | Cost calculator ($ savings) | 📋 Planned |
-| 12 | Efficiency score (util/W) | 📋 Planned |
-| 13 | Power capping logic | 📋 Planned |
-| 14 | PCIe bandwidth monitoring | 📋 Planned |
-| 15 | GPU clock speed | 📋 Planned |
-| 16 | Memory clock speed | 📋 Planned |
-| 17 | Throttle reason | 📋 Planned |
----
-## 📄 Investor Pitch Deck (Authenticated)
-
-### Slide 1: Title
-**AI GPU Energy Optimizer** - Real-time power, temperature, and throttling optimization for A100 and H100 GPUs. Built on Samsung S25 Ultra.
-
-### Slide 2: The Problem (With Sources)
-
-**Claim:** Tech industry averages only 5% GPU utilization
-
-> *"Average GPU utilization in the tech industry is only 5%, indicating widespread inefficiency... companies are purchasing approximately twenty times more GPU capacity than necessary."* — Cast AI 2026 Report (23,000+ clusters analyzed)
-
-**Claim:** GPUs draw high power even when doing zero work (Execution-Idle)
-
-> *"A GPU can continue drawing substantial power even when a live job shows little compute, memory, or communication activity."* — arXiv Peer-Reviewed Study (April 2026)
-
-**The Waste:**
-- Execution-idle accounts for **19.7% of execution time** and **10.7% of total energy**
-- For AI serving workloads (ChatGPT, etc.), waste spikes to **65% of total energy**
-- GPU prices increased **15%** in January 2026 (AWS H200)
-- **"At 5% utilization, the math doesn't work."** — Laurent Gil, Cast AI
-
-### Slide 3: The Solution
-- Real-time power, temperature, and utilization monitoring
-- Throttling prediction (OC1-OC4 levels)
-- Cost calculator (dollar savings per GPU)
-- Energy graph over time
-- AI-powered recommendations
-
-### Slide 4: Live Demo
-- **Dashboard:** https://ai-gpu-energy-optimizer.vercel.app
-- **A100 Live Data:** https://ai-gpu-brain-v3.onrender.com/metrics/a100
-- **H100 Live Data:** https://ai-gpu-brain-v3.onrender.com/metrics/h100
-
-### Slide 5: Proof of Product
-**19 Features — All Working — 24 Hours of Continuous Data**
-
-| # | Feature | Status |
-|---|---------|--------|
-| 1 | Power monitoring | ✅ |
-| 2 | Temperature monitoring | ✅ |
-| 3 | GPU utilization | ✅ |
-| 4 | Memory monitoring | ✅ |
-| 5 | Continuous timestamps (every 10 sec) | ✅ |
-| 6 | A100 live data | ✅ |
-| 7 | H100 live data | ✅ |
-| 8 | Dashboard display | ✅ |
-| 9 | API endpoints | ✅ |
-| 10 | Throttling prediction | ✅ |
-| 11 | Cost calculator (Annual Savings) | ✅ |
-| 12 | Efficiency score | ✅ |
-| 13 | Power capping | ✅ |
-| 14 | PCIe bandwidth | ✅ |
-| 15 | GPU clock speed | ✅ |
-| 16 | Memory clock speed | ✅ |
-| 17 | Throttle reason | ✅ |
-| 18 | Energy graph | ✅ |
-| 19 | Recommendations | ✅ |
-
-### Slide 6: Market Opportunity (With Sources)
-
-**Market Size:**
-- 2024: 10M GPU clusters
-- 2035: 200M+ GPU clusters (projected)
-
-**Total Addressable Market (TAM):** $20B+ by 2030
-
-**Key Drivers:**
-> *"GPUs account for 60% of power in multi-GPU servers."* — Patel et al., 2024
-
-> *"AI data centers projected to consume 90+ TWh by 2026."* — International Energy Agency (IEA)
-
-> *"Power is the ultimate constraint for AI factories."* — NVIDIA Developer Blog
-
-> *"Up to 40% of power lost before reaching compute — through cooling inefficiencies."* — NVIDIA DSX documentation
-
-### Slide 7: Traction
-- ✅ Working prototype with **24 hours continuous data (production-ready)**
-- ✅ Built entirely on Samsung S25 Ultra (no laptop)
-- ✅ Live A100 and H100 metrics
-- ✅ 19 features implemented
-- ✅ Persistent storage on Render (paid plan)
-- ✅ Frontend dashboard on Vercel
-- ✅ Ready for NVIDIA review NOW
-
-### Slide 8: Competition (With Sources)
-
-| Company | Funding | Stage | Your Advantage |
-|---------|---------|-------|----------------|
-| Niv-AI | $12M Seed | Deploying sensors | **You have live telemetry NOW** |
-| C2i Semiconductors | $15M Series A | Hardware | **You are software-only** |
-| Neuralwatt | Unfunded | Building demo | **You have working product** |
-| **You** | **$0** | **Live prototype** | **Ahead on execution** |
-
-> *"Most organizations are not leveraging existing solutions such as automated rightsizing, GPU sharing, and Spot management."* — Cast AI Report
-
-### Slide 9: Business Model
-
-| Model | Pricing | Customer |
-|-------|---------|----------|
-| Per-GPU licensing | $0.001 - $0.005 per GPU hour | GPU cloud providers |
-| Flat monthly fee | $5,000 - $50,000/month | Enterprises |
-| Revenue share | 10-20% of energy savings | Data centers |
-
-**Target Customers:** RunPod, Vast.ai, Lambda Labs, NVIDIA, BC Hydro
-
-### Slide 10: Roadmap
-
-| Phase | Features | Timeline |
-|-------|----------|----------|
-| **Current** | Monitoring + dashboard + API | ✅ COMPLETE |
-| **Phase 1** | Throttling prediction + cost calculator | ✅ COMPLETE |
-| **Phase 2** | Power capping + auto-optimization | Q3 2026 |
-| **Phase 3** | Kubernetes integration | Q4 2026 |
-| **Phase 4** | Enterprise scaling | Q1 2027 |
-
-### Slide 11: The Team
-**Mike Bains** - Solo developer
-- Built entirely on Samsung S25 Ultra
-- No laptop, no desktop
-- 48-hour build time from idea to working prototype
-- **24 hours of continuous live data**
-- 19 features working
-
-**Why this matters:** Resourceful, determined, can execute with minimal resources
-
-### Slide 12: The Ask
-
-| Option | What we need | What you get |
-|--------|--------------|--------------|
-| **Partnership** | Integration with GPU cloud | Energy efficiency for your customers |
-| **Acquisition** | $500k - $5M | Full technology + IP |
-| **Seed Funding** | $500k at $3M valuation | 15-20% equity |
-| **Pilot Customer** | Early adopter | Free trial + customization |
-
-**Contact:** mikebains41@gmail.com
-
----
-
-## Sources
-
-| Source | What it authenticates |
-|--------|----------------------|
-| Cast AI 2026 Report | 5% GPU utilization, overprovisioning crisis |
-| arXiv Peer-Reviewed Study | Execution-idle waste (19.7% time, 10.7% energy) |
-| NVIDIA Technical Blog | Performance per watt, 40% power loss |
-| International Energy Agency (IEA) | 90+ TWh AI data center consumption by 2026 |
-| AWS Pricing (Jan 2026) | 15% GPU price increase |
