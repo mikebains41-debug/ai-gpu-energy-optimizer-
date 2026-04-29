@@ -141,3 +141,9 @@ https://ai-gpu-brain-v3.onrender.com/metrics/h100
 | Efficiency | Higher performance | Better power efficiency |
 
 **Recommendation:** Run light workloads on A100. Reserve H100 for large language models (70B+ parameters
+## 📬 Contact
+
+- **Name:** Manmohan Bains
+- **Email:** mikebains41@gmail.com
+- **GitHub:** [github.com/mikebains41-debug](https://github.com/mikebains41-debug)
+- **Project:** [ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app)
