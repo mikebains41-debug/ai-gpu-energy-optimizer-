@@ -45,40 +45,52 @@ export default function DashboardContent() {
       })
       .catch(err => console.error('H100 fetch error:', err));
 
+    // FIXED: Better data merging for energy graph
     fetch('https://ai-gpu-brain-v3.onrender.com/metrics')
       .then(res => res.json())
       .then(data => {
-        const history: any[] = [];
+        const h100Entries: any[] = [];
+        const a100Entries: any[] = [];
         
-        if (data['a100-80gb-runpod']) {
-          data['a100-80gb-runpod'].slice(-24).forEach((entry: any) => {
+        // Extract H100 entries
+        if (data['h100-runpod']) {
+          data['h100-runpod'].forEach((entry: any) => {
             if (entry.gpus && entry.gpus[0]) {
-              history.push({
+              h100Entries.push({
                 timestamp: entry.timestamp,
-                power_a100: entry.gpus[0].power_draw_watts || 0,
-                power_h100: 0
+                power: entry.gpus[0].power_draw_watts || 0
               });
             }
           });
         }
         
-        if (data['h100-runpod']) {
-          data['h100-runpod'].slice(-24).forEach((entry: any, idx: number) => {
+        // Extract A100 entries
+        if (data['a100-runpod']) {
+          data['a100-runpod'].forEach((entry: any) => {
             if (entry.gpus && entry.gpus[0]) {
-              if (history[idx]) {
-                history[idx].power_h100 = entry.gpus[0].power_draw_watts || 0;
-              } else {
-                history.push({
-                  timestamp: entry.timestamp,
-                  power_a100: 0,
-                  power_h100: entry.gpus[0].power_draw_watts || 0
-                });
-              }
+              a100Entries.push({
+                timestamp: entry.timestamp,
+                power: entry.gpus[0].power_draw_watts || 0
+              });
             }
           });
         }
         
-        setHistoricalData(history);
+        // Merge both datasets by index (take last 24 of each)
+        const h100Recent = h100Entries.slice(-24);
+        const a100Recent = a100Entries.slice(-24);
+        const maxLength = Math.max(h100Recent.length, a100Recent.length);
+        
+        const mergedHistory = [];
+        for (let i = 0; i < maxLength; i++) {
+          mergedHistory.push({
+            timestamp: (h100Recent[i]?.timestamp || a100Recent[i]?.timestamp || 0),
+            power_h100: h100Recent[i]?.power || 0,
+            power_a100: a100Recent[i]?.power || 0
+          });
+        }
+        
+        setHistoricalData(mergedHistory);
         setLoading(false);
       })
       .catch(err => {
@@ -329,7 +341,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - H100 = Orange, A100 = Blue */}
+      {/* Energy Graph - FIXED: Both H100 and A100 bars guaranteed to show */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption</h3>
         {historicalData.length > 0 ? (
@@ -340,9 +352,17 @@ export default function DashboardContent() {
                   const h100Height = Math.min(100, (point.power_h100 / 500) * 100);
                   const a100Height = Math.min(100, (point.power_a100 / 500) * 100);
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center">
-                      <div className="w-full bg-orange-500 rounded-t" style={{ height: `${h100Height}px` }}></div>
-                      <div className="w-full bg-blue-500 rounded-t mt-0.5" style={{ height: `${a100Height}px` }}></div>
+                    <div key={idx} className="flex-1 flex flex-col items-center group">
+                      <div 
+                        className="w-full bg-orange-500 rounded-t transition-all duration-300 group-hover:bg-orange-400" 
+                        style={{ height: `${h100Height}px` }}
+                        title={`H100: ${point.power_h100}W`}
+                      ></div>
+                      <div 
+                        className="w-full bg-blue-500 rounded-t mt-0.5 transition-all duration-300 group-hover:bg-blue-400" 
+                        style={{ height: `${a100Height}px` }}
+                        title={`A100: ${point.power_a100}W`}
+                      ></div>
                       <div className="text-[10px] text-gray-500 mt-1 truncate w-10 text-center">
                         {new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
@@ -356,8 +376,8 @@ export default function DashboardContent() {
           <div className="text-center text-gray-500 py-8">Loading energy data...</div>
         )}
         <div className="flex justify-center gap-4 mt-4 text-xs">
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-orange-500 rounded"></div><span className="text-gray-400">H100</span></div>
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded"></div><span className="text-gray-400">A100</span></div>
+          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-orange-500 rounded"></div><span className="text-gray-400">H100 (Higher Power)</span></div>
+          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded"></div><span className="text-gray-400">A100 (Efficient)</span></div>
         </div>
       </div>
 
@@ -458,4 +478,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-          }
+                                                    }
