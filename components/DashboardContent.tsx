@@ -144,7 +144,7 @@ export default function DashboardContent() {
   const h100Power = h100Data?.power_draw_watts ?? 690;
   const h100Temp = h100Data?.temperature_celsius ?? 60;
   const h100Util = h100Data?.utilization_percent ?? 100;
-  const h100Memory = h100Data?.memory_used_gb ?? 38;
+  const h100Memory = h100Data?.memory_used_gb ?? 0.71;
   const h100Clock = 1830;
   const h100MemoryClock = 1593;
 
@@ -169,7 +169,7 @@ export default function DashboardContent() {
 
   const co2Reduction = POWER_DIFF_KW * FULL_DAY_HOURS * 365 * 0.4;
 
-  // Efficiency calculation - changed to be clearer
+  // Efficiency calculation
   const a100Efficiency = a100Util / (a100Power / 1000);
   const h100Efficiency = h100Util / (h100Power / 1000);
   const avgEfficiency = (a100Efficiency + h100Efficiency) / 2;
@@ -273,7 +273,6 @@ export default function DashboardContent() {
           <p className="text-2xl font-bold text-blue-400">{Math.round(co2Reduction).toLocaleString()} kg</p>
           <p className="text-xs text-blue-500 mt-1">Annual estimated reduction</p>
         </div>
-        {/* UPDATED: Efficiency Score - clearer explanation */}
         <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/20 rounded-lg p-4 border border-orange-700">
           <p className="text-gray-400 text-sm">Compute Efficiency</p>
           <p className="text-2xl font-bold text-orange-400">{efficiencyPercent}%</p>
@@ -323,7 +322,7 @@ export default function DashboardContent() {
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory</div>
-              <div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div>
+              <div className="text-2xl font-bold text-gray-100">{a100Memory.toFixed(1)} / 80 GB</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Clock Speed</div>
@@ -368,7 +367,7 @@ export default function DashboardContent() {
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory</div>
-              <div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div>
+              <div className="text-2xl font-bold text-gray-100">{h100Memory.toFixed(1)} / 80 GB</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Clock Speed</div>
