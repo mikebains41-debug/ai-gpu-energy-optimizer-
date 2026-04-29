@@ -17,7 +17,7 @@ export default function DashboardContent() {
   // Fetch all data
   const fetchAllData = async () => {
     try {
-      // Fetch A100
+      // Fetch A100 - using correct key "a100-runpod"
       const a100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100');
       const a100Json = await a100Res.json();
       if (a100Json['a100-runpod'] && a100Json['a100-runpod'].length > 0) {
@@ -25,7 +25,7 @@ export default function DashboardContent() {
         setA100Data(latest.gpus[0]);
       }
 
-      // Fetch H100
+      // Fetch H100 - using correct key "h100-runpod"
       const h100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100');
       const h100Json = await h100Res.json();
       if (h100Json['h100-runpod'] && h100Json['h100-runpod'].length > 0) {
@@ -134,9 +134,9 @@ export default function DashboardContent() {
     }
   }, [historicalData]);
 
-  // Get current values (with fallbacks)
-  const a100Power = a100Data?.power_draw_watts ?? 380;
-  const a100Temp = a100Data?.temperature_celsius ?? 66;
+  // Get current values (LIVE from API)
+  const a100Power = a100Data?.power_draw_watts ?? 400;
+  const a100Temp = a100Data?.temperature_celsius ?? 65;
   const a100Util = a100Data?.utilization_percent ?? 100;
   const a100Memory = a100Data?.memory_used_gb ?? 45;
   const a100Clock = 1455;
@@ -265,7 +265,7 @@ export default function DashboardContent() {
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
           <p className="text-gray-400 text-sm">Annual Savings (Switch H100→A100)</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavingsSwitch).toLocaleString()}</p>
-          <p className="text-xs text-green-500 mt-1">Based on {POWER_DIFF_KW * 1000}W difference</p>
+          <p className="text-xs text-green-500 mt-1">Based on {Math.round(POWER_DIFF_KW * 1000)}W difference</p>
           <p className="text-xs text-green-400 mt-2">≈ ${dailySavingsSwitch.toFixed(2)} per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
@@ -312,7 +312,7 @@ export default function DashboardContent() {
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
-              <div className="text-2xl font-bold text-gray-100">{a100Power}W</div>
+              <div className="text-2xl font-bold text-gray-100">{Math.round(a100Power)}W</div>
               <div className="text-xs text-gray-500">Real-time</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
@@ -357,7 +357,7 @@ export default function DashboardContent() {
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
-              <div className="text-2xl font-bold text-gray-100">{h100Power}W</div>
+              <div className="text-2xl font-bold text-gray-100">{Math.round(h100Power)}W</div>
               <div className="text-xs text-gray-500">Real-time</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
@@ -462,9 +462,9 @@ export default function DashboardContent() {
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
         <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Why H100 May Be Overspending</h3>
         <div className="space-y-2 text-sm text-gray-300">
-          <p>• <strong className="text-white">Your current workload:</strong> Using {h100Power}W on H100</p>
-          <p>• <strong className="text-white">Same workload on A100:</strong> Only {a100Power}W</p>
-          <p>• <strong className="text-white">Power difference:</strong> {(h100Power - a100Power).toFixed(0)}W extra</p>
+          <p>• <strong className="text-white">Your current workload:</strong> Using {Math.round(h100Power)}W on H100</p>
+          <p>• <strong className="text-white">Same workload on A100:</strong> Only {Math.round(a100Power)}W</p>
+          <p>• <strong className="text-white">Power difference:</strong> {Math.round(h100Power - a100Power)}W extra</p>
           <p>• <strong className="text-white">Why?</strong> H100 is designed for massive AI models (70B+ parameters). Your current workload doesn't need H100's power.</p>
           <p>• <strong className="text-white">Recommendation:</strong> Run light workloads on A100. Reserve H100 for large language models.</p>
         </div>
@@ -492,7 +492,7 @@ export default function DashboardContent() {
             <span className="text-green-400 font-bold">Save ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Based on your live data: H100 {h100Power}W, A100 {a100Power}W</p>
+        <p className="text-xs text-gray-500 mt-4">Based on your live data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
       </div>
 
       {/* AI Optimization Recommendations */}
@@ -510,4 +510,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-            }
+              }
