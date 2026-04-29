@@ -1,3 +1,8 @@
+// PROPRIETARY AND CONFIDENTIAL
+// Copyright (c) 2026 Mike Bains. All Rights Reserved.
+// Contact: Mikebains41@gmail.com
+// Unauthorized use prohibited.
+
 #!/usr/bin/env python3
 """
 Credential Generator for AI GPU Energy Optimizer Beta Program
