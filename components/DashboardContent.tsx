@@ -136,10 +136,15 @@ export default function DashboardContent() {
   // Calculate total power
   const totalPowerMW = (a100Power + h100Power) / 1000;
 
-  // Calculate annual savings (24/7, $0.12/kWh)
-  const powerSavingsKW = (h100Power - a100Power) / 1000;
-  const annualSavings = powerSavingsKW * 24 * 365 * 0.12;
-  const co2Reduction = powerSavingsKW * 24 * 365 * 0.4;
+  // Calculate REAL savings based on your actual power data
+  const powerSavingsKW = (h100Power - a100Power) / 1000;  // H100 uses ~440W more
+  const hourlyElectricityCost = 0.12;  // $0.12 per kWh
+  const offPeakHours = 8;  // Shift 8 hours of work
+
+  const realDailySavings = powerSavingsKW * offPeakHours * hourlyElectricityCost;
+  const realMonthlySavings = realDailySavings * 30;
+  const annualSavings = realDailySavings * 365;
+  const co2Reduction = powerSavingsKW * offPeakHours * 365 * 0.4;
   
   // NEW: Daily savings calculation
   const dailySavings = (annualSavings / 365).toFixed(2);
@@ -159,18 +164,18 @@ export default function DashboardContent() {
 
   const pcieBandwidth = "64 GB/s (PCIe 5.0 x16)";
 
-  // Recommendations
+  // REAL recommendations based on actual power data
   const recommendations = [
-    { text: 'Shift non-critical jobs to off-peak hours (2am-6am)', savings: '$18,922/mo' },
-    { text: 'Optimize cooling system and increase airflow', savings: '$7,142/mo' },
-    { text: 'Enable power capping during low utilization periods', savings: '$8,722/mo' }
+    { text: 'Shift non-critical jobs to off-peak hours (2am-6am)', savings: `$${realMonthlySavings.toFixed(0)}/mo` },
+    { text: 'Optimize cooling system and increase airflow', savings: 'Based on live temp data' },
+    { text: 'Enable power capping during low utilization periods', savings: `Save ${(h100Power - 380).toFixed(0)}W on H100` }
   ];
   
   if (h100Temp > 70) {
-    recommendations.unshift({ text: 'Reduce H100 power cap by 5% - Throttling risk detected', savings: '$2,400/year' });
+    recommendations.unshift({ text: 'Reduce H100 power cap by 5% - Throttling risk detected', savings: 'Immediate action' });
   }
   if (a100Temp > 70) {
-    recommendations.unshift({ text: 'Reduce A100 power cap by 3%', savings: '$1,200/year' });
+    recommendations.unshift({ text: 'Reduce A100 power cap by 3%', savings: 'Monitor required' });
   }
 
   if (loading) {
@@ -237,18 +242,18 @@ export default function DashboardContent() {
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
           <p className="text-gray-400 text-sm">Annual Savings</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavings).toLocaleString()}</p>
-          <p className="text-xs text-green-500 mt-1">↘️ 32% reduction in energy costs</p>
+          <p className="text-xs text-green-500 mt-1">↘️ Based on shifting 8hrs/day off-peak</p>
           <p className="text-xs text-green-400 mt-2">≈ ${dailySavings} saved per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
           <p className="text-gray-400 text-sm">CO₂ Reduction</p>
           <p className="text-2xl font-bold text-blue-400">{Math.round(co2Reduction).toLocaleString()} kg</p>
-          <p className="text-xs text-blue-500 mt-1">Equivalent to {Math.round(co2Reduction / 0.27)} trees planted</p>
+          <p className="text-xs text-blue-500 mt-1">Estimated annual reduction</p>
         </div>
         <div className="bg-gradient-to-r from-purple-900/30 to-purple-800/20 rounded-lg p-4 border border-purple-700">
           <p className="text-gray-400 text-sm">Efficiency Score</p>
           <p className="text-2xl font-bold text-purple-400">{efficiencyPercent}%</p>
-          <p className="text-xs text-purple-500 mt-1">Top 5% of data centers globally</p>
+          <p className="text-xs text-purple-500 mt-1">Based on power vs utilization</p>
         </div>
         {/* NEW: Performance Stability Card */}
         {stabilityMetrics && (
@@ -393,4 +398,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-}
+      }
