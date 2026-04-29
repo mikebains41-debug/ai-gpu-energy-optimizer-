@@ -82,15 +82,41 @@ GPU Optimizer can evolve into a broader system for managing compute efficiency:
 
 ---
 
-## 📡 Live Metrics
+## 📊 Live A100 Metrics
 
-### A100 Metrics
+**View real-time A100 GPU data:**  
+[https://ai-gpu-brain-v3.onrender.com/metrics/a100](https://ai-gpu-brain-v3.onrender.com/metrics/a100)
 
-https://ai-gpu-brain-v3.onrender.com/metrics/a100
+### What the A100 data shows:
 
-### H100 Metrics
+| Field | Description |
+|-------|-------------|
+| `cluster_id` | "a100-80gb-runpod" - identifies the A100 GPU cluster |
+| `timestamp` | Unix timestamp (proof of continuous collection) |
+| `utilization_percent` | GPU utilization % (80-95%) |
+| `memory_used_gb` | Used memory in GB (40-50GB) |
+| `memory_total_gb` | Total memory (80GB) |
+| `temperature_celsius` | GPU temperature (60-75°C) |
+| `power_draw_watts` | GPU power draw (240-270W) |
 
-https://ai-gpu-brain-v3.onrender.com/metrics/h100
+---
+
+## 📊 Live H100 Metrics
+
+**View real-time H100 GPU data:**  
+[https://ai-gpu-brain-v3.onrender.com/metrics/h100](https://ai-gpu-brain-v3.onrender.com/metrics/h100)
+
+### What the H100 data shows:
+
+| Field | Description |
+|-------|-------------|
+| `cluster_id` | "h100-runpod" - identifies the H100 GPU cluster |
+| `timestamp` | Unix timestamp (proof of continuous collection) |
+| `utilization_percent` | GPU utilization % (90-95%) |
+| `memory_used_gb` | Used memory in GB (35-45GB) |
+| `memory_total_gb` | Total memory (80GB) |
+| `temperature_celsius` | GPU temperature (55-65°C) |
+| `power_draw_watts` | GPU power draw (350-450W) |
 
 ---
 
