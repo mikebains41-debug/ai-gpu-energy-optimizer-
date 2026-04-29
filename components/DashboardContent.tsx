@@ -329,22 +329,26 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph */}
+      {/* Energy Graph - FIXED COLORS: Purple = H100, Blue = A100 */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption</h3>
         {historicalData.length > 0 ? (
           <div style={{ overflowX: 'auto', width: '100%' }}>
             <div style={{ minWidth: '600px' }}>
               <div className="h-48 flex items-end gap-1">
-                {historicalData.map((point, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center">
-                    <div className="w-full bg-purple-500 rounded-t" style={{ height: `${Math.min(100, (point.power_h100 / 500) * 100)}px` }}></div>
-                    <div className="w-full bg-blue-500 rounded-t mt-0.5" style={{ height: `${Math.min(100, (point.power_a100 / 500) * 100)}px` }}></div>
-                    <div className="text-[10px] text-gray-500 mt-1 truncate w-10 text-center">
-                      {new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {historicalData.map((point, idx) => {
+                  const h100Height = Math.min(100, (point.power_h100 / 500) * 100);
+                  const a100Height = Math.min(100, (point.power_a100 / 500) * 100);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center">
+                      <div className="w-full bg-purple-500 rounded-t" style={{ height: `${h100Height}px` }}></div>
+                      <div className="w-full bg-blue-500 rounded-t mt-0.5" style={{ height: `${a100Height}px` }}></div>
+                      <div className="text-[10px] text-gray-500 mt-1 truncate w-10 text-center">
+                        {new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -463,4 +467,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-            }
+      }
