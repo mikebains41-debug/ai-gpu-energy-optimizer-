@@ -35,35 +35,38 @@ It integrates with current environments and does not require hardware upgrades o
 - Detection of inefficiencies across workloads
 - Early identification of conditions that lead to GPU throttling
 - Dynamic adjustment of GPU behavior based on demand
+- Compatibility with orchestration systems such as Kubernetes and Slurm
 
 ---
 
-## ✅ Proof of Product
+## 📊 What It Improves
 
-- 8+ hours of continuous GPU monitoring
-- 2,880+ timestamped data points per GPU
-- 90+ GPU metrics collected every 10 seconds
-- Live API endpoints accessible to anyone
+GPU environments often lose efficiency due to uneven workloads and idle capacity.
 
----
+GPU Optimizer helps by:
 
-## 🛠️ Technology Stack
+- Reducing unnecessary power usage
+- Improving overall GPU utilization
+- Lowering thermal output and cooling demand
 
-- **Backend:** FastAPI (Python) on Render
-- **Frontend:** Next.js on Vercel
-- **GPU Compute:** RunPod (H100 SXM, A100 SXM)
-- **Persistent Storage:** RunPod Network Volume (10 GB)
-- **Monitoring:** nvidia-smi + custom Python agents
+Results vary by environment, but improvements are typically observable in both efficiency and system stability.
 
 ---
 
-## 🔍 Key Findings (H100 vs A100)
+## ⚡ 60-Second Deployment
 
-| Metric | H100 | A100 |
-| :--- | :--- | :--- |
-| Power Draw (peak) | 690W | 410W |
-| Temperature | 60°C | 67°C |
-| FP8 Support | ✅ Yes | ❌ No |
-| Efficiency | Higher performance | Better power efficiency |
+GPU Optimizer is designed for fast, low-friction deployment across existing GPU nodes.
 
-**Recommendation:** Run light workloads on A100. Reserve H100 for large language models (70B+ parameters).
+### ✅ Prerequisites
+
+- NVIDIA GPU (A100 / H100)
+- Docker or Kubernetes (optional but recommended)
+- Network access to backend API
+
+---
+
+### 🚀 Step 1 — Clone Repository
+
+```bash
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer
+cd ai-gpu-energy-optimizer
