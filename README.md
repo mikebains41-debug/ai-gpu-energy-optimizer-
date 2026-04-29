@@ -91,6 +91,9 @@ https://ai-gpu-brain-v3.onrender.com/metrics/h100
 | power_draw_watts | GPU power draw (350-450W)    |
 
 ---
+## 📊 Live Metrics
+
+**All GPU Metrics:** https://ai-gpu-brain-v3.onrender.com/metrics
 
 ## Example response (A100):
 
