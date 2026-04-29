@@ -131,3 +131,13 @@ https://ai-gpu-brain-v3.onrender.com/metrics/h100
         }
     ]
 }
+## 🔍 Key Findings (H100 vs A100)
+
+| Metric | H100 | A100 |
+| :--- | :--- | :--- |
+| Power Draw (peak) | 690W | 410W |
+| Temperature | 60°C | 67°C |
+| FP8 Support | ✅ Yes | ❌ No |
+| Efficiency | Higher performance | Better power efficiency |
+
+**Recommendation:** Run light workloads on A100. Reserve H100 for large language models (70B+ parameters
