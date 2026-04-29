@@ -52,7 +52,6 @@ export default function DashboardContent() {
         const h100Entries: any[] = [];
         const a100Entries: any[] = [];
         
-        // Extract H100 entries
         if (data['h100-runpod']) {
           data['h100-runpod'].forEach((entry: any) => {
             if (entry.gpus && entry.gpus[0]) {
@@ -64,7 +63,6 @@ export default function DashboardContent() {
           });
         }
         
-        // Extract A100 entries
         if (data['a100-runpod']) {
           data['a100-runpod'].forEach((entry: any) => {
             if (entry.gpus && entry.gpus[0]) {
@@ -76,7 +74,6 @@ export default function DashboardContent() {
           });
         }
         
-        // Merge both datasets by index (take last 24 of each)
         const h100Recent = h100Entries.slice(-24);
         const a100Recent = a100Entries.slice(-24);
         const maxLength = Math.max(h100Recent.length, a100Recent.length);
@@ -341,29 +338,46 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - FIXED: Both H100 and A100 bars guaranteed to show */}
+      {/* Energy Graph - SEPARATE BARS for H100 and A100 */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts)</h3>
         {historicalData.length > 0 ? (
           <div style={{ overflowX: 'auto', width: '100%' }}>
-            <div style={{ minWidth: '600px' }}>
-              <div className="h-48 flex items-end gap-1">
+            <div style={{ minWidth: '800px' }}>
+              {/* Legend */}
+              <div className="flex justify-center gap-6 mb-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                  <span className="text-gray-300 font-medium">H100</span>
+                  <span className="text-gray-500">({h100Power}W avg)</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                  <span className="text-gray-300 font-medium">A100</span>
+                  <span className="text-gray-500">({a100Power}W avg)</span>
+                </div>
+              </div>
+              
+              {/* Chart: Two separate bars per timestamp */}
+              <div className="h-48 flex items-end gap-2">
                 {historicalData.map((point, idx) => {
-                  const h100Height = Math.min(100, (point.power_h100 / 500) * 100);
-                  const a100Height = Math.min(100, (point.power_a100 / 500) * 100);
+                  const h100Height = Math.min(120, (point.power_h100 / 700) * 120);
+                  const a100Height = Math.min(120, (point.power_a100 / 700) * 120);
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center group">
-                      <div 
-                        className="w-full bg-orange-500 rounded-t transition-all duration-300 group-hover:bg-orange-400" 
-                        style={{ height: `${h100Height}px` }}
-                        title={`H100: ${point.power_h100}W`}
-                      ></div>
-                      <div 
-                        className="w-full bg-blue-500 rounded-t mt-0.5 transition-all duration-300 group-hover:bg-blue-400" 
-                        style={{ height: `${a100Height}px` }}
-                        title={`A100: ${point.power_a100}W`}
-                      ></div>
-                      <div className="text-[10px] text-gray-500 mt-1 truncate w-10 text-center">
+                    <div key={idx} className="flex flex-col items-center" style={{ width: '60px' }}>
+                      <div className="flex gap-1 items-end" style={{ height: '120px' }}>
+                        <div 
+                          className="w-5 bg-orange-500 rounded-t transition-all duration-300 hover:bg-orange-400" 
+                          style={{ height: `${h100Height}px` }}
+                          title={`H100: ${point.power_h100}W`}
+                        ></div>
+                        <div 
+                          className="w-5 bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-400" 
+                          style={{ height: `${a100Height}px` }}
+                          title={`A100: ${point.power_a100}W`}
+                        ></div>
+                      </div>
+                      <div className="text-[9px] text-gray-500 mt-1 text-center">
                         {new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
@@ -375,10 +389,6 @@ export default function DashboardContent() {
         ) : (
           <div className="text-center text-gray-500 py-8">Loading energy data...</div>
         )}
-        <div className="flex justify-center gap-4 mt-4 text-xs">
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-orange-500 rounded"></div><span className="text-gray-400">H100 (Higher Power)</span></div>
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded"></div><span className="text-gray-400">A100 (Efficient)</span></div>
-        </div>
       </div>
 
       {/* Power Capping */}
@@ -478,4 +488,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-                                                    }
+}
