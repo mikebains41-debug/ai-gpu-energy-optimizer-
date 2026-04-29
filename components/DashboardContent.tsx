@@ -14,46 +14,37 @@ export default function DashboardContent() {
   const [actionLogs, setActionLogs] = useState<string[]>([]);
   const [stabilityMetrics, setStabilityMetrics] = useState<any>(null);
 
-  // Function to fetch all metrics
-  const fetchAllMetrics = async () => {
+  // Fetch all data
+  const fetchAllData = async () => {
     try {
-      // Fetch A100 latest
+      // Fetch A100
       const a100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100');
-      const a100DataJson = await a100Res.json();
-      if (a100DataJson['a100-80gb-runpod'] && a100DataJson['a100-80gb-runpod'].length > 0) {
-        const latest = a100DataJson['a100-80gb-runpod'][a100DataJson['a100-80gb-runpod'].length - 1];
+      const a100Json = await a100Res.json();
+      if (a100Json['a100-runpod'] && a100Json['a100-runpod'].length > 0) {
+        const latest = a100Json['a100-runpod'][a100Json['a100-runpod'].length - 1];
         setA100Data(latest.gpus[0]);
       }
 
-      // Fetch H100 latest
+      // Fetch H100
       const h100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100');
-      const h100DataJson = await h100Res.json();
-      if (h100DataJson['h100-runpod'] && h100DataJson['h100-runpod'].length > 0) {
-        const latest = h100DataJson['h100-runpod'][h100DataJson['h100-runpod'].length - 1];
+      const h100Json = await h100Res.json();
+      if (h100Json['h100-runpod'] && h100Json['h100-runpod'].length > 0) {
+        const latest = h100Json['h100-runpod'][h100Json['h100-runpod'].length - 1];
         setH100Data(latest.gpus[0]);
         setLastUpdated(new Date().toLocaleTimeString());
-        
-        if (autoMode) {
-          const temp = latest.gpus[0].temperature_celsius || 58;
-          if (temp > 70) {
-            setActionLogs(prev => [...prev, `⚠️ Thermal trend rising (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
-          } else if (temp < 60) {
-            setActionLogs(prev => [...prev, `✅ Thermal stable (${temp}°C) → maintaining power cap at ${new Date().toLocaleTimeString()}`]);
-          }
-        }
       }
 
-      // Fetch historical data for energy graph
+      // Fetch history for chart
       const metricsRes = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics');
       const metricsData = await metricsRes.json();
       
-      const h100Entries: any[] = [];
-      const a100Entries: any[] = [];
+      const h100History: any[] = [];
+      const a100History: any[] = [];
       
       if (metricsData['h100-runpod']) {
         metricsData['h100-runpod'].forEach((entry: any) => {
-          if (entry.gpus && entry.gpus[0]) {
-            h100Entries.push({
+          if (entry.gpus?.[0]) {
+            h100History.push({
               timestamp: entry.timestamp,
               power: entry.gpus[0].power_draw_watts || 0
             });
@@ -63,8 +54,8 @@ export default function DashboardContent() {
       
       if (metricsData['a100-runpod']) {
         metricsData['a100-runpod'].forEach((entry: any) => {
-          if (entry.gpus && entry.gpus[0]) {
-            a100Entries.push({
+          if (entry.gpus?.[0]) {
+            a100History.push({
               timestamp: entry.timestamp,
               power: entry.gpus[0].power_draw_watts || 0
             });
@@ -72,20 +63,21 @@ export default function DashboardContent() {
         });
       }
       
-      const h100Recent = h100Entries.slice(-24);
-      const a100Recent = a100Entries.slice(-24);
-      const maxLength = Math.max(h100Recent.length, a100Recent.length);
+      // Take last 24 entries from each
+      const h100Recent = h100History.slice(-24);
+      const a100Recent = a100History.slice(-24);
+      const maxLen = Math.max(h100Recent.length, a100Recent.length);
       
-      const mergedHistory = [];
-      for (let i = 0; i < maxLength; i++) {
-        mergedHistory.push({
-          timestamp: (h100Recent[i]?.timestamp || a100Recent[i]?.timestamp || 0),
+      const merged = [];
+      for (let i = 0; i < maxLen; i++) {
+        merged.push({
+          timestamp: h100Recent[i]?.timestamp || a100Recent[i]?.timestamp || Date.now() / 1000,
           power_h100: h100Recent[i]?.power || 0,
           power_a100: a100Recent[i]?.power || 0
         });
       }
       
-      setHistoricalData(mergedHistory);
+      setHistoricalData(merged);
       setLoading(false);
     } catch (err) {
       console.error('Fetch error:', err);
@@ -100,22 +92,33 @@ export default function DashboardContent() {
       const data = await res.json();
       setThrottlePrediction(data);
     } catch (err) {
-      console.error('Throttle prediction error:', err);
+      console.error('Throttle error:', err);
     }
   };
 
-  // Initial fetch and auto-refresh every 30 seconds
+  // Initial load + auto refresh every 30 seconds
   useEffect(() => {
-    fetchAllMetrics();
+    fetchAllData();
     fetchThrottle();
     
     const interval = setInterval(() => {
-      fetchAllMetrics();
-    }, 30000); // Refresh every 30 seconds
+      fetchAllData();
+    }, 30000);
     
     return () => clearInterval(interval);
-  }, [autoMode]);
+  }, []);
 
+  // Auto mode effect
+  useEffect(() => {
+    if (autoMode && h100Data) {
+      const temp = h100Data.temperature_celsius || 58;
+      if (temp > 70) {
+        setActionLogs(prev => [...prev, `⚠️ Thermal rise (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
+      }
+    }
+  }, [autoMode, h100Data]);
+
+  // Stability metrics
   useEffect(() => {
     if (historicalData.length > 10) {
       const powers = historicalData.map(d => d.power_a100 + d.power_h100);
@@ -126,51 +129,51 @@ export default function DashboardContent() {
       
       setStabilityMetrics({
         stability_score: stabilityScore.toFixed(1),
-        variance: variance.toFixed(0),
-        std_dev: stdDev.toFixed(0),
         status: stabilityScore > 90 ? "Excellent" : stabilityScore > 70 ? "Good" : "Needs improvement"
       });
     }
   }, [historicalData]);
 
-  const a100Power = a100Data?.power_draw_watts ?? 250;
-  const a100Temp = a100Data?.temperature_celsius ?? 65;
-  const a100Util = a100Data?.utilization_percent ?? 85;
+  // Get current values (with fallbacks)
+  const a100Power = a100Data?.power_draw_watts ?? 380;
+  const a100Temp = a100Data?.temperature_celsius ?? 66;
+  const a100Util = a100Data?.utilization_percent ?? 100;
   const a100Memory = a100Data?.memory_used_gb ?? 45;
   const a100Clock = 1455;
   const a100MemoryClock = 1215;
   
-  const h100Power = h100Data?.power_draw_watts ?? 380;
-  const h100Temp = h100Data?.temperature_celsius ?? 58;
-  const h100Util = h100Data?.utilization_percent ?? 94;
+  const h100Power = h100Data?.power_draw_watts ?? 690;
+  const h100Temp = h100Data?.temperature_celsius ?? 60;
+  const h100Util = h100Data?.utilization_percent ?? 100;
   const h100Memory = h100Data?.memory_used_gb ?? 38;
   const h100Clock = 1830;
   const h100MemoryClock = 1593;
 
   const totalPowerMW = (a100Power + h100Power) / 1000;
 
+  // Savings calculations
   const POWER_DIFF_KW = (h100Power - a100Power) / 1000;
   const ELECTRICITY_RATE = 0.12;
   const OFF_PEAK_HOURS = 8;
   const FULL_DAY_HOURS = 24;
 
-  const dailySavingsSwitchToA100 = POWER_DIFF_KW * FULL_DAY_HOURS * ELECTRICITY_RATE;
-  const monthlySavingsSwitchToA100 = dailySavingsSwitchToA100 * 30;
-  const annualSavingsSwitchToA100 = dailySavingsSwitchToA100 * 365;
+  const dailySavingsSwitch = POWER_DIFF_KW * FULL_DAY_HOURS * ELECTRICITY_RATE;
+  const monthlySavingsSwitch = dailySavingsSwitch * 30;
+  const annualSavingsSwitch = dailySavingsSwitch * 365;
 
   const h100PowerCapSavingsKW = (h100Power - 380) / 1000;
-  const dailySavingsPowerCap = h100PowerCapSavingsKW * FULL_DAY_HOURS * ELECTRICITY_RATE;
-  const monthlySavingsPowerCap = dailySavingsPowerCap * 30;
+  const dailySavingsCap = h100PowerCapSavingsKW * FULL_DAY_HOURS * ELECTRICITY_RATE;
+  const monthlySavingsCap = dailySavingsCap * 30;
 
   const dailySavingsOffPeak = POWER_DIFF_KW * OFF_PEAK_HOURS * ELECTRICITY_RATE;
   const monthlySavingsOffPeak = dailySavingsOffPeak * 30;
 
   const co2Reduction = POWER_DIFF_KW * FULL_DAY_HOURS * 365 * 0.4;
 
-  const a100Efficiency = (a100Util / (a100Power / 1000));
-  const h100Efficiency = (h100Util / (h100Power / 1000));
-  const avgEfficiencyNum = (a100Efficiency + h100Efficiency) / 2;
-  const efficiencyPercent = (avgEfficiencyNum / 10).toFixed(1);
+  const a100Efficiency = a100Util / (a100Power / 1000);
+  const h100Efficiency = h100Util / (h100Power / 1000);
+  const avgEfficiency = (a100Efficiency + h100Efficiency) / 2;
+  const efficiencyPercent = (avgEfficiency / 10).toFixed(1);
 
   const getThrottleReason = () => {
     if (h100Temp > 80) return "Thermal throttling active";
@@ -181,22 +184,14 @@ export default function DashboardContent() {
   const pcieBandwidth = "64 GB/s (PCIe 5.0 x16)";
 
   const recommendations = [
-    { text: 'Switch light workloads from H100 → A100', savings: `Save ~$${monthlySavingsSwitchToA100.toFixed(0)}/month` },
-    { text: 'Power cap H100 (690W → 380W)', savings: `Save ~$${monthlySavingsPowerCap.toFixed(0)}/month` },
+    { text: 'Switch light workloads from H100 → A100', savings: `Save ~$${monthlySavingsSwitch.toFixed(0)}/month` },
+    { text: 'Power cap H100 (690W → 380W)', savings: `Save ~$${monthlySavingsCap.toFixed(0)}/month` },
     { text: 'Shift 8 hours to off-peak', savings: `Save ~$${monthlySavingsOffPeak.toFixed(0)}/month` }
   ];
-  
-  if (h100Temp > 70) {
-    recommendations.unshift({ text: '⚠️ Reduce H100 power cap immediately - Throttling risk', savings: 'Critical' });
-  }
-  if (a100Temp > 70) {
-    recommendations.unshift({ text: '⚠️ Monitor A100 temperature', savings: 'Warning' });
-  }
 
-  // Manual refresh button handler
   const handleRefresh = () => {
     setLoading(true);
-    fetchAllMetrics().finally(() => setLoading(false));
+    fetchAllData().finally(() => setLoading(false));
   };
 
   if (loading && historicalData.length === 0) {
@@ -214,7 +209,6 @@ export default function DashboardContent() {
         <h1 className="text-3xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
         <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
           Real-time power, temperature, and utilization monitoring for A100 and H100 GPUs.
-          Predict throttling. Optimize energy use. Deploy in 60 seconds.
         </p>
         <p className="text-gray-500 text-sm mt-4">
           Built on Samsung S25 Ultra | No laptop, no desktop
@@ -270,9 +264,9 @@ export default function DashboardContent() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
           <p className="text-gray-400 text-sm">Annual Savings (Switch H100→A100)</p>
-          <p className="text-2xl font-bold text-green-400">${Math.round(annualSavingsSwitchToA100).toLocaleString()}</p>
-          <p className="text-xs text-green-500 mt-1">Based on 440W difference, 24/7</p>
-          <p className="text-xs text-green-400 mt-2">≈ ${dailySavingsSwitchToA100.toFixed(2)} per day</p>
+          <p className="text-2xl font-bold text-green-400">${Math.round(annualSavingsSwitch).toLocaleString()}</p>
+          <p className="text-xs text-green-500 mt-1">Based on {POWER_DIFF_KW * 1000}W difference</p>
+          <p className="text-xs text-green-400 mt-2">≈ ${dailySavingsSwitch.toFixed(2)} per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
           <p className="text-gray-400 text-sm">CO₂ Reduction</p>
@@ -312,12 +306,31 @@ export default function DashboardContent() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Utilization</div><div className="text-2xl font-bold text-gray-100">{a100Util}%</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Power Draw</div><div className="text-2xl font-bold text-gray-100">{(a100Power / 1000).toFixed(2)} MW</div><div className="text-xs text-gray-500">Real-time</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Temperature</div><div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div><div className="text-xs text-green-400">Renewable 50%</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory</div><div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Clock Speed</div><div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory Clock Speed</div><div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div></div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">GPU Utilization</div>
+              <div className="text-2xl font-bold text-gray-100">{a100Util}%</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Power Draw</div>
+              <div className="text-2xl font-bold text-gray-100">{a100Power}W</div>
+              <div className="text-xs text-gray-500">Real-time</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Temperature</div>
+              <div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Memory</div>
+              <div className="text-2xl font-bold text-gray-100">{a100Memory} / 80 GB</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">GPU Clock Speed</div>
+              <div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Memory Clock Speed</div>
+              <div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div>
+            </div>
           </div>
         </div>
 
@@ -338,12 +351,31 @@ export default function DashboardContent() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Utilization</div><div className="text-2xl font-bold text-gray-100">{h100Util}%</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Power Draw</div><div className="text-2xl font-bold text-gray-100">{(h100Power / 1000).toFixed(2)} MW</div><div className="text-xs text-gray-500">Real-time</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Temperature</div><div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div><div className="text-xs text-green-400">Renewable 50%</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory</div><div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">GPU Clock Speed</div><div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div></div>
-            <div className="bg-gray-800 rounded-lg p-3"><div className="text-xs text-gray-400">Memory Clock Speed</div><div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div></div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">GPU Utilization</div>
+              <div className="text-2xl font-bold text-gray-100">{h100Util}%</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Power Draw</div>
+              <div className="text-2xl font-bold text-gray-100">{h100Power}W</div>
+              <div className="text-xs text-gray-500">Real-time</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Temperature</div>
+              <div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Memory</div>
+              <div className="text-2xl font-bold text-gray-100">{h100Memory} / 80 GB</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">GPU Clock Speed</div>
+              <div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xs text-gray-400">Memory Clock Speed</div>
+              <div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div>
+            </div>
           </div>
         </div>
       </div>
@@ -353,7 +385,7 @@ export default function DashboardContent() {
         <div className="bg-gray-900 rounded-lg p-4 border border-yellow-700">
           <h3 className="text-sm font-semibold text-yellow-400 mb-2">Throttling Prediction</h3>
           <p className="text-gray-300 text-sm">{throttlePrediction?.action || "Monitoring GPU thermal headroom"}</p>
-          <p className="text-xs text-gray-500 mt-2">Level: {throttlePrediction?.throttle_level || "OC0"} | Reduction: {throttlePrediction?.gpu_reduction_percent || 0}%</p>
+          <p className="text-xs text-gray-500 mt-2">Level: {throttlePrediction?.throttle_level || "Normal"}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-red-700">
           <h3 className="text-sm font-semibold text-red-400 mb-2">Throttle Reason</h3>
@@ -367,31 +399,30 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - SEPARATE BARS with live refresh */}
+      {/* Energy Graph - Separate side-by-side bars */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts)</h3>
         {historicalData.length > 0 ? (
           <div style={{ overflowX: 'auto', width: '100%' }}>
             <div style={{ minWidth: '800px' }}>
-              {/* Legend */}
               <div className="flex justify-center gap-6 mb-4 text-xs">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 bg-orange-500 rounded"></div>
                   <span className="text-gray-300 font-medium">H100</span>
-                  <span className="text-gray-500">({h100Power}W avg)</span>
+                  <span className="text-gray-500">({Math.round(h100Power)}W)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 bg-blue-500 rounded"></div>
                   <span className="text-gray-300 font-medium">A100</span>
-                  <span className="text-gray-500">({a100Power}W avg)</span>
+                  <span className="text-gray-500">({Math.round(a100Power)}W)</span>
                 </div>
               </div>
               
-              {/* Chart: Two separate bars per timestamp */}
               <div className="h-48 flex items-end gap-2">
                 {historicalData.map((point, idx) => {
                   const h100Height = Math.min(120, (point.power_h100 / 700) * 120);
                   const a100Height = Math.min(120, (point.power_a100 / 700) * 120);
+                  const timeStr = new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div key={idx} className="flex flex-col items-center" style={{ width: '60px' }}>
                       <div className="flex gap-1 items-end" style={{ height: '120px' }}>
@@ -407,7 +438,7 @@ export default function DashboardContent() {
                         ></div>
                       </div>
                       <div className="text-[9px] text-gray-500 mt-1 text-center">
-                        {new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {timeStr}
                       </div>
                     </div>
                   );
@@ -423,23 +454,23 @@ export default function DashboardContent() {
       {/* Power Capping */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Power Capping</h3>
-        <p className="text-gray-400 text-sm">Recommended power cap: {h100Temp > 70 ? 360 : 380}W for H100 | {a100Temp > 70 ? 240 : 250}W for A100</p>
+        <p className="text-gray-400 text-sm">Recommended power cap: 380W for H100 | 250W for A100</p>
         <p className="text-xs text-gray-500 mt-1">Dynamic power limiting based on thermal headroom</p>
       </div>
 
-      {/* Why H100 is Overspending - Customer Explanation */}
+      {/* Why H100 is Overspending */}
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
         <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Why H100 May Be Overspending</h3>
         <div className="space-y-2 text-sm text-gray-300">
           <p>• <strong className="text-white">Your current workload:</strong> Using {h100Power}W on H100</p>
           <p>• <strong className="text-white">Same workload on A100:</strong> Only {a100Power}W</p>
           <p>• <strong className="text-white">Power difference:</strong> {(h100Power - a100Power).toFixed(0)}W extra</p>
-          <p>• <strong className="text-white">Why?</strong> H100 is designed for massive AI models (70B+ parameters) and memory-intensive tasks. Your current workload (small matrix operations) doesn't need H100's power.</p>
-          <p>• <strong className="text-white">Recommendation:</strong> Run light workloads on A100. Reserve H100 for large language models (Llama 70B, GPT, etc.) where its 3x TFLOPS advantage actually matters.</p>
+          <p>• <strong className="text-white">Why?</strong> H100 is designed for massive AI models (70B+ parameters). Your current workload doesn't need H100's power.</p>
+          <p>• <strong className="text-white">Recommendation:</strong> Run light workloads on A100. Reserve H100 for large language models.</p>
         </div>
         <div className="mt-3 p-3 bg-yellow-900/30 rounded-lg">
           <p className="text-xs text-yellow-300">
-            💡 <strong>Rule of thumb:</strong> If memory usage {"<"} 20GB and utilization is constant 100%, switch to A100. You'll get same performance at {( (h100Power - a100Power) / 1000 * 24 * 30 * 0.12 ).toFixed(0)}% lower energy cost.
+            💡 <strong>Rule of thumb:</strong> If memory usage {"<"} 20GB and utilization is 100%, switch to A100.
           </p>
         </div>
       </div>
@@ -450,18 +481,18 @@ export default function DashboardContent() {
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Switch light workloads from H100 → A100</span>
-            <span className="text-green-400 font-bold">Save ~${monthlySavingsSwitchToA100.toFixed(0)}/month</span>
+            <span className="text-green-400 font-bold">Save ~${monthlySavingsSwitch.toFixed(0)}/month</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Power cap H100 (690W → 380W)</span>
-            <span className="text-green-400 font-bold">Save ~${monthlySavingsPowerCap.toFixed(0)}/month</span>
+            <span className="text-green-400 font-bold">Save ~${monthlySavingsCap.toFixed(0)}/month</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Shift 8 hours to off-peak</span>
             <span className="text-green-400 font-bold">Save ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Calculated from your live power data: H100 {h100Power}W, A100 {a100Power}W, ${ELECTRICITY_RATE}/kWh</p>
+        <p className="text-xs text-gray-500 mt-4">Based on your live data: H100 {h100Power}W, A100 {a100Power}W</p>
       </div>
 
       {/* AI Optimization Recommendations */}
@@ -476,44 +507,6 @@ export default function DashboardContent() {
           ))}
         </div>
         <div className="mt-4 text-xs text-gray-500">Based on real-time temperature and utilization data</div>
-      </div>
-
-      {/* Context & Educational Section */}
-      <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-300 mb-3">📘 Understanding Your GPUs</h3>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 text-xs font-bold rounded bg-orange-600 text-white">NVIDIA H100</span>
-              <span className="text-xs text-gray-500">Hopper Architecture (2022)</span>
-            </div>
-            <ul className="space-y-1 text-sm text-gray-400">
-              <li>• <strong>Best for:</strong> Large language models (70B+ parameters), massive AI training</li>
-              <li>• <strong>Compute:</strong> 989 TFLOPS FP16 | 1979 TFLOPS FP8</li>
-              <li>• <strong>Memory:</strong> 80GB HBM3 @ 3.35 TB/s</li>
-              <li>• <strong>Power:</strong> 700W peak | Your reading: {h100Power}W</li>
-              <li>• <strong>Use when:</strong> You need maximum memory bandwidth or FP8 speed</li>
-            </ul>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-600 text-white">NVIDIA A100</span>
-              <span className="text-xs text-gray-500">Ampere Architecture (2020)</span>
-            </div>
-            <ul className="space-y-1 text-sm text-gray-400">
-              <li>• <strong>Best for:</strong> Fine-tuning, inference, batch processing, medium models</li>
-              <li>• <strong>Compute:</strong> 312 TFLOPS FP16 | No FP8 support</li>
-              <li>• <strong>Memory:</strong> 80GB HBM2e @ 2.0 TB/s</li>
-              <li>• <strong>Power:</strong> 250-400W typical | Your reading: {a100Power}W</li>
-              <li>• <strong>Use when:</strong> Your workload fits in 80GB and doesn't need FP8</li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
-          <p className="text-xs text-gray-400">
-            📊 <strong>Your current workload:</strong> {h100Power > a100Power + 100 ? `H100 is drawing ${(h100Power - a100Power).toFixed(0)}W more than A100 for the same utilization. Consider switching to A100 for this task.` : `Power usage is balanced.`}
-          </p>
-        </div>
       </div>
     </div>
   );
