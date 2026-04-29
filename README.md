@@ -28,7 +28,7 @@ It integrates with current environments and does not require hardware upgrades o
 
 ## ✅ Proof of Product
 
-- 8+ hours of continuous GPU monitoring
+- 8+ hours of continuous GPU monitoring on **real RunPod hardware** (H100 SXM, A100 SXM)
 - 2,880+ timestamped data points per GPU
 - 90+ GPU metrics collected every 10 seconds
 - Live API endpoints accessible to anyone
