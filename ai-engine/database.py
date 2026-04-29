@@ -1,3 +1,8 @@
+# PROPRIETARY AND CONFIDENTIAL
+# Copyright (c) 2026 Mike Bains. All Rights Reserved.
+# Contact: Mikebains41@gmail.com
+# Unauthorized use prohibited.
+
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
