@@ -125,7 +125,6 @@ export default function DashboardContent() {
 
   const totalPowerMW = (a100Power + h100Power) / 1000;
 
-  // REAL SAVINGS CALCULATIONS based on your actual power data
   const POWER_DIFF_KW = (h100Power - a100Power) / 1000;
   const ELECTRICITY_RATE = 0.12;
   const OFF_PEAK_HOURS = 8;
@@ -157,7 +156,6 @@ export default function DashboardContent() {
 
   const pcieBandwidth = "64 GB/s (PCIe 5.0 x16)";
 
-  // ACCURATE recommendations with real savings
   const recommendations = [
     { text: 'Switch light workloads from H100 → A100', savings: `Save ~$${monthlySavingsSwitchToA100.toFixed(0)}/month` },
     { text: 'Power cap H100 (690W → 380W)', savings: `Save ~$${monthlySavingsPowerCap.toFixed(0)}/month` },
@@ -366,7 +364,7 @@ export default function DashboardContent() {
         <p className="text-xs text-gray-500 mt-1">Dynamic power limiting based on thermal headroom</p>
       </div>
 
-      {/* WHY H100 IS OVERSPENDING - EXPLANATION FOR CUSTOMERS */}
+      {/* Why H100 is Overspending - Customer Explanation */}
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
         <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Why H100 May Be Overspending</h3>
         <div className="space-y-2 text-sm text-gray-300">
@@ -383,7 +381,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Savings Summary - CLEAR FOR CUSTOMERS */}
+      {/* Savings Summary */}
       <div className="bg-gray-900 rounded-lg p-6 border border-green-700">
         <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Based on Your Actual Data)</h3>
         <div className="space-y-3">
@@ -417,6 +415,44 @@ export default function DashboardContent() {
         <div className="mt-4 text-xs text-gray-500">Based on real-time temperature and utilization data</div>
       </div>
 
+      {/* Context & Educational Section - What are H100 and A100? */}
+      <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-300 mb-3">📘 Understanding Your GPUs</h3>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 text-xs font-bold rounded bg-purple-600 text-white">NVIDIA H100</span>
+              <span className="text-xs text-gray-500">Hopper Architecture (2022)</span>
+            </div>
+            <ul className="space-y-1 text-sm text-gray-400">
+              <li>• <strong>Best for:</strong> Large language models (70B+ parameters), massive AI training</li>
+              <li>• <strong>Compute:</strong> 989 TFLOPS FP16 | 1979 TFLOPS FP8</li>
+              <li>• <strong>Memory:</strong> 80GB HBM3 @ 3.35 TB/s</li>
+              <li>• <strong>Power:</strong> 700W peak | Your reading: {h100Power}W</li>
+              <li>• <strong>Use when:</strong> You need maximum memory bandwidth or FP8 speed</li>
+            </ul>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-600 text-white">NVIDIA A100</span>
+              <span className="text-xs text-gray-500">Ampere Architecture (2020)</span>
+            </div>
+            <ul className="space-y-1 text-sm text-gray-400">
+              <li>• <strong>Best for:</strong> Fine-tuning, inference, batch processing, medium models</li>
+              <li>• <strong>Compute:</strong> 312 TFLOPS FP16 | No FP8 support</li>
+              <li>• <strong>Memory:</strong> 80GB HBM2e @ 2.0 TB/s</li>
+              <li>• <strong>Power:</strong> 250-400W typical | Your reading: {a100Power}W</li>
+              <li>• <strong>Use when:</strong> Your workload fits in 80GB and doesn't need FP8</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
+          <p className="text-xs text-gray-400">
+            📊 <strong>Your current workload:</strong> {h100Power > a100Power + 100 ? `H100 is drawing ${(h100Power - a100Power).toFixed(0)}W more than A100 for the same utilization. Consider switching to A100 for this task.` : `Power usage is balanced.`}
+          </p>
+        </div>
+      </div>
+
       {/* Legend */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">GPU Cluster Legend</h3>
@@ -427,4 +463,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-}
+            }
