@@ -14,91 +14,106 @@ export default function DashboardContent() {
   const [actionLogs, setActionLogs] = useState<string[]>([]);
   const [stabilityMetrics, setStabilityMetrics] = useState<any>(null);
 
-  useEffect(() => {
-    fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100')
-      .then(res => res.json())
-      .then(data => {
-        if (data['a100-80gb-runpod'] && data['a100-80gb-runpod'].length > 0) {
-          const latest = data['a100-80gb-runpod'][data['a100-80gb-runpod'].length - 1];
-          setA100Data(latest.gpus[0]);
-        }
-      })
-      .catch(err => console.error('A100 fetch error:', err));
+  // Function to fetch all metrics
+  const fetchAllMetrics = async () => {
+    try {
+      // Fetch A100 latest
+      const a100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100');
+      const a100DataJson = await a100Res.json();
+      if (a100DataJson['a100-80gb-runpod'] && a100DataJson['a100-80gb-runpod'].length > 0) {
+        const latest = a100DataJson['a100-80gb-runpod'][a100DataJson['a100-80gb-runpod'].length - 1];
+        setA100Data(latest.gpus[0]);
+      }
 
-    fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100')
-      .then(res => res.json())
-      .then(data => {
-        if (data['h100-runpod'] && data['h100-runpod'].length > 0) {
-          const latest = data['h100-runpod'][data['h100-runpod'].length - 1];
-          setH100Data(latest.gpus[0]);
-          setLastUpdated(new Date().toLocaleTimeString());
-          
-          if (autoMode) {
-            const temp = latest.gpus[0].temperature_celsius || 58;
-            if (temp > 70) {
-              setActionLogs(prev => [...prev, `⚠️ Thermal trend rising (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
-            } else if (temp < 60) {
-              setActionLogs(prev => [...prev, `✅ Thermal stable (${temp}°C) → maintaining power cap at ${new Date().toLocaleTimeString()}`]);
-            }
+      // Fetch H100 latest
+      const h100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100');
+      const h100DataJson = await h100Res.json();
+      if (h100DataJson['h100-runpod'] && h100DataJson['h100-runpod'].length > 0) {
+        const latest = h100DataJson['h100-runpod'][h100DataJson['h100-runpod'].length - 1];
+        setH100Data(latest.gpus[0]);
+        setLastUpdated(new Date().toLocaleTimeString());
+        
+        if (autoMode) {
+          const temp = latest.gpus[0].temperature_celsius || 58;
+          if (temp > 70) {
+            setActionLogs(prev => [...prev, `⚠️ Thermal trend rising (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
+          } else if (temp < 60) {
+            setActionLogs(prev => [...prev, `✅ Thermal stable (${temp}°C) → maintaining power cap at ${new Date().toLocaleTimeString()}`]);
           }
         }
-      })
-      .catch(err => console.error('H100 fetch error:', err));
+      }
 
-    // FIXED: Better data merging for energy graph
-    fetch('https://ai-gpu-brain-v3.onrender.com/metrics')
-      .then(res => res.json())
-      .then(data => {
-        const h100Entries: any[] = [];
-        const a100Entries: any[] = [];
-        
-        if (data['h100-runpod']) {
-          data['h100-runpod'].forEach((entry: any) => {
-            if (entry.gpus && entry.gpus[0]) {
-              h100Entries.push({
-                timestamp: entry.timestamp,
-                power: entry.gpus[0].power_draw_watts || 0
-              });
-            }
-          });
-        }
-        
-        if (data['a100-runpod']) {
-          data['a100-runpod'].forEach((entry: any) => {
-            if (entry.gpus && entry.gpus[0]) {
-              a100Entries.push({
-                timestamp: entry.timestamp,
-                power: entry.gpus[0].power_draw_watts || 0
-              });
-            }
-          });
-        }
-        
-        const h100Recent = h100Entries.slice(-24);
-        const a100Recent = a100Entries.slice(-24);
-        const maxLength = Math.max(h100Recent.length, a100Recent.length);
-        
-        const mergedHistory = [];
-        for (let i = 0; i < maxLength; i++) {
-          mergedHistory.push({
-            timestamp: (h100Recent[i]?.timestamp || a100Recent[i]?.timestamp || 0),
-            power_h100: h100Recent[i]?.power || 0,
-            power_a100: a100Recent[i]?.power || 0
-          });
-        }
-        
-        setHistoricalData(mergedHistory);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('History fetch error:', err);
-        setLoading(false);
-      });
+      // Fetch historical data for energy graph
+      const metricsRes = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics');
+      const metricsData = await metricsRes.json();
+      
+      const h100Entries: any[] = [];
+      const a100Entries: any[] = [];
+      
+      if (metricsData['h100-runpod']) {
+        metricsData['h100-runpod'].forEach((entry: any) => {
+          if (entry.gpus && entry.gpus[0]) {
+            h100Entries.push({
+              timestamp: entry.timestamp,
+              power: entry.gpus[0].power_draw_watts || 0
+            });
+          }
+        });
+      }
+      
+      if (metricsData['a100-runpod']) {
+        metricsData['a100-runpod'].forEach((entry: any) => {
+          if (entry.gpus && entry.gpus[0]) {
+            a100Entries.push({
+              timestamp: entry.timestamp,
+              power: entry.gpus[0].power_draw_watts || 0
+            });
+          }
+        });
+      }
+      
+      const h100Recent = h100Entries.slice(-24);
+      const a100Recent = a100Entries.slice(-24);
+      const maxLength = Math.max(h100Recent.length, a100Recent.length);
+      
+      const mergedHistory = [];
+      for (let i = 0; i < maxLength; i++) {
+        mergedHistory.push({
+          timestamp: (h100Recent[i]?.timestamp || a100Recent[i]?.timestamp || 0),
+          power_h100: h100Recent[i]?.power || 0,
+          power_a100: a100Recent[i]?.power || 0
+        });
+      }
+      
+      setHistoricalData(mergedHistory);
+      setLoading(false);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setLoading(false);
+    }
+  };
 
-    fetch('https://ai-gpu-brain-v3.onrender.com/power-headroom?gpu_power=380&cpu_power=45')
-      .then(res => res.json())
-      .then(data => setThrottlePrediction(data))
-      .catch(err => console.error('Throttle prediction error:', err));
+  // Fetch throttle prediction
+  const fetchThrottle = async () => {
+    try {
+      const res = await fetch('https://ai-gpu-brain-v3.onrender.com/power-headroom?gpu_power=380&cpu_power=45');
+      const data = await res.json();
+      setThrottlePrediction(data);
+    } catch (err) {
+      console.error('Throttle prediction error:', err);
+    }
+  };
+
+  // Initial fetch and auto-refresh every 30 seconds
+  useEffect(() => {
+    fetchAllMetrics();
+    fetchThrottle();
+    
+    const interval = setInterval(() => {
+      fetchAllMetrics();
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
   }, [autoMode]);
 
   useEffect(() => {
@@ -178,7 +193,13 @@ export default function DashboardContent() {
     recommendations.unshift({ text: '⚠️ Monitor A100 temperature', savings: 'Warning' });
   }
 
-  if (loading) {
+  // Manual refresh button handler
+  const handleRefresh = () => {
+    setLoading(true);
+    fetchAllMetrics().finally(() => setLoading(false));
+  };
+
+  if (loading && historicalData.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-400">Loading live GPU data from Render...</div>
@@ -198,7 +219,15 @@ export default function DashboardContent() {
         <p className="text-gray-500 text-sm mt-4">
           Built on Samsung S25 Ultra | No laptop, no desktop
         </p>
-        <p className="text-gray-500 text-xs mt-2">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total</p>
+        <div className="flex justify-center items-center gap-3 mt-2">
+          <p className="text-gray-500 text-xs">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total</p>
+          <button
+            onClick={handleRefresh}
+            className="px-3 py-1 text-xs bg-gray-700 rounded hover:bg-gray-600 transition-colors"
+          >
+            🔄 Refresh
+          </button>
+        </div>
       </div>
 
       {/* Auto Mode Toggle */}
@@ -338,7 +367,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - SEPARATE BARS for H100 and A100 */}
+      {/* Energy Graph - SEPARATE BARS with live refresh */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts)</h3>
         {historicalData.length > 0 ? (
@@ -449,7 +478,7 @@ export default function DashboardContent() {
         <div className="mt-4 text-xs text-gray-500">Based on real-time temperature and utilization data</div>
       </div>
 
-      {/* Context & Educational Section - What are H100 and A100? */}
+      {/* Context & Educational Section */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
         <h3 className="text-sm font-semibold text-gray-300 mb-3">📘 Understanding Your GPUs</h3>
         <div className="grid md:grid-cols-2 gap-6">
@@ -488,4 +517,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-}
+            }
