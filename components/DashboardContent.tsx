@@ -17,7 +17,7 @@ export default function DashboardContent() {
   // Fetch all data
   const fetchAllData = async () => {
     try {
-      // Fetch A100 - using correct key "a100-runpod"
+      // Fetch A100
       const a100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100');
       const a100Json = await a100Res.json();
       if (a100Json['a100-runpod'] && a100Json['a100-runpod'].length > 0) {
@@ -25,7 +25,7 @@ export default function DashboardContent() {
         setA100Data(latest.gpus[0]);
       }
 
-      // Fetch H100 - using correct key "h100-runpod"
+      // Fetch H100
       const h100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100');
       const h100Json = await h100Res.json();
       if (h100Json['h100-runpod'] && h100Json['h100-runpod'].length > 0) {
@@ -63,7 +63,6 @@ export default function DashboardContent() {
         });
       }
       
-      // Take last 24 entries from each
       const h100Recent = h100History.slice(-24);
       const a100Recent = a100History.slice(-24);
       const maxLen = Math.max(h100Recent.length, a100Recent.length);
@@ -134,7 +133,7 @@ export default function DashboardContent() {
     }
   }, [historicalData]);
 
-  // Get current values (LIVE from API)
+  // Get current values
   const a100Power = a100Data?.power_draw_watts ?? 400;
   const a100Temp = a100Data?.temperature_celsius ?? 65;
   const a100Util = a100Data?.utilization_percent ?? 100;
@@ -170,6 +169,7 @@ export default function DashboardContent() {
 
   const co2Reduction = POWER_DIFF_KW * FULL_DAY_HOURS * 365 * 0.4;
 
+  // Efficiency calculation - changed to be clearer
   const a100Efficiency = a100Util / (a100Power / 1000);
   const h100Efficiency = h100Util / (h100Power / 1000);
   const avgEfficiency = (a100Efficiency + h100Efficiency) / 2;
@@ -273,10 +273,12 @@ export default function DashboardContent() {
           <p className="text-2xl font-bold text-blue-400">{Math.round(co2Reduction).toLocaleString()} kg</p>
           <p className="text-xs text-blue-500 mt-1">Annual estimated reduction</p>
         </div>
+        {/* UPDATED: Efficiency Score - clearer explanation */}
         <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/20 rounded-lg p-4 border border-orange-700">
-          <p className="text-gray-400 text-sm">Efficiency Score</p>
+          <p className="text-gray-400 text-sm">Compute Efficiency</p>
           <p className="text-2xl font-bold text-orange-400">{efficiencyPercent}%</p>
-          <p className="text-xs text-orange-500 mt-1">Based on power vs utilization</p>
+          <p className="text-xs text-orange-500 mt-1">Utilization vs power draw</p>
+          <p className="text-xs text-gray-500 mt-1">Normal range: 15-25% for H100 at 100% load</p>
         </div>
         {stabilityMetrics && (
           <div className="bg-gradient-to-r from-indigo-900/30 to-indigo-800/20 rounded-lg p-4 border border-indigo-700">
@@ -399,7 +401,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - Separate side-by-side bars */}
+      {/* Energy Graph */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts)</h3>
         {historicalData.length > 0 ? (
@@ -510,4 +512,4 @@ export default function DashboardContent() {
       </div>
     </div>
   );
-              }
+}
