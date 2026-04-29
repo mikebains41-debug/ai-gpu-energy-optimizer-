@@ -1,72 +1,100 @@
 # AI GPU Energy Optimizer
 
-[![Render](https://img.shields.io/badge/Render-Live-brightgreen)](https://ai-gpu-brain-v3.onrender.com)
-[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com)
-
-**Real-time GPU energy optimization for A100 and H100 clusters.** Monitor power, temperature, and utilization. Detect and anticipate thermal or power-related throttling before it occurs.
-
-Built entirely on a Samsung S25 Ultra – no laptop, no desktop.
+**Render** | **Live** | **License** | **MIT** | **Python**  
+FastAPI 0.115  
 
 ---
 
-## 🚀 Live Demo
+**Real-time GPU energy optimization for A100, H100, and AI factories.** Monitor power, temperature, and throttling. Predict OC levels before hardware throttling occurs. Deploy in 60 seconds.
 
-| Component | Link |
-|-----------|------|
-| Backend API | https://ai-gpu-brain-v3.onrender.com |
-| API Docs | https://ai-gpu-brain-v3.onrender.com/docs |
-| Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
+Built entirely on a Samsung S25 Ultra – no laptop, no desktop, just out of curiosity.
 
 ---
 
-## 💡 Overview
+## Live Demo
 
-GPU Optimizer is a lightweight software layer designed to improve energy efficiency across existing GPU infrastructure.
-
-It integrates with current environments and does not require hardware upgrades or changes to training or inference workflows.
-
----
-
-## ⚙️ Core Capabilities
-
-- Real-time monitoring of GPU utilization, power draw, and temperature
-- Detection of inefficiencies across workloads
-- Early identification of conditions that lead to GPU throttling
-- Dynamic adjustment of GPU behavior based on demand
-- Compatibility with orchestration systems such as Kubernetes and Slurm
+| Link    | URL    |
+|---|---|
+| Backend API   | https://ai-gpu-brain-v3.onrender.com    |
+| API Docs    | https://ai-gpu-brain-v3.onrender.com/docs    |
+| Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app    |
 
 ---
 
-## 📊 What It Improves
+## Live A100 Metrics
 
-GPU environments often lose efficiency due to uneven workloads and idle capacity.
+View real-time A100 GPU data:
+https://ai-gpu-brain-v3.onrender.com/metrics/a100
 
-GPU Optimizer helps by:
+### What the A100 data shows:
 
-- Reducing unnecessary power usage
-- Improving overall GPU utilization
-- Lowering thermal output and cooling demand
-
-Results vary by environment, but improvements are typically observable in both efficiency and system stability.
-
----
-
-## ⚡ 60-Second Deployment
-
-GPU Optimizer is designed for fast, low-friction deployment across existing GPU nodes.
-
-### ✅ Prerequisites
-
-- NVIDIA GPU (A100 / H100)
-- Docker or Kubernetes (optional but recommended)
-- Network access to backend API
+| Field    | Description    |
+|---|---|
+| cluster_id   | "a100-80gb-runpod" - identifies the A100 GPU cluster    |
+| timestamp    | Unix timestamp (proof of continuous collection)    |
+| utilization_percent | GPU utilization % (80-95%)    |
+| memory_used_gb  | Used memory in GB (40-50GB)    |
+| memory_total_gb | Total memory (80GB)    |
+| temperature_celsius | GPU temperature (60-75°C)    |
+| power_draw_watts | GPU power draw (240-270W)    |
 
 ---
 
-### 🚀 Step 1 — Clone Repository
+## Live H100 Metrics
 
-```bash
-git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer
-cd ai-gpu-energy-optimizer
+View real-time H100 GPU data:
+https://ai-gpu-brain-v3.onrender.com/metrics/h100
+
+### What the H100 data shows:
+
+| Field    | Description    |
+|---|---|
+| cluster_id   | "h100-runpod" - identifies the H100 GPU cluster    |
+| timestamp    | Unix timestamp (proof of continuous collection)    |
+| utilization_percent | GPU utilization % (90-95%)    |
+| memory_used_gb  | Used memory in GB (35-45GB)    |
+| memory_total_gb | Total memory (80GB)    |
+| temperature_celsius | GPU temperature (55-65°C)    |
+| power_draw_watts | GPU power draw (350-450W)    |
+
+---
+
+## Example response (A100):
+
+```json
+{
+    "a100-80gb-runpod": [
+        {
+            "cluster_id": "a100-80gb-runpod",
+            "timestamp": 1777248579.13,
+            "gpus": [
+                {
+                    "gpu_id": 0,
+                    "utilization_percent": 85,
+                    "memory_used_gb": 45.0,
+                    "memory_total_gb": 80.0,
+                    "temperature_celsius": 65,
+                    "power_draw_watts": 250.0
+                }
+            ]
+        }
+    ]
+}
+{
+    "h100-runpod": [
+        {
+            "cluster_id": "h100-runpod",
+            "timestamp": 1777267236.16,
+            "gpus": [
+                {
+                    "gpu_id": 0,
+                    "utilization_percent": 94,
+                    "memory_used_gb": 38.0,
+                    "memory_total_gb": 80.0,
+                    "temperature_celsius": 58,
+                    "power_draw_watts": 380.0
+                }
+            ]
+        }
+    ]
+}
