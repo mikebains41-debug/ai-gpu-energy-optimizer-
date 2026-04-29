@@ -1,3 +1,8 @@
+// PROPRIETARY AND CONFIDENTIAL
+// Copyright (c) 2026 Mike Bains. All Rights Reserved.
+// Contact: Mikebains41@gmail.com
+// Unauthorized use prohibited.
+
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
