@@ -16,7 +16,10 @@ import subprocess
 import glob
 from typing import List, Optional, Dict
 
-# Import all 8 engines
+# Fix: Import from ai-engine/engines/ (correct path)
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from engines.engine1_efficiency import calculate_true_efficiency
 from engines.engine2_idle import calculate_idle_waste
 from engines.engine3_burst import detect_compute_bursts
