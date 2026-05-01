@@ -12,3 +12,4 @@ numpy==1.26.0
 requests==2.32.3
 sqlalchemy
 psycopg2-binary
+torch>=2.0.0
