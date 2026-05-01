@@ -145,6 +145,30 @@ https://ai-gpu-brain-v3.onrender.com/metrics/h100
 
 **Recommendation:** Run light workloads on A100. Reserve H100 for large language models (70B+ parameters
 ## 📬 Contact
+# GPU Optimizer
+
+Real-time GPU FinOps Intelligence Platform.
+
+## What It Reveals
+
+→ Standard GPU monitoring (nvidia-smi) misses micro-burst workloads
+→ A100 can draw 70W+ power while reporting 0% utilization
+→ 8 engines measure true compute efficiency
+
+## Live System
+
+- **API:** https://ai-gpu-brain-v3.onrender.com
+- **Docs:** https://ai-gpu-brain-v3.onrender.com/docs
+- **Frontend:** https://ai-gpu-energy-optimizer.vercel.app
+
+## Quick Start
+
+```bash
+# Send test data to API
+curl -X POST https://ai-gpu-brain-v3.onrender.com/api/v1/metrics \
+  -H "Authorization: Bearer test_key_123" \
+  -H "Content-Type: application/json" \
+  -d '{"cluster_id":"test","timestamp":'$(date +%s)',"gpus":[{"gpu_id":0,"utilization_percent":50,"kernel_time_ms":10,"memory_used_gb":20,"memory_total_gb":80,"temperature_celsius":65,"power_draw_watts":300}]}'
 
 - **Name:** Manmohan Bains
 - **Email:** mikebains41@gmail.com
