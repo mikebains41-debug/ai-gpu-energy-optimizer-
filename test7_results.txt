@@ -1,0 +1,18 @@
+cd ~
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer.git
+cd ai-gpu-energy-optimizer/experiments
+cp /sdcard/documents/a100_ghost_power_results.txt .
+git add a100_ghost_power_results.txt
+git commit -m "Add A100 Ghost Power Test Results (Test 2)"
+git push
+cd ~
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer.git
+cd ai-gpu-energy-optimizer/experiments
+cp /sdcard/documents/a100_ghost_power_results.txt .
+git add a100_ghost_power_results.txt
+git commit -m "Add A100 Ghost Power Test Results (Test 2)"
+git push
+clear
+
+ç[1;5D[1;5D[1;5C[1;5C
+
