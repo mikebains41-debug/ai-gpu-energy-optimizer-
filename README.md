@@ -256,4 +256,3 @@ The platform works. The data is real. The 60-second deploy is ready.
 
 ```
 
-**Copy this entire block. Paste into your README.md. Commit.** ✅
