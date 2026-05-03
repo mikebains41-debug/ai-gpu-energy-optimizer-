@@ -416,3 +416,10 @@ return ( <div className="p-6 grid gap-4">
 ); }
 ```
 
+## Future Roadmap
+
+- ✅ NVIDIA A100/H100 validation (complete)
+- ⏳ Test 11 (Nsight proof) - in progress
+- 🔮 TileLang support (planned)
+- 🔮 Huawei Ascend compatibility (planned)
+- 🔮 Multi-architecture observability (vision)
