@@ -135,6 +135,37 @@ But is it actually idle?
 
 Our data suggests: Not always. Standard monitoring misses real activity.
 
+## 💰 SAVINGS ARCHITECTURE
+
+### Per GPU Economics
+
+| Optimization Change | Monthly Savings | Yearly Savings |
+|---------------------|----------------|----------------|
+| Switch H100 → A100 | $25 | $300 |
+| Power cap H100 (690W → 380W) | $27 | $324 |
+| Shift 8 hours to off-peak | $8 | $96 |
+
+**Total potential savings per GPU: ~$700 / year**
+
+### Scale Impact
+
+| Scale | Annual Savings |
+|-------|----------------|
+| 1 GPU | ~$700 |
+| 100 GPUs | ~$70,000 |
+| 1,000 GPUs | ~$700,000 |
+| 10,000 GPUs | ~$7,000,000 |
+
+### What The System Does
+
+- **Detects waste:** idle GPUs, underutilized compute, wrong GPU assigned
+- **Converts waste to money:** $/hour, $/month, $/year losses
+- **Simulates savings:** power capping, GPU substitution, workload shifting
+- **Real-time alerts:** "$X wasted in last hour"
+
+---
+
+**A real-time GPU financial intelligence system that detects compute waste, converts inefficiency into dollar impact, and simulates actionable optimizations across large-scale AI infrastructure.**
 ---
 
 🛠️ TECHNOLOGY STACK (THAT RUNS ON A PHONE)
