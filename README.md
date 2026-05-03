@@ -91,6 +91,27 @@ https://ai-gpu-brain-v3.onrender.com/metrics/h100
 | power_draw_watts | GPU power draw (350-450W)    |
 
 ---
+## Test Results (A100)
+
+Complete test results available in [RESULTS.md](RESULTS.md)
+
+| Test | Finding | Status |
+|------|---------|--------|
+| 1 | Baseline idle: 58.1W @ 0% | ✅ |
+| 2 | Ghost power: 102.3W @ 0% util | ✅ |
+| 3 | Sampling: 0% util at 1s/100ms/10ms | ✅ |
+| 4 | Load ramp: Power scales 58W→344W | ✅ |
+| 5 | CEI compute (2048): 1.316e+13 FLOPs/sec | ✅ |
+| 6 | CEI efficiency: 1.839e+11 FLOPs/Watt | ✅ |
+| 7 | CEI compute (4096 15min): 1.510e+13 | ✅ |
+| 8 | FP16 vs FP32: 10.25x faster | ✅ |
+| 9 | Normality: p=0.000000 (expected) | ✅ |
+| 10 | Scaling: Peak at 4096 | ✅ |
+| 11 | Final Proof (Nsight) | ⏳ Pending |
+
+**Current Classification:** Advanced Benchmarking System  
+**Requires Test 11 for:** Efficiency Discovery System
+
 ## 📊 Live Metrics
 
 **All GPU Metrics:** https://ai-gpu-brain-v3.onrender.com/metrics
