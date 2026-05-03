@@ -151,33 +151,11 @@ Our data suggests: **Not always.** Standard monitoring misses real activity.
 
 ---
 
-## ⏳ WHAT'S NEXT (TEST 11)
-
-Test 11 will determine whether this is:
-
-- **Case A:** A real observability gap (telemetry layers desynchronized)
-- **Case B:** Known telemetry smoothing effects
-
-**Without Test 11, causal claims about "hidden compute" are not defensible.**
-
----
-
 ## 📁 FULL RESULTS
 
 - **Detailed test results:** [RESULTS.md](RESULTS.md)
 - **Screenshots:** [screenshots/](screenshots/)
 - **Raw data:** Included in test files
-
----
-
-## ⚡ QUICK START (60 SECONDS)
-
-```bash
-git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
-cd ai-gpu-energy-optimizer-
-pip install -r requirements.txt
-python main.py
-```
 
 ---
 
