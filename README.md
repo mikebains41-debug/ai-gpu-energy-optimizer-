@@ -254,5 +254,134 @@ See for yourself. The data is real. The API is live. The claims are tested.
 
 The platform works. The data is real. The 60-second deploy is ready.
 
+import React, { useState, useEffect } from "react"; import { Card, CardContent } from "@/components/ui/card"; import { Button } from "@/components/ui/button"; import { motion } from "framer-motion"; import { Copy } from "lucide-react";
+
+export default function Dashboard() { const [openIndex, setOpenIndex] = useState(null); const [metrics, setMetrics] = useState(null);
+
+const sections = [ { title: "Core System", content: Live API: ACTIVE\nFrontend: ACTIVE\nGPU Backend: RunPod\nData: 90+ metrics / 10s\nDeploy: 60 seconds, }, { title: "Key Discoveries", content: Ghost Power: 102.3W @ 0% util\nSampling Blind Spot persists\nPower precedes utilization\nFP16 = 10.25x efficiency\nOptimal size: 4096, }, { title: "Test Status", content: Tests 1-10: COMPLETE\nTest 11: PENDING\nStatus: 10/11, }, { title: "Critical Gaps", content: Metric definitions\nTimestamp alignment\nInterpretation boundary\nSampling table\nArchitecture diagram, }, ];
+
+useEffect(() => { const fetchData = () => { fetch("https://ai-gpu-brain-v3.onrender.com/metrics/a100") .then((res) => res.json()) .then((data) => setMetrics(data)) .catch(() => setMetrics(null)); };
+
+fetchData();
+const interval = setInterval(fetchData, 5000);
+return () => clearInterval(interval);
+
+}, []);
+
+const copyToClipboard = (text) => { navigator.clipboard.writeText(text); };
+
+const latest = metrics?.[Object.keys(metrics)[0]]?.[0]?.gpus?.[0];
+
+return ( <div className="p-6 grid gap-4">
+
+{/* LIVE METRICS ROW */}
+  <div className="grid grid-cols-3 gap-4">
+    <Card className="rounded-2xl shadow-lg">
+      <CardContent className="p-4">
+        <h3 className="text-sm">Power (W)</h3>
+        <p className="text-2xl font-bold">
+          {latest?.power_draw_watts ?? "--"}
+        </p>
+      </CardContent>
+    </Card>
+
+    <Card className="rounded-2xl shadow-lg">
+      <CardContent className="p-4">
+        <h3 className="text-sm">Utilization (%)</h3>
+        <p className="text-2xl font-bold">
+          {latest?.utilization_percent ?? "--"}
+        </p>
+      </CardContent>
+    </Card>
+
+    <Card className="rounded-2xl shadow-lg">
+      <CardContent className="p-4">
+        <h3 className="text-sm">Temp (°C)</h3>
+        <p className="text-2xl font-bold">
+          {latest?.temperature_celsius ?? "--"}
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+
+  {/* TEST 11 STATUS BANNER */}
+  <Card className="rounded-2xl shadow-lg border">
+    <CardContent className="p-4 flex justify-between items-center">
+      <span className="font-semibold">Test 11 Status</span>
+      <span className="text-red-500 font-bold">PENDING</span>
+    </CardContent>
+  </Card>
+
+  {/* SECTIONS */}
+  <div className="grid md:grid-cols-2 gap-4">
+    {sections.map((section, index) => (
+      <motion.div key={index} whileHover={{ scale: 1.02 }}>
+        <Card className="rounded-2xl shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">
+                {section.title}
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    setOpenIndex(openIndex === index ? null : index)
+                  }
+                >
+                  {openIndex === index ? "Hide" : "Expand"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => copyToClipboard(section.content)}
+                >
+                  <Copy size={16} />
+                </Button>
+              </div>
+            </div>
+
+            {openIndex === index && (
+              <motion.pre
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-3 text-sm whitespace-pre-wrap"
+              >
+                {section.content}
+              </motion.pre>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    ))}
+  </div>
+
+  {/* EXPORT BUTTONS */}
+  <div className="flex gap-4">
+    <Button
+      onClick={() =>
+        copyToClipboard(JSON.stringify(sections, null, 2))
+      }
+    >
+      Copy All
+    </Button>
+
+    <Button
+      onClick={() => {
+        const blob = new Blob([JSON.stringify(sections, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "gpu-dashboard.json";
+        a.click();
+      }}
+    >
+      Export JSON
+    </Button>
+  </div>
+</div>
+
+); }
 ```
 
