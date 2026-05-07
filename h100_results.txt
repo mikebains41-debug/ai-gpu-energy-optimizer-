@@ -1,3 +1,0 @@
-H100 Test 1: Idle 75.39W 0% 29C
-H100 Test 8: FP16 0.216ms (4.17x vs A100)
-H100 Test 11: No ghost power - observability gap NOT present
