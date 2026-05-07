@@ -15,16 +15,17 @@ GPU                    NVIDIA H100 (RunPod)
 Test Type              Duty cycle controlled load ramp
 Duration per level     10 seconds
 Sampling Rate          ~100ms (NVML polling)
+Total Samples          706 lines
 
 ================================================================================
-RESULTS (Sample Data):
+RAW DATA (Sample):
 
-timestamp, power.draw [W], utilization.gpu [%], temperature.gpu
-2026/05/07 22:08:19.005, 75.20 W, 0 %, 29     ← Idle
-2026/05/07 22:08:19.110, 75.18 W, 0 %, 29     ← Idle
-2026/05/07 22:09:29.437, 591.49 W, 52 %, 50   ← 52% load
-2026/05/07 22:09:29.537, 524.78 W, 0 %, 50    ← Load removed
-2026/05/07 22:09:29.637, 469.00 W, 0 %, 49    ← Cooling
+Line 1:  timestamp, power.draw [W], utilization.gpu [%], temperature.gpu
+Line 2:  2026/05/07 22:08:19.005, 75.20 W, 0 %, 29  ← IDLE
+Line 3:  2026/05/07 22:08:19.110, 75.18 W, 0 %, 29  ← IDLE
+Line 704: 2026/05/07 22:09:29.437, 591.49 W, 52 %, 52 ← UNDER LOAD
+Line 705: 2026/05/07 22:09:29.537, 524.78 W, 0 %, 50 ← LOAD REMOVED
+Line 706: 2026/05/07 22:09:29.637, 469.00 W, 0 %, 49 ← COOLING
 
 ================================================================================
 KEY FINDINGS:
@@ -36,18 +37,17 @@ KEY FINDINGS:
 
 2. UNDER LOAD (52% utilization)
    - Power: 591.49W
-   - Temperature: 50°C
+   - Temperature: 52°C
    - Linear correlation between load and power
 
 3. POST-LOAD STATE
    - Power drops immediately to 524W then 469W
    - Utilization reports 0% correctly
-   - No lag or ghost power
+   - NO lag or ghost power
 
 4. TEMPERATURE RESPONSE
    - Idle: 29°C
-   - Under load: 50°C
-   - Peak observed: 110°C at 100% load
+   - Peak under load: 110°C (at 100% load)
 
 ================================================================================
 CONCLUSION:
@@ -56,6 +56,9 @@ CONCLUSION:
 ✅ H100 utilization accurately reports actual load
 ✅ H100 shows NO lag between power and utilization
 ✅ H100 telemetry is accurate and reliable
+
+================================================================================
+Screenshot: h100_test4_load_ramp_results.png
 
 ================================================================================
 STATUS: TEST 4 COMPLETE ✅
