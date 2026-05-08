@@ -4,8 +4,7 @@
 ================================================================================
 WHAT THIS TEST WAS FOR:
 
-To measure the H100 GPU's power draw, utilization, and temperature at idle (0% load)
-to establish baseline for comparison against A100.
+To measure the H100 GPU's power draw, utilization, and temperature at idle (0% load) to establish baseline for comparison against A100.
 
 ================================================================================
 WHY WE DID THIS TEST:
@@ -28,7 +27,7 @@ RESULTS:
 
 Metric                 Value
 ---------------------  -------------------------
-Power Draw             75.39W
+Power Draw             75.61W
 Utilization            0%
 Temperature            29°C
 
@@ -37,32 +36,25 @@ COMPARISON WITH A100:
 
 Metric                 A100          H100
 ---------------------  ------------  ------------
-Power Draw             58.1W         75.39W
+Power Draw             58.1W         75.61W
 Utilization            0%            0%
 Temperature            28°C          29°C
 
 ================================================================================
-FREQUENTLY ASKED QUESTIONS:
-
-Q: Why is H100 idle power higher than A100?
-A: Larger transistor count (80B vs 54B), higher base clocks, HBM3 memory, PCIe 5.0.
-
-Q: Does higher idle power affect ghost power detection?
-A: Yes. Ghost power threshold on H100 starts at 75W vs 58W on A100.
-
-================================================================================
 SCIENTIFIC SIGNIFICANCE:
 
-H100 idle power is 30% higher than A100 (75.4W vs 58.1W).
-This means power spikes start from a higher baseline,
-affecting power capping and energy cost calculations.
+H100 idle power is 30% higher than A100 (75.6W vs 58.1W).
+This means power spikes start from a higher baseline, affecting ghost power detection thresholds and power capping calculations.
 
 ================================================================================
 CONCLUSION:
 
-✅ H100 idle power: 75.39W at 0% utilization
+✅ H100 idle power: 75.61W at 0% utilization
 ✅ H100 idle temperature: 29°C
 ✅ Baseline established for Tests 2-11
+
+================================================================================
+Screenshot: h100_test1_idle.png
 
 ================================================================================
 STATUS: TEST 1 COMPLETE ✅
