@@ -1,0 +1,11 @@
+{
+  "test_1_idle": {
+    "typical_power_w": 58.1,
+    "power_range_w": "57.7 - 58.1",
+    "utilization_percent": 0,
+    "anomaly_power_spike_w": 68.5,
+    "anomaly_utilization": 0,
+    "duration_minutes": 10,
+    "notes": "Most samples at 58.1W, 0% utilization. Brief power spikes to 68.5W at 0% utilization observed (ghost power precursor)"
+  }
+}
