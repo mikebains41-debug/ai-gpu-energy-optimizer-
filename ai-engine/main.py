@@ -293,6 +293,20 @@ def save_metrics(metrics):
     except Exception as e:
         print(f"Error saving metrics: {e}")
 
+# ========== HELPER FUNCTION FOR TEST RESULTS ==========
+def load_test_results(gpu_type: str = "a100") -> List[Dict]:
+    results = []
+    for test_id in range(1, 12):
+        test_folder = f"data/tests/{gpu_type}/test-{test_id:02d}"
+        summary_file = f"{test_folder}/summary.json"
+        if os.path.exists(summary_file):
+            try:
+                with open(summary_file, "r") as f:
+                    results.append(json.load(f))
+            except:
+                pass
+    return results
+
 # ========== APP INITIALIZATION ==========
 app = FastAPI(title="AI GPU Energy Optimizer", version="3.0.0")
 
@@ -339,7 +353,42 @@ def get_metrics_list() -> List[Dict]:
             result.append(m_copy)
     return result
 
-# ========== ENDPOINTS ==========
+# ========== TEST RESULTS ENDPOINTS (NEW) ==========
+@app.get("/results/a100")
+def get_a100_results():
+    """Returns all A100 test results from data/tests/a100/ folder"""
+    return load_test_results("a100")
+
+@app.get("/results/h100")
+def get_h100_results():
+    """Returns all H100 test results from data/tests/h100/ folder"""
+    return load_test_results("h100")
+
+@app.get("/results/a100/{test_id}")
+def get_a100_test_result(test_id: int):
+    """Returns specific A100 test result (1-11)"""
+    if test_id < 1 or test_id > 11:
+        raise HTTPException(status_code=404, detail="Test ID must be between 1 and 11")
+    test_folder = f"data/tests/a100/test-{test_id:02d}"
+    summary_file = f"{test_folder}/summary.json"
+    if os.path.exists(summary_file):
+        with open(summary_file, "r") as f:
+            return json.load(f)
+    return {"error": "Test result not found"}
+
+@app.get("/results/h100/{test_id}")
+def get_h100_test_result(test_id: int):
+    """Returns specific H100 test result (1-11)"""
+    if test_id < 1 or test_id > 11:
+        raise HTTPException(status_code=404, detail="Test ID must be between 1 and 11")
+    test_folder = f"data/tests/h100/test-{test_id:02d}"
+    summary_file = f"{test_folder}/summary.json"
+    if os.path.exists(summary_file):
+        with open(summary_file, "r") as f:
+            return json.load(f)
+    return {"error": "Test result not found"}
+
+# ========== ORIGINAL ENDPOINTS ==========
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "ai-gpu-brain-v3", "engines": 8}
