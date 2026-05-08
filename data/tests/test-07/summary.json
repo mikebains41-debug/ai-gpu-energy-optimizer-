@@ -1,0 +1,9 @@
+{
+  "test_id": "test-07",
+  "name": "A100 CEI Compute 4096x4096",
+  "mean_cei": 1.510e13,
+  "mean_tflops": 15.1,
+  "mean_power_w": 68.4,
+  "duration_minutes": 10,
+  "status": "complete"
+}
