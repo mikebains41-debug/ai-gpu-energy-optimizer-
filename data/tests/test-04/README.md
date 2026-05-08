@@ -1,4 +1,4 @@
-=== TEST 4: A100 LOAD RAMP TEST RESULTS ===
+-=== TEST 4: A100 LOAD RAMP TEST RESULTS ===
 === Manmohan Bains | May 2, 2026 ===
 
 ================================================================================
