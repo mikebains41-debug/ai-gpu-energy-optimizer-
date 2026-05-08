@@ -1,0 +1,11 @@
+{
+  "test_id": "test-01",
+  "name": "H100 Idle Baseline",
+  "power_w": 69.5,
+  "power_range_w": "69.00 - 69.98",
+  "utilization_percent": 0,
+  "temperature_c": 27,
+  "duration_minutes": 10,
+  "samples": 600,
+  "status": "complete"
+}
