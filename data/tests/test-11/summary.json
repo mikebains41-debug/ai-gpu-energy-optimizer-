@@ -1,9 +1,10 @@
 {
   "test_id": "test-11",
   "name": "A100 Observability Validation",
-  "duration_seconds": 300,
-  "bursts": 500,
+  "duration_minutes": 5,
   "idle_power_w": 63.55,
-  "burst_power_w": "N/A (data corrupted)",
-  "status": "partial"
+  "burst_power_range_w": "395-406",
+  "burst_utilization": 100,
+  "ghost_power_events": 0,
+  "status": "complete"
 }
