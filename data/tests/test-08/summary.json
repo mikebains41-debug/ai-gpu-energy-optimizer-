@@ -1,0 +1,11 @@
+{
+  "test_id": "test-08",
+  "name": "A100 FP16 Tensor Core",
+  "mean_cei": 1.548e14,
+  "mean_tflops": 154.8,
+  "mean_time_ms": 0.895,
+  "mean_power_w": 68.4,
+  "speedup_vs_fp32": 10.25,
+  "duration_minutes": 15,
+  "status": "complete"
+}
