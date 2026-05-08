@@ -1,0 +1,10 @@
+{
+  "test_id": "test-01",
+  "metrics": {
+    "typical_power_w": 58.1,
+    "power_range_w": "57.7 - 58.1",
+    "utilization_percent": 0,
+    "duration_minutes": 10,
+    "anomaly_power_spike_w": 68.5
+  }
+}
