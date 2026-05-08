@@ -1,1 +1,9 @@
-
+{
+  "test_id": "test-03",
+  "name": "A100 Sampling Rate Test",
+  "sampling_rates": ["1s", "100ms", "10ms"],
+  "ghost_power_detected": true,
+  "ghost_power_w": 86.0,
+  "ghost_utilization_percent": 0,
+  "status": "complete"
+}
