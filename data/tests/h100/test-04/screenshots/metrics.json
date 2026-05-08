@@ -1,0 +1,13 @@
+{
+  "test_id": "test-04",
+  "metrics": {
+    "idle_power_w": 75.2,
+    "idle_utilization": 0,
+    "load_power_w": 591.5,
+    "load_utilization": 52,
+    "post_load_power_w": 524.8,
+    "cooldown_power_w": 469.0,
+    "linear_scaling": true,
+    "ghost_power_detected": false
+  }
+}
