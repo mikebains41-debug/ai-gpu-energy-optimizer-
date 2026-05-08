@@ -1,0 +1,9 @@
+{
+  "test_id": "test-04",
+  "name": "A100 Load Ramp Test",
+  "load_75_power_w": 343.7,
+  "load_75_utilization_percent": 2,
+  "load_100_power_w": 312.4,
+  "load_100_utilization_percent": 100,
+  "status": "complete"
+}
