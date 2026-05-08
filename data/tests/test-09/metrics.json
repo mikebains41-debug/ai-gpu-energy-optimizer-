@@ -1,0 +1,12 @@
+{
+  "test_id": "test-09",
+  "metrics": {
+    "samples": 58,
+    "mean_cei": 1.510e13,
+    "median_cei": 1.513e13,
+    "std_dev": 1.760e11,
+    "shapiro_wilk_p_value": 0.000000,
+    "skewness": -5.0295,
+    "is_normal": false
+  }
+}
