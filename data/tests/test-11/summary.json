@@ -1,0 +1,9 @@
+{
+  "test_id": "test-11",
+  "name": "A100 Observability Validation",
+  "duration_seconds": 300,
+  "bursts": 500,
+  "idle_power_w": 63.55,
+  "burst_power_w": "N/A (data corrupted)",
+  "status": "partial"
+}
