@@ -1,0 +1,12 @@
+{
+  "test_id": "test-11",
+  "metrics": {
+    "duration_seconds": 300,
+    "bursts_completed": 500,
+    "idle_power_w": 63.55,
+    "idle_utilization": 0,
+    "issue": "Timestamps corrupted. Mixed years: 2024,2025,2026,2029",
+    "typo": "Used c=a*b instead of a@b (element-wise multiply, not matrix)",
+    "valid": false
+  }
+}
