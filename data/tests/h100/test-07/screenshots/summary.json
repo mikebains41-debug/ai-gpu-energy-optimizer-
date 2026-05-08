@@ -1,0 +1,9 @@
+{
+  "test_id": "test-07",
+  "name": "H100 CEI Compute 4096x4096",
+  "mean_tflops": 47.0,
+  "mean_cei": 4.70e13,
+  "duration_minutes": 10,
+  "iterations": 60,
+  "status": "complete"
+}
