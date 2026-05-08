@@ -1,0 +1,8 @@
+{
+  "test_id": "test-10",
+  "name": "H100 Log-Log Scaling Test",
+  "peak_cei": 5.168e13,
+  "peak_tflops": 51.68,
+  "peak_matrix_size": 4096,
+  "status": "complete"
+}
