@@ -1,12 +1,15 @@
 {
   "test_id": "test-11",
   "metrics": {
-    "duration_seconds": 300,
-    "bursts_completed": 500,
+    "duration_seconds": 304,
     "idle_power_w": 63.55,
     "idle_utilization": 0,
-    "issue": "Timestamps corrupted. Mixed years: 2024,2025,2026,2029",
-    "typo": "Used c=a*b instead of a@b (element-wise multiply, not matrix)",
-    "valid": false
+    "burst_power_min_w": 395,
+    "burst_power_max_w": 406,
+    "burst_utilization": 100,
+    "ghost_power_events": 0,
+    "samples": 3044,
+    "start_time": "2026/05/08 04:49:25.251",
+    "end_time": "2026/05/08 04:54:29.764"
   }
 }
