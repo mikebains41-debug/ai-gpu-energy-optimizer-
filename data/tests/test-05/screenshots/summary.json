@@ -1,9 +1,0 @@
-{
-  "test_id": "test-05",
-  "name": "A100 CEI Compute 2048x2048",
-  "mean_cei": 1.316e13,
-  "mean_tflops": 13.16,
-  "error_percent": 0.88,
-  "iterations": 30,
-  "status": "complete"
-}
