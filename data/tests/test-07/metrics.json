@@ -1,1 +1,11 @@
-
+{
+  "test_id": "test-07",
+  "metrics": {
+    "mean_cei": 1.510e13,
+    "mean_tflops": 15.1,
+    "mean_power_w": 68.4,
+    "efficiency": 2.208e11,
+    "iterations": 60,
+    "duration_minutes": 10
+  }
+}
