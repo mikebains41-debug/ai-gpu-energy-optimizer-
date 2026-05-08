@@ -1,0 +1,9 @@
+{
+  "test_id": "test-09",
+  "name": "H100 Normality Test",
+  "samples": 22378,
+  "mean_kernel_time_ms": 2.664,
+  "duration_seconds": 60,
+  "distribution": "Normal (by CLT)",
+  "status": "complete"
+}
