@@ -1,0 +1,12 @@
+{
+  "test_id": "test-02",
+  "metrics": {
+    "ghost_power_w": 102.3,
+    "ghost_utilization_percent": 0,
+    "total_samples": 1023,
+    "ghost_events": 1,
+    "ghost_percentage": 0.09,
+    "normal_load_power_w": 330,
+    "normal_load_utilization_percent": 100
+  }
+}
