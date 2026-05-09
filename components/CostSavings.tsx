@@ -1,14 +1,18 @@
 /**
  * PROPRIETARY & CONFIDENTIAL
- * Copyright (c) 2026 Mike Bains. All Rights Reserved.
+ * Copyright (c) 2026 Manmohan Bains. All Rights Reserved.
  * Contact: Mikebains41@gmail.com
  */
+
 'use client';
 
 import { DollarSign, Leaf, TrendingDown } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
-interface CostSavingsProps { totalSavings: number; carbonReduction: number; }
+interface CostSavingsProps {
+  totalSavings: number;
+  carbonReduction: number;
+}
 
 export default function CostSavings({ totalSavings, carbonReduction }: CostSavingsProps) {
   return (
@@ -20,7 +24,7 @@ export default function CostSavings({ totalSavings, carbonReduction }: CostSavin
             <DollarSign className="h-6 w-6 text-green-400" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">Annual Savings</p>
+            <p className="text-sm text-gray-400">Annual Savings (Test Data)</p>
             <p className="text-3xl font-bold text-green-400">
               {formatCurrency(totalSavings)}
             </p>
@@ -40,7 +44,7 @@ export default function CostSavings({ totalSavings, carbonReduction }: CostSavin
             <Leaf className="h-6 w-6 text-blue-400" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">CO₂ Reduction</p>
+            <p className="text-sm text-gray-400">CO₂ Reduction (Test Data)</p>
             <p className="text-3xl font-bold text-blue-400">
               {carbonReduction.toLocaleString()} kg
             </p>
