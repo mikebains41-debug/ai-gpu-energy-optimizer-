@@ -1,8 +1,0 @@
-{
-  "test_id": "test-10",
-  "name": "A100 Log-Log Scaling Test",
-  "peak_cei": 1.610e13,
-  "peak_tflops": 16.1,
-  "peak_matrix_size": 4096,
-  "status": "complete"
-}
