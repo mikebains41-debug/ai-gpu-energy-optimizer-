@@ -1,5 +1,3 @@
-Good catches. Here is the corrected README — long press, Select All, Copy:
-
 # GPU ENERGY OBSERVABILITY PLATFORM
 
 ### Built on a Samsung S25 Ultra - No Laptop, No Desktop, Just Curiosity.
@@ -8,9 +6,9 @@ Good catches. Here is the corrected README — long press, Select All, Copy:
 
 ---
 
-## ⚡ ONE-LINE INSTALL
+## ⚡ INSTALLER ACCESS
 
-curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/install.sh | bash
+For access to the monitoring agent, contact: mikebains41@gmail.com
 
 Live right now: https://ai-gpu-brain-v3.onrender.com
 
