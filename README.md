@@ -1,4 +1,4 @@
-Here is the entire README — long press anywhere on this text, tap Select All, then Copy:
+Good catches. Here is the corrected README — long press, Select All, Copy:
 
 # GPU ENERGY OBSERVABILITY PLATFORM
 
@@ -25,9 +25,9 @@ This costs data centers $400M+ per year globally.
 | Discovery | Evidence | Impact |
 |-----------|----------|--------|
 | Ghost Power | A100 drew 102.3W at 0% utilization | Standard monitoring missed active compute |
-| 10ms Sampling Still Shows 0% | 100x faster sampling couldn't capture it | Not a sampling issue - persistent blind spot |
+| 10ms Sampling Still Shows 0% | 100x faster sampling could not capture it | Not a sampling issue - persistent blind spot |
 | Power Spikes Before Utilization | 75% load: 343W power, 2% reported util | Utilization metric lags behind reality |
-| FP16 Tensor Cores: 10.25x Faster | Same power (68.4W), 10x more compute | Massive efficiency gain at no power cost |
+| FP16 Tensor Cores: 16x Faster | A100 FP32: 14.35 TFLOPS, FP16: 231 TFLOPS | Massive efficiency gain at no power cost |
 | Optimal Matrix Size: 4096 | Peak CEI of 1.610e+13 FLOPs/sec | 20% more efficient than 2048 |
 
 ---
@@ -55,10 +55,9 @@ Not a simulator. Not a theory. Live data from actual A100 and H100 GPUs running 
 
 ## 🔬 THE DATA
 
-8+ hours continuous monitoring
-2,880+ timestamped data points per GPU
-90+ GPU metrics collected every 10 seconds
-22 tests total: 11 A100 + 11 H100
+22 comprehensive tests (11 A100 + 11 H100)
+601 - 868,006 iterations per test
+All data public and reproducible
 
 ### A100 Test Results
 
@@ -71,7 +70,7 @@ Not a simulator. Not a theory. Live data from actual A100 and H100 GPUs running 
 | 5 | CEI Compute (2048) | 1.316e+13 FLOPs/sec |
 | 6 | CEI Efficiency (2048) | 1.839e+11 FLOPs/Watt |
 | 7 | CEI Compute (4096) | 1.510e+13 FLOPs/sec |
-| 8 | FP16 vs FP32 | 10.25x faster ✅ |
+| 8 | FP16 vs FP32 | 16x faster (14.35→231 TFLOPS) ✅ |
 | 9 | Normality Test | p=0.000000 (expected) |
 | 10 | Log-Log Scaling | Peak at 4096 |
 | 11 | Final Proof (Nsight) | ✅ Complete |
@@ -99,15 +98,17 @@ Not a simulator. Not a theory. Live data from actual A100 and H100 GPUs running 
 Ghost power electricity waste per A100:
 102W at 0% utilization
 4,380 idle hours/year
-$44.70 per GPU per year wasted
+$44.70 per GPU per year in ghost power alone
 
-| Scale | Annual Savings |
-|-------|----------------|
-| 1 GPU | ~$700 |
-| 100 GPUs | ~$70,000 |
-| 1,000 GPUs | ~$700,000 |
-| 10,000 GPUs | ~$7,000,000 |
-| 1M GPUs (global fleet) | ~$44.7M ghost power alone |
+| Scale | Annual Waste (Ghost Power Only) |
+|-------|---------------------------------|
+| 1 GPU | ~$45 |
+| 100 GPUs | ~$4,500 |
+| 1,000 GPUs | ~$45,000 |
+| 10,000 GPUs | ~$450,000 |
+| 1M GPUs (global fleet) | ~$45M |
+
+Total annual waste including scheduling and over-provisioning: $400M+
 
 ---
 
@@ -174,8 +175,6 @@ Email: mikebains41@gmail.com
 GitHub: github.com/mikebains41-debug
 Dashboard: ai-gpu-energy-optimizer.vercel.app
 
-Open to acquisition or partnership. DM me.
-
 © 2026 Manmohan Bains. All Rights Reserved.
 Proprietary software — no copying, modification, or distribution without permission.
 
@@ -186,7 +185,7 @@ Proprietary software — no copying, modification, or distribution without permi
 ✅ Live API working
 ✅ 22 tests complete (11 A100 + 11 H100)
 ✅ Ghost power proven
-✅ FP16 10.25x speedup confirmed
+✅ FP16 16x speedup confirmed
 ✅ Sampling blind spot confirmed
 ✅ One-line installer ready
 ✅ Open to acquisition
