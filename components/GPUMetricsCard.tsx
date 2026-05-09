@@ -1,6 +1,6 @@
 /**
  * PROPRIETARY & CONFIDENTIAL
- * Copyright (c) 2026 Mike Bains. All Rights Reserved.
+ * Copyright (c) 2026 Manmohan Bains. All Rights Reserved.
  * Contact: Mikebains41@gmail.com
  */
 'use client';
@@ -19,7 +19,7 @@ interface ClusterData {
   status?: string;
   total_gpus?: number;
   active_gpus?: number;
-  gpu_type?: string;  // Added for H100/A100 identification
+  gpu_type?: string;
 }
 
 interface GPUMetricsCardProps {
@@ -27,12 +27,10 @@ interface GPUMetricsCardProps {
 }
 
 export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
-  // Determine GPU type based on location or ID
   const getGPUType = (): 'H100' | 'A100' => {
     if (cluster.gpu_type) {
       return cluster.gpu_type === 'H100' ? 'H100' : 'A100';
     }
-    // Fallback: US-West is H100, US-East is A100
     if (cluster.location === 'US-West' || cluster.id?.includes('h100')) {
       return 'H100';
     }
@@ -157,7 +155,7 @@ export default function GPUMetricsCard({ cluster }: GPUMetricsCardProps) {
           <div className="text-2xl font-bold text-gray-100">
             {formatPowerDraw()}
           </div>
-          <p className="text-xs text-gray-500">Real-time</p>
+          <p className="text-xs text-gray-500">Test Data</p>
         </div>
 
         {/* Temperature */}
