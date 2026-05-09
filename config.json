@@ -1,0 +1,6 @@
+{
+  "backend_url": "https://ai-gpu-brain-v3.onrender.com",
+  "cluster_id": "termux-cluster-001",
+  "api_key": "test_key_123",
+  "check_interval_seconds": 2
+}
