@@ -122,7 +122,7 @@ export default function DashboardContent() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto mode effect
+  // Auto mode effect (UI only - demo)
   useEffect(() => {
     if (autoMode && h100Data) {
       const temp = h100Data.temperature_celsius || 58;
@@ -198,12 +198,6 @@ export default function DashboardContent() {
 
   const pcieBandwidth = "64 GB/s (PCIe 5.0 x16)";
 
-  const recommendations = [
-    { text: 'Switch light workloads from H100 → A100', savings: `Save ~$${monthlySavingsSwitch.toFixed(0)}/month` },
-    { text: 'Power cap H100 (690W → 380W)', savings: `Save ~$${monthlySavingsCap.toFixed(0)}/month` },
-    { text: 'Shift 8 hours to off-peak', savings: `Save ~$${monthlySavingsOffPeak.toFixed(0)}/month` }
-  ];
-
   const handleRefresh = () => {
     setLoading(true);
     fetchAllData().finally(() => setLoading(false));
@@ -246,6 +240,10 @@ export default function DashboardContent() {
             🔄 Refresh
           </button>
         </div>
+        {/* Global disclaimer */}
+        <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+          <p className="text-xs text-gray-400">⚠️ Demo Environment - This dashboard visualizes recorded GPU test data and demonstrates potential optimization concepts. No live GPU control or real-time automation is active.</p>
+        </div>
       </div>
 
       {/* Auto Mode Toggle */}
@@ -253,14 +251,14 @@ export default function DashboardContent() {
         <div className="flex items-center gap-3">
           <div className={`w-3 h-3 rounded-full ${autoMode ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-200">Auto Mode</h3>
-            <p className="text-xs text-gray-400">{autoMode ? 'Actively optimizing GPU power' : 'Monitoring only'}</p>
+            <h3 className="text-sm font-semibold text-gray-200">Auto Mode (Demo UI)</h3>
+            <p className="text-xs text-gray-400">{autoMode ? 'UI shows active state - No actual GPU control' : 'Demo Mode - UI only'}</p>
           </div>
         </div>
         <button
           onClick={() => {
             setAutoMode(!autoMode);
-            setActionLogs(prev => [...prev, `Auto mode ${!autoMode ? 'ON' : 'OFF'} at ${new Date().toLocaleTimeString()}`]);
+            setActionLogs(prev => [...prev, `[DEMO] Auto mode ${!autoMode ? 'ON' : 'OFF'} at ${new Date().toLocaleTimeString()}`]);
           }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             autoMode 
@@ -272,10 +270,10 @@ export default function DashboardContent() {
         </button>
       </div>
 
-      {/* Action Logs */}
+      {/* Action Log */}
       {actionLogs.length > 0 && (
         <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
-          <div className="text-xs text-gray-400 mb-2">Action Log</div>
+          <div className="text-xs text-gray-400 mb-2">Demo Action Log (UI Interactions Only)</div>
           <div className="space-y-1">
             {actionLogs.slice(-5).map((log, i) => (
               <div key={i} className="text-xs text-gray-300 font-mono">→ {log}</div>
@@ -421,7 +419,7 @@ export default function DashboardContent() {
           <h3 className="text-sm font-semibold text-yellow-400 mb-2">Throttling Prediction</h3>
           <p className="text-gray-300 text-sm">{throttlePrediction?.action || "Monitoring GPU thermal headroom"}</p>
           <p className="text-xs text-gray-500 mt-2">Level: {throttlePrediction?.throttle_level || "Normal"}</p>
-          <p className="text-xs text-gray-500 mt-1">Demo Simulation</p>
+          <p className="text-xs text-gray-500 mt-1">⚠️ Interactive Demo Only - No real GPU controls active</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-red-700">
           <h3 className="text-sm font-semibold text-red-400 mb-2">Throttle Reason</h3>
@@ -437,7 +435,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph - Using EnergyChart component with fallback data */}
+      {/* Energy Graph */}
       <EnergyChart data={chartData} />
 
       {/* Power Capping */}
@@ -447,55 +445,62 @@ export default function DashboardContent() {
         <p className="text-xs text-gray-500 mt-1">General recommendation based on TDP</p>
       </div>
 
-      {/* Why H100 is Overspending */}
+      {/* Observed Power Difference (Credible Version) */}
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
-        <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Why H100 May Be Overspending</h3>
+        <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Observed Power Difference (Not a Guarantee of Inefficiency)</h3>
         <div className="space-y-2 text-sm text-gray-300">
-          <p>• <strong className="text-white">Your current workload:</strong> Using {Math.round(h100Power)}W on H100 (measured)</p>
-          <p>• <strong className="text-white">Same workload on A100:</strong> Only {Math.round(a100Power)}W (measured)</p>
+          <p>• <strong className="text-white">Measured H100 power:</strong> {Math.round(h100Power)}W</p>
+          <p>• <strong className="text-white">Measured A100 power:</strong> {Math.round(a100Power)}W (same test duration)</p>
+          <p>• <strong className="text-white">Workload type:</strong> Recorded benchmark session (matrix multiplication, FP16)</p>
           <p>• <strong className="text-white">Power difference:</strong> {Math.round(h100Power - a100Power)}W extra</p>
-          <p>• <strong className="text-white">Why?</strong> H100 is designed for massive AI models (70B+ parameters). Your current workload doesn't need H100's power.</p>
-          <p>• <strong className="text-white">Recommendation:</strong> Run light workloads on A100. Reserve H100 for large language models.</p>
         </div>
         <div className="mt-3 p-3 bg-yellow-900/30 rounded-lg">
           <p className="text-xs text-yellow-300">
-            💡 <strong>Rule of thumb:</strong> If memory usage {"<"} 20GB and utilization is 100%, switch to A100.
+            💡 Some lighter workloads may not fully utilize H100-class hardware. In those scenarios, A100-class GPUs may offer better cost efficiency depending on throughput and latency requirements.
           </p>
         </div>
       </div>
 
-      {/* Savings Summary */}
+      {/* Estimated Cost Modeling */}
       <div className="bg-gray-900 rounded-lg p-6 border border-green-700">
-        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Estimated from Test Data)</h3>
+        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Estimated Power Cost Reduction (Modeled from Recorded Test Sessions)</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Switch light workloads from H100 → A100</span>
-            <span className="text-green-400 font-bold">Save ~${monthlySavingsSwitch.toFixed(0)}/month</span>
+            <span className="text-green-400 font-bold">Estimated ~${monthlySavingsSwitch.toFixed(0)}/month</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Power cap H100 (690W → 380W)</span>
-            <span className="text-green-400 font-bold">Save ~${monthlySavingsCap.toFixed(0)}/month</span>
+            <span className="text-green-400 font-bold">Estimated ~${monthlySavingsCap.toFixed(0)}/month</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Shift 8 hours to off-peak</span>
-            <span className="text-green-400 font-bold">Save ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
+            <span className="text-green-400 font-bold">Estimated ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Based on measured test data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
+        <p className="text-xs text-gray-500 mt-4">Based on measured test data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W. Assumes $0.12/kWh and continuous operation. Actual savings depend on workload characteristics and pricing.</p>
       </div>
 
-      {/* AI Optimization Recommendations */}
+      {/* Observed Test Data & Optimization Hypotheses */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">AI Optimization Recommendations</h3>
-        <div className="space-y-3">
-          {recommendations.map((rec, idx) => (
-            <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-800">
-              <span className="text-gray-300">{rec.text}</span>
-              <span className="text-green-400 text-sm">{rec.savings}</span>
-            </div>
-          ))}
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">📊 Observed Test Data</h3>
+        <div className="space-y-2 text-sm text-gray-300 mb-4">
+          <p>• <strong>H100 observed power:</strong> {Math.round(h100Power)}W</p>
+          <p>• <strong>A100 observed power:</strong> {Math.round(a100Power)}W</p>
+          <p>• <strong>Workload type:</strong> Synthetic benchmark / recorded session</p>
         </div>
-        <div className="mt-4 text-xs text-gray-500">Based on recorded test data analysis</div>
+        
+        <h3 className="text-sm font-semibold text-gray-300 mb-3">💡 Optimization Hypotheses</h3>
+        <div className="space-y-2 text-sm text-gray-300 mb-4">
+          <p>• Some lighter workloads may be more cost-efficient on A100-class hardware</p>
+          <p>• H100 efficiency advantages increase under larger AI workloads (70B+ parameters)</p>
+        </div>
+        
+        <h3 className="text-sm font-semibold text-gray-300 mb-3">💰 Estimated Cost Modeling</h3>
+        <div className="space-y-2 text-sm text-gray-300">
+          <p>Based on assumed power pricing ($0.12/kWh), continuous operation, and recorded test sessions.</p>
+          <p className="text-xs text-gray-500 mt-2">Note: Power measurements only. Actual performance per watt depends on workload characteristics, throughput, and latency requirements.</p>
+        </div>
       </div>
     </div>
   );
