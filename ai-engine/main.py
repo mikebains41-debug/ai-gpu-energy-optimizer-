@@ -1,6 +1,6 @@
 # PROPRIETARY AND CONFIDENTIAL
-# Copyright (c) 2026 Mike Bains. All Rights Reserved.
-# Contact: Mikebains41@gmail.com
+# Copyright (c) 2026 Manmohan Bains. All Rights Reserved.
+# Contact: mikebains41@gmail.com
 # Unauthorized use prohibited.
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException
@@ -353,7 +353,7 @@ def get_metrics_list() -> List[Dict]:
             result.append(m_copy)
     return result
 
-# ========== TEST RESULTS ENDPOINTS (NEW) ==========
+# ========== TEST RESULTS ENDPOINTS ==========
 @app.get("/results/a100")
 def get_a100_results():
     """Returns all A100 test results from data/tests/a100/ folder"""
@@ -387,6 +387,16 @@ def get_h100_test_result(test_id: int):
         with open(summary_file, "r") as f:
             return json.load(f)
     return {"error": "Test result not found"}
+
+# ========== DASHBOARD SUMMARY ENDPOINT ==========
+@app.get("/api/summary")
+def get_dashboard_summary():
+    """Returns the dashboard summary JSON for the homepage"""
+    summary_path = "data/dashboard-summary.json"
+    if os.path.exists(summary_path):
+        with open(summary_path, "r") as f:
+            return json.load(f)
+    return {"error": "Summary file not found"}
 
 # ========== ORIGINAL ENDPOINTS ==========
 @app.get("/health")
