@@ -297,7 +297,7 @@ def save_metrics(metrics):
 def load_test_results(gpu_type: str = "a100") -> List[Dict]:
     results = []
     for test_id in range(1, 12):
-        test_folder = f"data/tests/{gpu_type}/test-{test_id:02d}"
+        test_folder = f"/opt/render/project/src/data/tests/{gpu_type}/test-{test_id:02d}"
         summary_file = f"{test_folder}/summary.json"
         if os.path.exists(summary_file):
             try:
@@ -356,12 +356,12 @@ def get_metrics_list() -> List[Dict]:
 # ========== TEST RESULTS ENDPOINTS ==========
 @app.get("/results/a100")
 def get_a100_results():
-    """Returns all A100 test results from data/tests/a100/ folder"""
+    """Returns all A100 test results"""
     return load_test_results("a100")
 
 @app.get("/results/h100")
 def get_h100_results():
-    """Returns all H100 test results from data/tests/h100/ folder"""
+    """Returns all H100 test results"""
     return load_test_results("h100")
 
 @app.get("/results/a100/{test_id}")
@@ -369,7 +369,7 @@ def get_a100_test_result(test_id: int):
     """Returns specific A100 test result (1-11)"""
     if test_id < 1 or test_id > 11:
         raise HTTPException(status_code=404, detail="Test ID must be between 1 and 11")
-    test_folder = f"data/tests/a100/test-{test_id:02d}"
+    test_folder = f"/opt/render/project/src/data/tests/a100/test-{test_id:02d}"
     summary_file = f"{test_folder}/summary.json"
     if os.path.exists(summary_file):
         with open(summary_file, "r") as f:
@@ -381,7 +381,7 @@ def get_h100_test_result(test_id: int):
     """Returns specific H100 test result (1-11)"""
     if test_id < 1 or test_id > 11:
         raise HTTPException(status_code=404, detail="Test ID must be between 1 and 11")
-    test_folder = f"data/tests/h100/test-{test_id:02d}"
+    test_folder = f"/opt/render/project/src/data/tests/h100/test-{test_id:02d}"
     summary_file = f"{test_folder}/summary.json"
     if os.path.exists(summary_file):
         with open(summary_file, "r") as f:
@@ -391,12 +391,18 @@ def get_h100_test_result(test_id: int):
 # ========== DASHBOARD SUMMARY ENDPOINT ==========
 @app.get("/api/summary")
 def get_dashboard_summary():
-    """Returns the dashboard summary JSON for the homepage"""
-    summary_path = "data/dashboard-summary.json"
-    if os.path.exists(summary_path):
-        with open(summary_path, "r") as f:
-            return json.load(f)
-    return {"error": "Summary file not found"}
+    """Returns the dashboard summary JSON"""
+    possible_paths = [
+        "/opt/render/project/src/data/dashboard-summary.json",
+        "data/dashboard-summary.json",
+        "../data/dashboard-summary.json",
+        "/opt/render/project/src/dashboard-summary.json"
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+    return {"error": "Summary file not found", "paths_checked": possible_paths}
 
 # ========== ORIGINAL ENDPOINTS ==========
 @app.get("/health")
