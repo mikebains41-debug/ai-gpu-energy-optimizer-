@@ -32,7 +32,6 @@ export default function DashboardContent() {
   // Fetch all data
   const fetchAllData = async () => {
     try {
-      // Fetch A100
       const a100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/a100');
       const a100Json = await a100Res.json();
       if (a100Json['a100-runpod'] && a100Json['a100-runpod'].length > 0) {
@@ -40,7 +39,6 @@ export default function DashboardContent() {
         setA100Data(latest.gpus[0]);
       }
 
-      // Fetch H100
       const h100Res = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics/h100');
       const h100Json = await h100Res.json();
       if (h100Json['h100-runpod'] && h100Json['h100-runpod'].length > 0) {
@@ -49,7 +47,6 @@ export default function DashboardContent() {
         setLastUpdated(new Date().toLocaleTimeString());
       }
 
-      // Fetch history for chart
       const metricsRes = await fetch('https://ai-gpu-brain-v3.onrender.com/metrics');
       const metricsData = await metricsRes.json();
       
@@ -99,7 +96,6 @@ export default function DashboardContent() {
     }
   };
 
-  // Fetch throttle prediction
   const fetchThrottle = async () => {
     try {
       const res = await fetch('https://ai-gpu-brain-v3.onrender.com/power-headroom?gpu_power=380&cpu_power=45');
@@ -110,29 +106,22 @@ export default function DashboardContent() {
     }
   };
 
-  // Initial load + auto refresh every 30 seconds
   useEffect(() => {
     fetchAllData();
     fetchThrottle();
-    
-    const interval = setInterval(() => {
-      fetchAllData();
-    }, 30000);
-    
+    const interval = setInterval(() => fetchAllData(), 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Auto mode effect (UI only - demo)
   useEffect(() => {
     if (autoMode && h100Data) {
       const temp = h100Data.temperature_celsius || 58;
       if (temp > 70) {
-        setActionLogs(prev => [...prev, `⚠️ Thermal rise (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
+        setActionLogs(prev => [...prev, `[DEMO] Thermal rise (${temp}°C) → reducing power cap at ${new Date().toLocaleTimeString()}`]);
       }
     }
   }, [autoMode, h100Data]);
 
-  // Stability metrics
   useEffect(() => {
     if (historicalData.length > 10) {
       const powers = historicalData.map(d => d.power_a100 + d.power_h100);
@@ -148,7 +137,6 @@ export default function DashboardContent() {
     }
   }, [historicalData]);
 
-  // Get current values (using recorded test data defaults)
   const a100Power = a100Data?.power_draw_watts ?? 400;
   const a100Temp = a100Data?.temperature_celsius ?? 65;
   const a100Util = a100Data?.utilization_percent ?? 100;
@@ -164,8 +152,6 @@ export default function DashboardContent() {
   const h100MemoryClock = 1593;
 
   const totalPowerMW = (a100Power + h100Power) / 1000;
-
-  // Savings calculations (Estimated from test data)
   const POWER_DIFF_KW = (h100Power - a100Power) / 1000;
   const ELECTRICITY_RATE = 0.12;
   const OFF_PEAK_HOURS = 8;
@@ -184,7 +170,6 @@ export default function DashboardContent() {
 
   const co2Reduction = POWER_DIFF_KW * FULL_DAY_HOURS * 365 * 0.4;
 
-  // Efficiency calculation
   const a100Efficiency = a100Util / (a100Power / 1000);
   const h100Efficiency = h100Util / (h100Power / 1000);
   const avgEfficiency = (a100Efficiency + h100Efficiency) / 2;
@@ -211,7 +196,6 @@ export default function DashboardContent() {
     );
   }
 
-  // Prepare chart data - use historical data if available, otherwise fallback
   const chartData = historicalData.length > 0 
     ? historicalData.map(point => ({
         timestamp: new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -240,9 +224,17 @@ export default function DashboardContent() {
             🔄 Refresh
           </button>
         </div>
+        
         {/* Global disclaimer */}
         <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-xs text-gray-400">⚠️ Demo Environment - This dashboard visualizes recorded GPU test data and demonstrates potential optimization concepts. No live GPU control or real-time automation is active.</p>
+        </div>
+        
+        {/* Badges */}
+        <div className="flex justify-center gap-3 mt-4">
+          <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">Measured</span>
+          <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-400">Estimated</span>
+          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-500/20 text-gray-400">Demo UI</span>
         </div>
       </div>
 
@@ -445,7 +437,7 @@ export default function DashboardContent() {
         <p className="text-xs text-gray-500 mt-1">General recommendation based on TDP</p>
       </div>
 
-      {/* Observed Power Difference (Credible Version) */}
+      {/* Observed Power Difference */}
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
         <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Observed Power Difference (Not a Guarantee of Inefficiency)</h3>
         <div className="space-y-2 text-sm text-gray-300">
