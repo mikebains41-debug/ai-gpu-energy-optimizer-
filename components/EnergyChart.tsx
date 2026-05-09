@@ -8,8 +8,17 @@
 import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Hardcoded test data from A100 load ramp test (Test 4)
+const fallbackData = [
+  { timestamp: "0s", totalPower: 68, renewablePower: 0 },
+  { timestamp: "30s", totalPower: 145, renewablePower: 0 },
+  { timestamp: "60s", totalPower: 221, renewablePower: 0 },
+  { timestamp: "90s", totalPower: 343, renewablePower: 0 },
+  { timestamp: "120s", totalPower: 320, renewablePower: 0 },
+];
+
 interface EnergyChartProps {
-  data: Array<{
+  data?: Array<{
     timestamp: string;
     totalPower: number;
     renewablePower?: number;
@@ -18,31 +27,14 @@ interface EnergyChartProps {
 
 export default function EnergyChart({ data }: EnergyChartProps) {
   const [showRenewable, setShowRenewable] = useState(false);
-
-  // If no data, show placeholder
-  if (!data || data.length === 0) {
-    return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-100">Energy Consumption</h3>
-          <button
-            onClick={() => setShowRenewable(!showRenewable)}
-            className="px-3 py-1 text-sm rounded-lg bg-gray-800 text-gray-400"
-          >
-            Renewable
-          </button>
-        </div>
-        <div className="h-[300px] flex items-center justify-center text-gray-500">
-          No energy data available
-        </div>
-      </div>
-    );
-  }
+  
+  // Use provided data or fallback to hardcoded test data
+  const chartData = data && data.length > 0 ? data : fallbackData;
 
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-100">Energy Consumption</h3>
+        <h3 className="text-lg font-semibold text-gray-100">Energy Consumption (Recorded Test Data)</h3>
         <button
           onClick={() => setShowRenewable(!showRenewable)}
           className={`px-3 py-1 text-sm rounded-lg transition-colors ${
@@ -55,7 +47,7 @@ export default function EnergyChart({ data }: EnergyChartProps) {
 
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -73,15 +65,11 @@ export default function EnergyChart({ data }: EnergyChartProps) {
               dataKey="timestamp" 
               stroke="#9ca3af" 
               fontSize={12}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              }}
             />
             <YAxis 
               stroke="#9ca3af" 
               fontSize={12} 
-              tickFormatter={(value) => `${value} kW`}
+              tickFormatter={(value) => `${value} W`}
             />
             <Tooltip 
               contentStyle={{ 
@@ -90,7 +78,7 @@ export default function EnergyChart({ data }: EnergyChartProps) {
                 borderRadius: '8px',
                 color: '#f3f4f6'
               }}
-              formatter={(value: number) => [`${value} kW`, 'Power']}
+              formatter={(value: number) => [`${value} W`, 'Power']}
             />
             <Area 
               type="monotone" 
