@@ -1,0 +1,10 @@
+{
+  "test_id": "test-09",
+  "metrics": {
+    "samples": 8247,
+    "mean_cei": 1.900e13,
+    "std_dev": 2.455e11,
+    "skewness": -47.1473,
+    "is_normal": false
+  }
+}
