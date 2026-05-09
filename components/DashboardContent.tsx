@@ -494,6 +494,11 @@ export default function DashboardContent() {
           <p className="text-xs text-gray-500 mt-2">Note: Power measurements only. Actual performance per watt depends on workload characteristics, throughput, and latency requirements.</p>
         </div>
       </div>
+
+      {/* Contact Footer */}
+      <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-800">
+        📧 Contact for monitoring agent access: <a href="mailto:mikebains41@gmail.com" className="text-blue-400 hover:underline">mikebains41@gmail.com</a>
+      </div>
     </div>
   );
 }
