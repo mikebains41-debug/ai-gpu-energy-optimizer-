@@ -1,9 +1,0 @@
-{
-  "test_id": "test-01",
-  "screenshots": [
-    {
-      "name": "A100 Idle Baseline",
-      "url": "/screenshots/a100_test1_idle.png"
-    }
-  ]
-}
