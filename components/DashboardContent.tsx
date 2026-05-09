@@ -1,5 +1,5 @@
 // PROPRIETARY AND CONFIDENTIAL
-// Copyright (c) 2026 Mike Bains. All Rights Reserved.
+// Copyright (c) 2026 Manmohan Bains. All Rights Reserved.
 // Contact: Mikebains41@gmail.com
 // Unauthorized use prohibited.
 
@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 
 export default function DashboardContent() {
   const [a100Data, setA100Data] = useState<any>(null);
-  const [h100Data, setH100Data] = useState<any>(null);
+  const [h100Data, setH100Data] useState<any>(null);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -202,7 +202,7 @@ export default function DashboardContent() {
   if (loading && historicalData.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-400">Loading live GPU data from Render...</div>
+        <div className="text-gray-400">Loading recorded test data...</div>
       </div>
     );
   }
@@ -213,13 +213,13 @@ export default function DashboardContent() {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
         <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
-          Real-time power, temperature, and utilization monitoring for A100 and H100 GPUs.
+          Recorded test data from A100 and H100 GPU benchmarks.
         </p>
         <p className="text-gray-500 text-sm mt-4">
           Built on Samsung S25 Ultra | No laptop, no desktop
         </p>
         <div className="flex justify-center items-center gap-3 mt-2">
-          <p className="text-gray-500 text-xs">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total</p>
+          <p className="text-gray-500 text-xs">Last updated: {lastUpdated} | 📈 {totalPowerMW.toFixed(2)} MW Total (Test Data)</p>
           <button
             onClick={handleRefresh}
             className="px-3 py-1 text-xs bg-gray-700 rounded hover:bg-gray-600 transition-colors"
@@ -268,13 +268,13 @@ export default function DashboardContent() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
-          <p className="text-gray-400 text-sm">Annual Savings (Switch H100→A100)</p>
+          <p className="text-gray-400 text-sm">Annual Savings (Test Data)</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavingsSwitch).toLocaleString()}</p>
           <p className="text-xs text-green-500 mt-1">Based on {Math.round(POWER_DIFF_KW * 1000)}W difference</p>
           <p className="text-xs text-green-400 mt-2">≈ ${dailySavingsSwitch.toFixed(2)} per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
-          <p className="text-gray-400 text-sm">CO₂ Reduction</p>
+          <p className="text-gray-400 text-sm">CO₂ Reduction (Test Data)</p>
           <p className="text-2xl font-bold text-blue-400">{Math.round(co2Reduction).toLocaleString()} kg</p>
           <p className="text-xs text-blue-500 mt-1">Annual estimated reduction</p>
         </div>
@@ -319,7 +319,7 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{Math.round(a100Power)}W</div>
-              <div className="text-xs text-gray-500">Real-time</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Temperature</div>
@@ -364,7 +364,7 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{Math.round(h100Power)}W</div>
-              <div className="text-xs text-gray-500">Real-time</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Temperature</div>
@@ -407,7 +407,7 @@ export default function DashboardContent() {
 
       {/* Energy Graph */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts)</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts) - Test Data</h3>
         {historicalData.length > 0 ? (
           <div style={{ overflowX: 'auto', width: '100%' }}>
             <div style={{ minWidth: '800px' }}>
@@ -453,7 +453,7 @@ export default function DashboardContent() {
             </div>
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-8">Loading energy data...</div>
+          <div className="text-center text-gray-500 py-8">Loading test data...</div>
         )}
       </div>
 
@@ -483,7 +483,7 @@ export default function DashboardContent() {
 
       {/* Savings Summary */}
       <div className="bg-gray-900 rounded-lg p-6 border border-green-700">
-        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Based on Your Actual Data)</h3>
+        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Based on Test Data)</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Switch light workloads from H100 → A100</span>
@@ -498,7 +498,7 @@ export default function DashboardContent() {
             <span className="text-green-400 font-bold">Save ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Based on your live data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
+        <p className="text-xs text-gray-500 mt-4">Based on test run data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
       </div>
 
       {/* AI Optimization Recommendations */}
@@ -512,8 +512,8 @@ export default function DashboardContent() {
             </div>
           ))}
         </div>
-        <div className="mt-4 text-xs text-gray-500">Based on real-time temperature and utilization data</div>
+        <div className="mt-4 text-xs text-gray-500">Based on recorded test data</div>
       </div>
     </div>
   );
-                }
+              }
