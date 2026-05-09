@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 
 export default function DashboardContent() {
   const [a100Data, setA100Data] = useState<any>(null);
-  const [h100Data, setH100Data] useState<any>(null);
+  const [h100Data, setH100Data] = useState<any>(null);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -138,7 +138,7 @@ export default function DashboardContent() {
     }
   }, [historicalData]);
 
-  // Get current values
+  // Get current values (using recorded test data defaults)
   const a100Power = a100Data?.power_draw_watts ?? 400;
   const a100Temp = a100Data?.temperature_celsius ?? 65;
   const a100Util = a100Data?.utilization_percent ?? 100;
@@ -155,7 +155,7 @@ export default function DashboardContent() {
 
   const totalPowerMW = (a100Power + h100Power) / 1000;
 
-  // Savings calculations
+  // Savings calculations (Estimated from test data)
   const POWER_DIFF_KW = (h100Power - a100Power) / 1000;
   const ELECTRICITY_RATE = 0.12;
   const OFF_PEAK_HOURS = 8;
@@ -213,7 +213,7 @@ export default function DashboardContent() {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-100">AI GPU Energy Optimizer</h1>
         <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
-          Recorded test data from A100 and H100 GPU benchmarks.
+          Test data from recorded A100 and H100 GPU benchmarks.
         </p>
         <p className="text-gray-500 text-sm mt-4">
           Built on Samsung S25 Ultra | No laptop, no desktop
@@ -268,20 +268,20 @@ export default function DashboardContent() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 rounded-lg p-4 border border-green-700">
-          <p className="text-gray-400 text-sm">Annual Savings (Test Data)</p>
+          <p className="text-gray-400 text-sm">Estimated Annual Savings</p>
           <p className="text-2xl font-bold text-green-400">${Math.round(annualSavingsSwitch).toLocaleString()}</p>
-          <p className="text-xs text-green-500 mt-1">Based on {Math.round(POWER_DIFF_KW * 1000)}W difference</p>
+          <p className="text-xs text-green-500 mt-1">Based on {Math.round(POWER_DIFF_KW * 1000)}W measured difference</p>
           <p className="text-xs text-green-400 mt-2">≈ ${dailySavingsSwitch.toFixed(2)} per day</p>
         </div>
         <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 rounded-lg p-4 border border-blue-700">
-          <p className="text-gray-400 text-sm">CO₂ Reduction (Test Data)</p>
+          <p className="text-gray-400 text-sm">Estimated CO₂ Reduction</p>
           <p className="text-2xl font-bold text-blue-400">{Math.round(co2Reduction).toLocaleString()} kg</p>
-          <p className="text-xs text-blue-500 mt-1">Annual estimated reduction</p>
+          <p className="text-xs text-blue-500 mt-1">Based on regional grid assumptions</p>
         </div>
         <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/20 rounded-lg p-4 border border-orange-700">
           <p className="text-gray-400 text-sm">Compute Efficiency</p>
           <p className="text-2xl font-bold text-orange-400">{efficiencyPercent}%</p>
-          <p className="text-xs text-orange-500 mt-1">Utilization vs power draw</p>
+          <p className="text-xs text-orange-500 mt-1">Calculated from test data</p>
           <p className="text-xs text-gray-500 mt-1">Normal range: 15-25% for H100 at 100% load</p>
         </div>
         {stabilityMetrics && (
@@ -315,27 +315,32 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{a100Util}%</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{Math.round(a100Power)}W</div>
-              <div className="text-xs text-gray-500">Test Data</div>
+              <div className="text-xs text-gray-500">Measured</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Temperature</div>
               <div className="text-2xl font-bold text-gray-100">{a100Temp}°C</div>
+              <div className="text-xs text-gray-500">Measured</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory</div>
               <div className="text-2xl font-bold text-gray-100">{a100Memory.toFixed(1)} / 80 GB</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{a100Clock} MHz</div>
+              <div className="text-xs text-gray-500">Spec</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{a100MemoryClock} MHz</div>
+              <div className="text-xs text-gray-500">Spec</div>
             </div>
           </div>
         </div>
@@ -360,27 +365,32 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{h100Util}%</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
               <div className="text-2xl font-bold text-gray-100">{Math.round(h100Power)}W</div>
-              <div className="text-xs text-gray-500">Test Data</div>
+              <div className="text-xs text-gray-500">Measured</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Temperature</div>
               <div className="text-2xl font-bold text-gray-100">{h100Temp}°C</div>
+              <div className="text-xs text-gray-500">Measured</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory</div>
               <div className="text-2xl font-bold text-gray-100">{h100Memory.toFixed(1)} / 80 GB</div>
+              <div className="text-xs text-gray-500">Test Data</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{h100Clock} MHz</div>
+              <div className="text-xs text-gray-500">Spec</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Memory Clock Speed</div>
               <div className="text-xl font-bold text-gray-100">{h100MemoryClock} MHz</div>
+              <div className="text-xs text-gray-500">Spec</div>
             </div>
           </div>
         </div>
@@ -392,22 +402,25 @@ export default function DashboardContent() {
           <h3 className="text-sm font-semibold text-yellow-400 mb-2">Throttling Prediction</h3>
           <p className="text-gray-300 text-sm">{throttlePrediction?.action || "Monitoring GPU thermal headroom"}</p>
           <p className="text-xs text-gray-500 mt-2">Level: {throttlePrediction?.throttle_level || "Normal"}</p>
+          <p className="text-xs text-gray-500 mt-1">Demo Simulation</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-red-700">
           <h3 className="text-sm font-semibold text-red-400 mb-2">Throttle Reason</h3>
           <p className="text-gray-300 text-sm">{getThrottleReason()}</p>
           <p className="text-xs text-gray-500 mt-2">Trigger: {h100Temp > 70 ? "Temperature threshold exceeded" : "Normal operation"}</p>
+          <p className="text-xs text-gray-500 mt-1">Based on test data</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 border border-blue-700">
           <h3 className="text-sm font-semibold text-blue-400 mb-2">PCIe Bandwidth</h3>
           <p className="text-gray-300 text-sm">{pcieBandwidth}</p>
           <p className="text-xs text-gray-500 mt-2">PCIe 5.0 x16 interface</p>
+          <p className="text-xs text-gray-500 mt-1">Specification</p>
         </div>
       </div>
 
       {/* Energy Graph */}
       <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts) - Test Data</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts) - Recorded Test Data</h3>
         {historicalData.length > 0 ? (
           <div style={{ overflowX: 'auto', width: '100%' }}>
             <div style={{ minWidth: '800px' }}>
@@ -453,7 +466,7 @@ export default function DashboardContent() {
             </div>
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-8">Loading test data...</div>
+          <div className="text-center text-gray-500 py-8">Loading recorded test data...</div>
         )}
       </div>
 
@@ -461,15 +474,15 @@ export default function DashboardContent() {
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Power Capping</h3>
         <p className="text-gray-400 text-sm">Recommended power cap: 380W for H100 | 250W for A100</p>
-        <p className="text-xs text-gray-500 mt-1">Dynamic power limiting based on thermal headroom</p>
+        <p className="text-xs text-gray-500 mt-1">General recommendation based on TDP</p>
       </div>
 
       {/* Why H100 is Overspending */}
       <div className="bg-gray-900 rounded-lg p-6 border border-yellow-700">
         <h3 className="text-sm font-semibold text-yellow-400 mb-3">⚠️ Why H100 May Be Overspending</h3>
         <div className="space-y-2 text-sm text-gray-300">
-          <p>• <strong className="text-white">Your current workload:</strong> Using {Math.round(h100Power)}W on H100</p>
-          <p>• <strong className="text-white">Same workload on A100:</strong> Only {Math.round(a100Power)}W</p>
+          <p>• <strong className="text-white">Your current workload:</strong> Using {Math.round(h100Power)}W on H100 (measured)</p>
+          <p>• <strong className="text-white">Same workload on A100:</strong> Only {Math.round(a100Power)}W (measured)</p>
           <p>• <strong className="text-white">Power difference:</strong> {Math.round(h100Power - a100Power)}W extra</p>
           <p>• <strong className="text-white">Why?</strong> H100 is designed for massive AI models (70B+ parameters). Your current workload doesn't need H100's power.</p>
           <p>• <strong className="text-white">Recommendation:</strong> Run light workloads on A100. Reserve H100 for large language models.</p>
@@ -483,7 +496,7 @@ export default function DashboardContent() {
 
       {/* Savings Summary */}
       <div className="bg-gray-900 rounded-lg p-6 border border-green-700">
-        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Based on Test Data)</h3>
+        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Potential Savings (Estimated from Test Data)</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Switch light workloads from H100 → A100</span>
@@ -498,7 +511,7 @@ export default function DashboardContent() {
             <span className="text-green-400 font-bold">Save ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Based on test run data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
+        <p className="text-xs text-gray-500 mt-4">Based on measured test data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W</p>
       </div>
 
       {/* AI Optimization Recommendations */}
@@ -512,8 +525,8 @@ export default function DashboardContent() {
             </div>
           ))}
         </div>
-        <div className="mt-4 text-xs text-gray-500">Based on recorded test data</div>
+        <div className="mt-4 text-xs text-gray-500">Based on recorded test data analysis</div>
       </div>
     </div>
   );
-              }
+}
