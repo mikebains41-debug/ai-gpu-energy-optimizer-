@@ -1,7 +1,7 @@
 /**
  * PROPRIETARY & CONFIDENTIAL
- * Copyright (c) 2026 Mike Bains. All Rights Reserved.
- * Contact: Mikebains41@gmail.com
+ * Copyright (c) 2026 Manmohan Bains. All Rights Reserved.
+ * Contact: mikebains41@gmail.com
  */
 'use client';
 
@@ -28,7 +28,6 @@ interface EnergyChartProps {
 export default function EnergyChart({ data }: EnergyChartProps) {
   const [showRenewable, setShowRenewable] = useState(false);
   
-  // Use provided data or fallback to hardcoded test data
   const chartData = data && data.length > 0 ? data : fallbackData;
 
   return (
@@ -61,17 +60,9 @@ export default function EnergyChart({ data }: EnergyChartProps) {
               )}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis 
-              dataKey="timestamp" 
-              stroke="#9ca3af" 
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#9ca3af" 
-              fontSize={12} 
-              tickFormatter={(value) => `${value} W`}
-            />
-            <Tooltip 
+            <XAxis dataKey="timestamp" stroke="#9ca3af" fontSize={12} />
+            <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(value) => `${value} W`} />
+            <Tooltip
               contentStyle={{ 
                 backgroundColor: '#111827', 
                 border: '1px solid #374151', 
