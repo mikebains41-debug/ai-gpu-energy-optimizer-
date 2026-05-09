@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import EnergyChart from './EnergyChart';
 
 export default function DashboardContent() {
   const [a100Data, setA100Data] = useState<any>(null);
@@ -18,6 +19,15 @@ export default function DashboardContent() {
   const [autoMode, setAutoMode] = useState(false);
   const [actionLogs, setActionLogs] = useState<string[]>([]);
   const [stabilityMetrics, setStabilityMetrics] = useState<any>(null);
+
+  // Fallback chart data from A100 load ramp test (Test 4)
+  const fallbackChartData = [
+    { timestamp: "0s", totalPower: 68, renewablePower: 0 },
+    { timestamp: "30s", totalPower: 145, renewablePower: 0 },
+    { timestamp: "60s", totalPower: 221, renewablePower: 0 },
+    { timestamp: "90s", totalPower: 343, renewablePower: 0 },
+    { timestamp: "120s", totalPower: 320, renewablePower: 0 },
+  ];
 
   // Fetch all data
   const fetchAllData = async () => {
@@ -206,6 +216,15 @@ export default function DashboardContent() {
       </div>
     );
   }
+
+  // Prepare chart data - use historical data if available, otherwise fallback
+  const chartData = historicalData.length > 0 
+    ? historicalData.map(point => ({
+        timestamp: new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        totalPower: point.power_h100 + point.power_a100,
+        renewablePower: 0
+      }))
+    : fallbackChartData;
 
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto">
@@ -418,57 +437,8 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Energy Graph */}
-      <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Energy Consumption (Watts) - Recorded Test Data</h3>
-        {historicalData.length > 0 ? (
-          <div style={{ overflowX: 'auto', width: '100%' }}>
-            <div style={{ minWidth: '800px' }}>
-              <div className="flex justify-center gap-6 mb-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                  <span className="text-gray-300 font-medium">H100</span>
-                  <span className="text-gray-500">({Math.round(h100Power)}W)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                  <span className="text-gray-300 font-medium">A100</span>
-                  <span className="text-gray-500">({Math.round(a100Power)}W)</span>
-                </div>
-              </div>
-              
-              <div className="h-48 flex items-end gap-2">
-                {historicalData.map((point, idx) => {
-                  const h100Height = Math.min(120, (point.power_h100 / 700) * 120);
-                  const a100Height = Math.min(120, (point.power_a100 / 700) * 120);
-                  const timeStr = new Date(point.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  return (
-                    <div key={idx} className="flex flex-col items-center" style={{ width: '60px' }}>
-                      <div className="flex gap-1 items-end" style={{ height: '120px' }}>
-                        <div 
-                          className="w-5 bg-orange-500 rounded-t transition-all duration-300 hover:bg-orange-400" 
-                          style={{ height: `${h100Height}px` }}
-                          title={`H100: ${point.power_h100}W`}
-                        ></div>
-                        <div 
-                          className="w-5 bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-400" 
-                          style={{ height: `${a100Height}px` }}
-                          title={`A100: ${point.power_a100}W`}
-                        ></div>
-                      </div>
-                      <div className="text-[9px] text-gray-500 mt-1 text-center">
-                        {timeStr}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-8">Loading recorded test data...</div>
-        )}
-      </div>
+      {/* Energy Graph - Using EnergyChart component with fallback data */}
+      <EnergyChart data={chartData} />
 
       {/* Power Capping */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
