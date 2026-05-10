@@ -1,23 +1,27 @@
 #!/bin/bash
-echo "🔧 Installing GPU Optimizer Agent..."
+# GPU Agent Installer - Proprietary
+# Contact: mikebains41@gmail.com
 
-command -v curl >/dev/null 2>&1 || { echo "❌ Install curl: pkg install curl"; exit 1; }
-command -v python3 >/dev/null 2>&1 || { echo "❌ Install python: pkg install python"; exit 1; }
+set -e
 
-mkdir -p ~/gpu-optimizer
-cd ~/gpu-optimizer
+echo "=== GPU Ghost Power Detector ==="
+echo ""
 
-echo "📥 Downloading agent..."
-curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/ai-engine/gpu_monitor_agent.py -o gpu_monitor_agent.py
+if ! command -v nvidia-smi &> /dev/null; then
+    echo "ERROR: No NVIDIA GPU detected"
+    exit 1
+fi
 
-echo "Enter API Key:"
-read API_KEY
-echo "Enter Cluster ID:"
-read CLUSTER_ID
+echo "✓ GPU detected"
 
-echo "{\"backend_url\":\"https://ai-gpu-brain-v3.onrender.com\",\"cluster_id\":\"$CLUSTER_ID\",\"api_key\":\"$API_KEY\",\"check_interval_seconds\":2}" > config.json
+echo "Installing dependencies..."
+pip install pynvml torch -q
 
-pip3 install requests --quiet
+echo "Downloading agent..."
+curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/gpu_agent.py -o gpu_agent.py
 
-echo "✅ Done! Starting agent..."
-python3 gpu_monitor_agent.py
+chmod +x gpu_agent.py
+
+echo ""
+echo "=== Ready to scan ==="
+echo "Run: python3 gpu_agent.py --scan"
