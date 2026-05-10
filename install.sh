@@ -18,10 +18,10 @@ echo "Installing dependencies..."
 pip install pynvml torch -q
 
 echo "Downloading agent..."
-curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/gpu_agent.py -o gpu_agent.py
+curl -sSL https://raw.githubusercontent.com/mikebains41-debug/ai-gpu-energy-optimizer-/main/telemetry_validator.py -o telemetry_validator.py
 
-chmod +x gpu_agent.py
+chmod +x telemetry_validator.py
 
 echo ""
 echo "=== Ready to scan ==="
-echo "Run: python3 gpu_agent.py --scan"
+echo "Run: python3 telemetry_validator.py --scan"
