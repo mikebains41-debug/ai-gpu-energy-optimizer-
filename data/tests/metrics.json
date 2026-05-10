@@ -1,0 +1,14 @@
+{
+  "test_id": "t4-test-01",
+  "metrics": {
+    "duration_seconds": 60,
+    "samples": 60,
+    "idle_power_mean_w": 9.5,
+    "idle_power_min_w": 9.2,
+    "idle_power_max_w": 9.9,
+    "utilization_mean": 0,
+    "ghost_power_events": 0,
+    "platform": "Kaggle",
+    "gpu": "Tesla T4"
+  }
+}
