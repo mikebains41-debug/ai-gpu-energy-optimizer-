@@ -411,7 +411,13 @@ def health_check():
 
 @app.get("/")
 def root():
-    return {"message": "AI GPU Energy Optimizer API", "docs": "/docs", "health": "/health", "engines": 8}
+    return {
+        "message": "AI GPU Energy Optimizer API",
+        "docs": "/docs",
+        "health": "/health",
+        "engines": 8,
+        "contact": "mikebains41@gmail.com"
+    }
 
 @app.get("/metrics")
 def get_metrics():
