@@ -44,3 +44,19 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# === SCHEDULER INTEGRATION ===
+# When desync detected, trigger workload migration
+def check_and_migrate(power, util, pod_name="unknown"):
+    if power > 70 and util == 0:
+        print(f"\n⚠️ DESYNC DETECTED: {power}W at {util}% util")
+        print("Triggering workload migration...")
+        
+        import subprocess
+        subprocess.run([
+            "python3", "scheduler_integration.py",
+            "--evict",
+            "--pod-name", pod_name,
+            "--power", str(power),
+            "--util", str(util)
+        ])
