@@ -1,0 +1,10 @@
+{
+  "cooldown": {
+    "duration_hours": 2.07,
+    "mean_power_w": 47.5,
+    "std_power_w": 1.5,
+    "min_power_w": 45.12,
+    "max_power_w": 50.46,
+    "samples": 169
+  }
+}
