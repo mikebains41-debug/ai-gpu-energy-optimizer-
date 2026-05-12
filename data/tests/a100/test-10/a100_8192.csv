@@ -1,29 +1,0 @@
-git add data/tests/a100/test-10/git commit -m "Add A100 8192 test results - no ghost power"git push origin mainscp -P 19376 root@154.54.102.55:/root/a100_8192.csv ~/ai-gpu-energy-optimizer-/data/tests/a100/test-10/mkdir -p ~/ai-gpu-energy-optimizer-/data/tests/a100/test-10scp -P 19376 root@154.54.102.55:/root/a100_8192.csv ~/ai-gpu-energy-optimizer-/data/tests/a100/test-10/ls -la ~/ai-gpu-energy-optimizer-/data/tests/a100/test-10/a100_8192.csv
-# 1. Navigate to your home directory
-cd ~
-
-# 2. Clone the repository (using the correct URL from your screç
-ç
-
-
-git clone https://github.com/mikebains41/ai-gpu-energy-optimizer.git
-
-# 3. Enter the project folder
-cd ai-gpu-energy-optimizer
-
-# 4. List all files to verify (you should see H100_benchmark.py, Run_pop_tests.sh, etc.)
-ls -la
-
-# 5. Install Python dependencies (if requirements.txt exists)
-pip install -r requirements.txt
-
-# If no requirements.txt, install common ones:
-pip install pynvml torch numpy pandas matplotlib flask
-
-# 6. Make the test script executable
-chmod +x Run_pop_tests.sh
-
-# 7. Run the full test suite (this executes your 11-test plan)
-./Run_pop_tests.sh
-cd /data/data/com.termux/files/home/ai-gpu-energy-optimizer-
-find data/tests -type f -name "*.json" -o -name "*.md" -o -name "*.png" | sort
