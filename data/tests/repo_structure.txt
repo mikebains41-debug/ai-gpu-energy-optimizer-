@@ -1,0 +1,521 @@
+.
+├── a100
+│   ├── test-01
+│   │   ├── README.md
+│   │   ├── evidence.json
+│   │   ├── metrics.json
+│   │   ├── screenshots
+│   │   │   ├── a100_test1_idle.png
+│   │   │   └── a100_test1_timestamped.png
+│   │   └── summary.json
+│   ├── test-02
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test2_ghost_power_1.png
+│   │   │   ├── a100_test2_ghost_power_2.png
+│   │   │   ├── a100_test2_ghost_power_3.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-03
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test3_sampling.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-04
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test4_load_ramp.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-05
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test5_cei_compute.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-06
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test6_power_proof.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-07
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test7_cei_compute_1.png
+│   │   │   ├── a100_test7_cei_compute_2.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-08
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test8_fp16.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-09
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test9_normality.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-10
+│   │   ├── a100_8192.csv
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── a100_test10_loglog_scaling.png
+│   │   │   ├── evidence.json
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   └── test-11
+│       ├── screenshots
+│       │   ├── Readme.md
+│       │   ├── a100_test11_5min_proof.png
+│       │   ├── evidence.json
+│       │   └── metrics.json
+│       └── summary.json
+├── a100_pcie
+│   └── test-01
+│       └── a100_pcie_load.csv
+├── ai-gpu-energy-optimizer-
+│   ├── CEI_RESULTS_T4.md
+│   ├── Controller.py
+│   ├── Dockerfile
+│   ├── Docs
+│   │   └── Pop_report.md
+│   ├── H100_benchmark.py:
+│   ├── K8s
+│   │   ├── Controller-development.yaml
+│   │   ├── Gpu-benchmark-job.yaml
+│   │   ├── Namespace-quota.yaml
+│   │   ├── Powercap-crd.yaml
+│   │   └── Scaledobject.yaml
+│   ├── LICENSE
+│   ├── Lib
+│   │   └── Config.ts
+│   ├── Procfile
+│   ├── README.md
+│   ├── Readme.md
+│   ├── Results.md
+│   ├── Run_pop_tests.sh
+│   ├── __pycache__
+│   │   └── telemetry_validator.cpython-313.pyc
+│   ├── a100_all_tests.json
+│   ├── a100_ghost_power_results.txt
+│   ├── ai-engine
+│   │   ├── Dockerfile
+│   │   ├── Engines
+│   │   ├── __init__.py
+│   │   ├── agent_requirements.txt
+│   │   ├── config.json
+│   │   ├── database.py
+│   │   ├── engine1_efficiency.py
+│   │   ├── engine2_idle.py
+│   │   ├── engine3_burst.py
+│   │   ├── engine4_sampling.py
+│   │   ├── engine5_alerts.py
+│   │   ├── engine6_export.py
+│   │   ├── engine7_powerstate.py
+│   │   ├── engine8_delta.py
+│   │   ├── generate_credentials.py
+│   │   ├── gpu_monitor_agent.py
+│   │   ├── install.sh
+│   │   ├── main.py
+│   │   ├── main_simple.py
+│   │   ├── metrics_simulator.py
+│   │   ├── optimizer.py
+│   │   ├── pyproject.toml
+│   │   ├── requirements.txt
+│   │   ├── runtime.txt
+│   │   └── test.py
+│   ├── all_content.txt
+│   ├── all_files.txt
+│   ├── all_test_results.json
+│   ├── app
+│   │   ├── admin
+│   │   │   └── page.tsx
+│   │   ├── analytics
+│   │   │   └── page.tsx
+│   │   ├── api
+│   │   │   └── beta
+│   │   │       └── signup
+│   │   │           └── route.ts
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── signup
+│   │       └── page.tsx
+│   ├── app.py
+│   ├── components
+│   │   ├── CostSavings.tsx
+│   │   ├── D
+│   │   ├── DashboardContent.tsx
+│   │   ├── DashboardLayout.tsx
+│   │   ├── EnergyChart.tsx
+│   │   ├── GPUMetricsCard.tsx
+│   │   ├── Mobilemenu.tsx
+│   │   ├── NotificationBell.tsx
+│   │   ├── OptimizationPanel.tsx
+│   │   └── TemperatureAlert.tsx
+│   ├── config.json
+│   ├── contexts
+│   │   ├── NotificationContext.tsx
+│   │   └── ThemeContext.tsx
+│   ├── data
+│   │   ├── dashboard-summary.json
+│   │   └── tests
+│   │       ├── a100
+│   │       │   ├── test-01
+│   │       │   │   ├── README.md
+│   │       │   │   ├── evidence.json
+│   │       │   │   ├── metrics.json
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── a100_test1_idle.png
+│   │       │   │   │   └── a100_test1_timestamped.png
+│   │       │   │   └── summary.json
+│   │       │   ├── test-02
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test2_ghost_power_1.png
+│   │       │   │   │   ├── a100_test2_ghost_power_2.png
+│   │       │   │   │   ├── a100_test2_ghost_power_3.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-03
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test3_sampling.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-04
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test4_load_ramp.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-05
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test5_cei_compute.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-06
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test6_power_proof.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-07
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test7_cei_compute_1.png
+│   │       │   │   │   ├── a100_test7_cei_compute_2.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-08
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test8_fp16.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-09
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test9_normality.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-10
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── a100_test10_loglog_scaling.png
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   └── test-11
+│   │       │       ├── screenshots
+│   │       │       │   ├── Readme.md
+│   │       │       │   ├── a100_test11_5min_proof.png
+│   │       │       │   ├── evidence.json
+│   │       │       │   └── metrics.json
+│   │       │       └── summary.json
+│   │       ├── a100_pcie
+│   │       │   └── test-01
+│   │       │       └── a100_pcie_load.csv
+│   │       ├── evidence.json
+│   │       ├── h100
+│   │       │   ├── burst_test
+│   │       │   │   ├── h100_burst.csv
+│   │       │   │   └── h100_burst_test.csv
+│   │       │   ├── h100_metrics.csv
+│   │       │   ├── test-01
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test1_idle.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-02
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test2_ghost_power.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-03
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── README.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test3_sampling.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-04
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test4_load_ramp.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-05
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test5_cei_compute.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-06
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── data
+│   │       │   │   │   │   └── tests
+│   │       │   │   │   │       └── h100
+│   │       │   │   │   │           └── test-06
+│   │       │   │   │   │               └── README.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test6_power_proof.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-07
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── data
+│   │       │   │   │   │   └── tests
+│   │       │   │   │   │       └── h100
+│   │       │   │   │   │           └── test-07
+│   │       │   │   │   │               └── README.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test7_10min_run.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-08
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── data
+│   │       │   │   │   │   └── tests
+│   │       │   │   │   │       └── h100
+│   │       │   │   │   │           └── test-08
+│   │       │   │   │   │               └── README.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test8_fp16_proof.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-09
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── data
+│   │       │   │   │   │   └── tests
+│   │       │   │   │   │       └── h100
+│   │       │   │   │   │           └── test-09
+│   │       │   │   │   │               └── README.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test9_60sec_proof.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   ├── test-10
+│   │       │   │   ├── screenshots
+│   │       │   │   │   ├── Readme.md
+│   │       │   │   │   ├── evidence.json
+│   │       │   │   │   ├── h100_test10_loglog_scaling.png
+│   │       │   │   │   └── metrics.json
+│   │       │   │   └── summary.json
+│   │       │   └── test-11
+│   │       │       ├── screenshots
+│   │       │       │   ├── Readme.md
+│   │       │       │   ├── evidence.json
+│   │       │       │   ├── h100_test11_5min_proof.png
+│   │       │       │   └── metrics.json
+│   │       │       └── summary.json
+│   │       ├── metrics.json
+│   │       ├── summary.json
+│   │       └── t4
+│   │           └── test-01
+│   │               └── screenshots
+│   │                   ├── t4_test1_idle_part1.png
+│   │                   └── t4_test1_idle_part2.png
+│   ├── db_init.py
+│   ├── docker-compose.yml
+│   ├── experiments
+│   │   ├── experiment1_nsight.py
+│   │   ├── experiment2_sampling.py
+│   │   ├── experiment3_load_ramp.py
+│   │   ├── final_proof_test.py
+│   │   ├── install_nsight.sh
+│   │   ├── reproduce_experiments.sh
+│   │   ├── run_all_experiments.sh
+│   │   ├── run_nsight_test.sh
+│   │   └── workload.py
+│   ├── generate_api_key.py
+│   ├── gitignore
+│   ├── gpu_collector.py
+│   ├── gpu_log.jsonl
+│   ├── h100_test11_observability_results.md
+│   ├── h100_test6_power_proof.png
+│   ├── hooks
+│   │   └── useOptimizationStream.ts
+│   ├── install.sh
+│   ├── lib
+│   │   ├── ExportData.ts
+│   │   ├── email.ts
+│   │   ├── mockData.ts
+│   │   └── utils.ts
+│   ├── logger.py
+│   ├── metrics.json
+│   ├── next.config.js
+│   ├── package.json
+│   ├── postcss.config.cjs
+│   ├── render.yaml
+│   ├── repo_export.txt
+│   ├── report_generator.py
+│   ├── requirements.txt
+│   ├── run_collector.sh
+│   ├── runpod_test.py
+│   ├── runtime.txt
+│   ├── scheduler_integration.py
+│   ├── summary.json
+│   ├── tailwind.config.ts
+│   ├── telemetry_validator.py
+│   ├── tsconfig.json
+│   └── types
+│       └── index.ts
+├── evidence.json
+├── h100
+│   ├── burst_test
+│   │   ├── h100_burst.csv
+│   │   └── h100_burst_test.csv
+│   ├── h100_metrics.csv
+│   ├── test-01
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test1_idle.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-02
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test2_ghost_power.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-03
+│   │   ├── screenshots
+│   │   │   ├── README.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test3_sampling.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-04
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test4_load_ramp.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-05
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test5_cei_compute.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-06
+│   │   ├── screenshots
+│   │   │   ├── data
+│   │   │   │   └── tests
+│   │   │   │       └── h100
+│   │   │   │           └── test-06
+│   │   │   │               └── README.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test6_power_proof.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-07
+│   │   ├── screenshots
+│   │   │   ├── data
+│   │   │   │   └── tests
+│   │   │   │       └── h100
+│   │   │   │           └── test-07
+│   │   │   │               └── README.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test7_10min_run.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-08
+│   │   ├── screenshots
+│   │   │   ├── data
+│   │   │   │   └── tests
+│   │   │   │       └── h100
+│   │   │   │           └── test-08
+│   │   │   │               └── README.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test8_fp16_proof.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-09
+│   │   ├── screenshots
+│   │   │   ├── data
+│   │   │   │   └── tests
+│   │   │   │       └── h100
+│   │   │   │           └── test-09
+│   │   │   │               └── README.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test9_60sec_proof.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   ├── test-10
+│   │   ├── screenshots
+│   │   │   ├── Readme.md
+│   │   │   ├── evidence.json
+│   │   │   ├── h100_test10_loglog_scaling.png
+│   │   │   └── metrics.json
+│   │   └── summary.json
+│   └── test-11
+│       ├── screenshots
+│       │   ├── Readme.md
+│       │   ├── evidence.json
+│       │   ├── h100_test11_5min_proof.png
+│       │   └── metrics.json
+│       └── summary.json
+├── metrics.json
+├── repo_structure.txt
+├── summary.json
+└── t4
+    └── test-01
+        └── screenshots
+            ├── t4_test1_idle_part1.png
+            └── t4_test1_idle_part2.png
+
+159 directories, 360 files
