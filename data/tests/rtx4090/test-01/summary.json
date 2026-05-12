@@ -1,0 +1,8 @@
+{
+  "test": "RTX 4090 Ghost Power Test",
+  "result": "PASS",
+  "idle_power": "~20.5 W",
+  "utilization": "0%",
+  "ghost_power": "None (transient <4 sec)",
+  "file": "rtx4090_cooldown.csv"
+}

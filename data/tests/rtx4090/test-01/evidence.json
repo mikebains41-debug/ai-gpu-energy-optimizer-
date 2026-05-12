@@ -1,0 +1,16 @@
+{
+  "test_name": "RTX 4090 Ghost Power Test",
+  "timestamp": "2026-05-12T01:17:51Z",
+  "warmup_min": 5,
+  "load_min": 20,
+  "cooldown_min": 5,
+  "ghost_events": [
+    {"time": "01:17:51.427", "power_w": 351.36, "util_pct": 0},
+    {"time": "01:17:52.428", "power_w": 91.97, "util_pct": 0},
+    {"time": "01:17:53.429", "power_w": 74.26, "util_pct": 0}
+  ],
+  "max_power_during_cooldown_w": 59.0,
+  "sustained_ghost_power_seconds": 0,
+  "stable_idle_power_w": 20.5,
+  "verdict": "PASS"
+}
