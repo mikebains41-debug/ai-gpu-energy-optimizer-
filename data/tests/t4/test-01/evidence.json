@@ -1,0 +1,14 @@
+{
+  "test_name": "Tesla T4 Idle Power Validation",
+  "timestamp": "2026-05-11T??:??:??Z",
+  "duration_seconds": 60,
+  "idle_power_w": {
+    "mean": 9.6,
+    "min": 9.237,
+    "max": 9.925
+  },
+  "utilization_percent": 0,
+  "ghost_power_threshold_w": 70,
+  "ghost_power_detected": false,
+  "verdict": "PASS (no ghost power)"
+}

@@ -1,0 +1,9 @@
+{
+  "idle": {
+    "mean_power_w": 9.6,
+    "std_power_w": 0.15,
+    "min_power_w": 9.237,
+    "max_power_w": 9.925,
+    "count": 60
+  }
+}
