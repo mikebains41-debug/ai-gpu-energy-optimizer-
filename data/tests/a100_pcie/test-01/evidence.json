@@ -1,0 +1,10 @@
+{
+  "test_name": "A100 PCIe Mixed Idle-Load (no cooldown)",
+  "timestamp": "2026-05-11T05:54:46Z",
+  "duration_seconds": 600,
+  "idle_power_w": 47.3,
+  "load_power_w": 299.8,
+  "load_util_pct": 99.8,
+  "ghost_power_detected": false,
+  "notes": "No cooldown phase; ghost power cannot be evaluated."
+}

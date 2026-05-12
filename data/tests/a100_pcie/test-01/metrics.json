@@ -1,0 +1,15 @@
+{
+  "idle": {
+    "mean_power_w": 47.3,
+    "std_power_w": 0.1,
+    "count": 4,
+    "range_w": "47.21-47.42"
+  },
+  "load": {
+    "mean_power_w": 299.8,
+    "std_power_w": 3.2,
+    "mean_util_pct": 99.8,
+    "count": 49,
+    "range_w": "292.53-310.91"
+  }
+}
