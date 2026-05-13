@@ -1,8 +1,0 @@
-{
-  "test_id": "t4-test-01",
-  "screenshots": [
-    "t4_test1_idle_part1.png",
-    "t4_test1_idle_part2.png"
-  ],
-  "notes": "Full 60-second idle log. Logger confirmed working. No ghost power detected (T4 idle power too low to trigger 70W threshold)."
-}
