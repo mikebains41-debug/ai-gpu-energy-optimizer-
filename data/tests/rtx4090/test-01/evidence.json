@@ -1,16 +1,22 @@
 {
-  "test_name": "RTX 4090 Ghost Power Test",
-  "timestamp": "2026-05-12T01:17:51Z",
-  "warmup_min": 5,
-  "load_min": 20,
-  "cooldown_min": 5,
-  "ghost_events": [
-    {"time": "01:17:51.427", "power_w": 351.36, "util_pct": 0},
-    {"time": "01:17:52.428", "power_w": 91.97, "util_pct": 0},
-    {"time": "01:17:53.429", "power_w": 74.26, "util_pct": 0}
+  "test_id": "rtx4090_ghost_validation_01",
+  "ghost_events_raw": [
+    "2026/05/12 01:17:51.427,351.36,0",
+    "2026/05/12 01:17:52.428,91.97,0",
+    "2026/05/12 01:17:53.429,74.26,0"
   ],
-  "max_power_during_cooldown_w": 59.0,
-  "sustained_ghost_power_seconds": 0,
-  "stable_idle_power_w": 20.5,
-  "verdict": "PASS"
+  "secondary_blip": "2026/05/12 01:30:05.205,58.97,0",
+  "cooldown_stable_samples": [
+    "2026/05/12 01:28:11.128,20.46,0",
+    "2026/05/12 01:28:13.130,20.47,0",
+    "... (150+ rows, all ~20W, 0%)",
+    "2026/05/12 02:47:18.220,20.04,0"
+  ],
+  "test_protocol": {
+    "warmup": "5 min idle, logging with nvidia-smi",
+    "load": "20 min torch.mm(4096×4096 FP32) with cuda.synchronize()",
+    "cooldown": "5 min idle monitoring at 2s intervals",
+    "ghost_filter": "awk -F',' '{gsub(/W/,\"\",$2); if($2+0>70 && $3~/0 %/) print}'"
+  },
+  "conclusion": "All >70W readings at 0% util were transient (<4 sec). No sustained ghost power. RTX 4090 passes as control architecture."
 }
