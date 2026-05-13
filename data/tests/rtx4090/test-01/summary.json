@@ -1,8 +1,18 @@
 {
-  "test": "RTX 4090 Ghost Power Test",
-  "result": "PASS",
-  "idle_power": "~20.5 W",
-  "utilization": "0%",
-  "ghost_power": "None (transient <4 sec)",
-  "file": "rtx4090_cooldown.csv"
+  "test_id": "rtx4090_ghost_validation_01",
+  "name": "RTX 4090 Ghost Power Validation",
+  "gpu_model": "NVIDIA RTX 4090 (Ada Lovelace)",
+  "platform": "RunPod Cloud",
+  "tdp_w": 450,
+  "test_date": "2026-05-12",
+  "test_duration_minutes": 30,
+  "warmup_minutes": 5,
+  "load_minutes": 20,
+  "cooldown_minutes": 5,
+  "matrix_size": "4096×4096 FP32",
+  "idle_power_w": 20.0,
+  "idle_stable": true,
+  "ghost_power_detected": false,
+  "transient_events": 3,
+  "verdict": "PASS – No sustained ghost power"
 }
