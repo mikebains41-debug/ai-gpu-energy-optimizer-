@@ -1,19 +1,36 @@
-# RTX 4090 Ghost Power Test
+# RTX 4090 Ghost Power Test – RunPod Cloud
 
-- **Platform:** RunPod (pod `1vaoa5mqc5sxvv-19123`)
-- **Date:** 2026-05-12
-- **Test structure:**
-  - 5 min warmup (idle)
-  - 20 min load: PyTorch `4096×4096` matrix multiply
-  - 5 min cooldown (idle)
-- **Ghost power check:** flagged 3 events within first 3 seconds of cooldown:
-  - `351.36 W, 0%`
-  - `91.97 W, 0%`
-  - `74.26 W, 0%`
-- **Verdict:** **PASS** – all spikes are short transients (<4 sec). No sustained power >70 W at 0% util.
-- **Stable idle power after cooldown:** ~20 W (excellent)
-- **Raw cooldown data:** `rtx4090_cooldown.csv`
+## Test Overview
 
-> The 351 W spike is a measurement artifact (power still ramping down).  
-> The 92 W and 74 W readings are normal intermediate power states.  
-> A single 59 W blip occurred 12 minutes into cooldown (memory clock step‑down).
+- **GPU:** NVIDIA RTX 4090 (Ada Lovelace)
+- **Platform:** RunPod Cloud (`a9df9bc407a4`)
+- **Date:** May 12, 2026
+- **Duration:** 30 minutes (5 min warmup, 20 min load, 5 min cooldown)
+- **Workload:** Continuous 4096×4096 FP32 matrix multiplication (`torch.mm`)
+
+## Result
+
+**PASS – No sustained ghost power detected**
+
+- Peak transient reading: 351 W (immediately post‑load, one sample)
+- Three transient events, all within 3 seconds of load end
+- Recovery to ~20 W idle in <4 seconds
+- One secondary blip: 58.97 W (driver/memory clock transition, resolved in 2 sec)
+- Stable idle power: 20 W for the remaining 5‑minute cooldown (150+ samples)
+
+## Files in this folder
+
+- `data.csv` – raw nvidia-smi log (timestamp, power, util)
+- `ghost_events_screenshot.jpg` – visual proof of flagged events
+- `summary.json`, `metrics.json`, `evidence.json` – structured test data
+- `README.md` – this file
+
+## Interpretation
+
+The RTX 4090 behaves as expected for consumer Ada Lovelace architecture.  
+The elevated readings are **normal power ramp‑down artifacts**, not telemetry desynchronization.  
+This test serves as a **clean control** – the methodology correctly passes GPUs that do not exhibit ghost power, strengthening the validity of the A100 failure.
+
+## Contact
+
+Part of the GPU Energy Optimizer project – Manmohan Bains
