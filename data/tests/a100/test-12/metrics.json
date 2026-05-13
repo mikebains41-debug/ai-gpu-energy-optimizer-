@@ -1,0 +1,13 @@
+{
+  "test_id": "test-12",
+  "metrics": {
+    "power_min_w": 305.53,
+    "power_max_w": 342.09,
+    "power_mean_w": 330.2,
+    "power_std_w": 9.8,
+    "utilization_percent": 100,
+    "sample_count": 1200,
+    "matrix_size": 8192,
+    "compute_throughput_tflops": null
+  }
+}
