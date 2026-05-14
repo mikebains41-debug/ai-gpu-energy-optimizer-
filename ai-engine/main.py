@@ -15,6 +15,14 @@ from typing import List, Dict, Optional
 
 app = FastAPI(title="AI GPU Energy Optimizer", version="3.0.0")
 
+# ========== SORT HELPER ==========
+def sort_by_test_number(folders):
+    import re
+    def key(f):
+        m = re.search(r'test-(\d+)', f)
+        return int(m.group(1)) if m else 999
+    return sorted(folders, key=key)
+
 # ========== HELPER FOR FLEXIBLE TEST ID ==========
 def find_test_result(base_dir: str, test_id: str):
     if not os.path.isdir(base_dir):
@@ -340,7 +348,7 @@ def get_a100_results():
     base = "/opt/render/project/src/ai-engine/data/tests/a100"
     out = []
     if os.path.isdir(base):
-        for f in os.listdir(base):
+        for f in sort_by_test_number(os.listdir(base)):
             p = os.path.join(base, f, "summary.json")
             if os.path.exists(p):
                 with open(p) as fp:
@@ -352,7 +360,7 @@ def get_h100_results():
     base = "/opt/render/project/src/ai-engine/data/tests/h100"
     out = []
     if os.path.isdir(base):
-        for f in os.listdir(base):
+        for f in sort_by_test_number(os.listdir(base)):
             p = os.path.join(base, f, "summary.json")
             if os.path.exists(p):
                 with open(p) as fp:
