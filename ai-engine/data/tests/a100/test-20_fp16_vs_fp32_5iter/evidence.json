@@ -1,0 +1,13 @@
+{
+  "test_id": "test-20",
+  "finding": "FP16 delivers 4x kernel speedup over FP32 with negligible power difference in burst mode (5 iterations)",
+  "raw_evidence": {
+    "fp32_kernel_times_ms": [1.38, 1.41, 1.40, 1.42, 1.39],
+    "fp16_kernel_times_ms": [0.33, 0.34, 0.35, 0.34, 0.34],
+    "fp32_power_w": 79,
+    "fp16_power_w": 77
+  },
+  "interpretation": "Burst FP16 appears efficient. However test-21 (60 iterations sustained) reveals FP16 draws 483W vs FP32 302W under sustained load — a 60% power increase not visible at 5 iterations.",
+  "significance": "Demonstrates why short burst tests mislead energy analysis. Sustained testing is required for accurate CEI measurement.",
+  "status": "complete"
+}
