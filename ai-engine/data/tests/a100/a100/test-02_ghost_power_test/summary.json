@@ -1,0 +1,13 @@
+{
+  "test_id": "test-02",
+  "name": "A100 Ghost Power Test",
+  "duration_seconds": 60,
+  "total_samples": 66,
+  "ghost_power_events": 1,
+  "ghost_power_w": 102.14,
+  "ghost_utilization": 0,
+  "idle_power_w": 63.4,
+  "load_power_range_w": "397 - 413",
+  "load_utilization": "94-96%",
+  "status": "complete"
+}

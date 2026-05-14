@@ -1,0 +1,51 @@
+{
+  "test_id": "test-21",
+  "metrics": {
+    "FP32": {
+      "kernel_time_ms": {
+        "mean": 1.44,
+        "min": 1.39,
+        "max": 1.96,
+        "std": 0.12
+      },
+      "power_w": {
+        "mean": 94.2,
+        "min": 76.06,
+        "max": 137.28
+      },
+      "utilization_percent": {
+        "mean": 0.3,
+        "max": 4
+      },
+      "temperature_c": {
+        "mean": 44.5,
+        "range": "44–45"
+      }
+    },
+    "FP16": {
+      "kernel_time_ms": {
+        "mean": 0.48,
+        "min": 0.34,
+        "max": 0.83,
+        "std": 0.15
+      },
+      "power_w": {
+        "mean": 77.4,
+        "min": 76.33,
+        "max": 79.29
+      },
+      "utilization_percent": {
+        "mean": 0.7,
+        "max": 4
+      },
+      "temperature_c": {
+        "mean": 45,
+        "range": "45"
+      }
+    },
+    "speedup": {
+      "mean_kernel_time_ratio": 3.0,
+      "flops_speedup": 3.0
+    }
+  }
+}

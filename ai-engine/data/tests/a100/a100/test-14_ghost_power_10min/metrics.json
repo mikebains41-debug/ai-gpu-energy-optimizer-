@@ -1,0 +1,33 @@
+{
+  "test_id": "test-14",
+  "metrics": {
+    "load_phase": {
+      "duration_sec": 600,
+      "power_min_W": 66.75,
+      "power_max_W": 146.66,
+      "power_mean_W": 82.3,
+      "power_std_W": 15.2,
+      "utilization_percent": 0,
+      "temperature_start_C": 27,
+      "temperature_end_C": 29
+    },
+    "cooldown_phase": {
+      "duration_sec": 600,
+      "power_min_W": 66.16,
+      "power_max_W": 78.37,
+      "power_mean_W": 72.1,
+      "power_std_W": 2.5,
+      "power_first_60s_mean_W": 77.8,
+      "power_last_60s_mean_W": 67.0,
+      "utilization_percent": 0,
+      "temperature_start_C": 29,
+      "temperature_end_C": 27
+    },
+    "ghost_power_quantified": {
+      "idle_floor_observed_W": 67.0,
+      "expected_idle_power_W": 30,
+      "waste_per_gpu_W": 37,
+      "annual_waste_per_gpu_kWh": 324
+    }
+  }
+}

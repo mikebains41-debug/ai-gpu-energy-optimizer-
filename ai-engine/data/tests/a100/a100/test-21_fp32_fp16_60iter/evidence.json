@@ -1,0 +1,15 @@
+{
+  "test_id": "test-21",
+  "evidence_type": "raw_csv_and_screenshots",
+  "file": "data.csv",
+  "screenshots": [
+    "screenshots/screenshot_01.jpg",
+    "screenshots/screenshot_02.jpg",
+    "screenshots/screenshot_03.jpg",
+    "screenshots/screenshot_04.jpg",
+    "screenshots/screenshot_05.jpg"
+  ],
+  "sample_data": "CSV contains 120 rows with iteration, precision, kernel time (ms), timestamp, power (W), utilisation (%), temperature (°C).",
+  "verification": "Mean kernel times and power ranges derived from full 60 iterations per precision.",
+  "conclusion": "FP16 provides 3× speedup with similar power draw, but reported GPU utilisation remains near 0% for both precisions – confirming telemetry desynchronisation."
+}

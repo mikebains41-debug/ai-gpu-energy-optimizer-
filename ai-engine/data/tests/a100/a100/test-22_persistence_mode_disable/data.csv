@@ -1,0 +1,8 @@
+measurement,value
+persistence_mode_before,Enabled
+command_executed,nvidia-smi -pm 0
+command_output,"Disabled persistence mode for GPU 00000000:87:00.0. All done."
+persistence_mode_after,Enabled
+power_w,66.16
+pstate,P0
+memory_clock_mhz,1593

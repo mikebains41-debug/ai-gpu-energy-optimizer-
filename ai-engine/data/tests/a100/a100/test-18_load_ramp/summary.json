@@ -1,0 +1,11 @@
+{
+  "test_id": "test-18",
+  "name": "Load Ramp – Power vs Matrix Size",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "matrix_sizes": [512, 1024, 2048, 4096, 6144, 8192],
+  "peak_power_w": 339.10,
+  "peak_power_size": 6144,
+  "idle_power_w": 67.1,
+  "conclusion": "Power scales with matrix size, peaking at 6144 before dropping due to memory bandwidth saturation.",
+  "status": "complete"
+}
