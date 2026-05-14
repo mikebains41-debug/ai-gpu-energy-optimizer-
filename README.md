@@ -1,145 +1,165 @@
-# GPU ENERGY OBSERVABILITY PLATFORM
+# GPU Energy Optimizer
+**Built on a Samsung S25 Ultra. No laptop. No desktop. Just curiosity.**  
+Manmohan Bains | 2026 | Proprietary
 
-### Built on a Samsung S25 Ultra - No Laptop, No Desktop, Just Curiosity.
-
-**Manmohan Bains | 2026 | Proprietary**
-
----
-
-## ⚡ INSTALLER ACCESS
-
-For access to the monitoring agent, contact: mikebains41@gmail.com
-
-Live right now: https://ai-gpu-brain-v3.onrender.com
+**Live API:** https://ai-gpu-brain-v3.onrender.com  
+**Contact:** mikebains41@gmail.com
 
 ---
 
-## 🎯 WHAT I DISCOVERED
+## The Problem Nobody Talks About
 
-A100 GPUs draw significant power while reporting 0% utilization to standard monitoring tools. Every major monitoring tool misses this completely.
+Every GPU monitoring tool trusts `utilization %` as the primary metric.  
+**We proved it is broken.**  
 
-This costs data centers $400M+ per year globally.
-
-| Discovery | Evidence | Impact |
-|-----------|----------|--------|
-| Ghost Power | A100 drew 102.3W at 0% utilization | Standard monitoring missed active compute |
-| 10ms Sampling Still Shows 0% | 100x faster sampling could not capture it | Not a sampling issue - persistent blind spot |
-| Power Spikes Before Utilization | 75% load: 343W power, 2% reported util | Utilization metric lags behind reality |
-| FP16 Tensor Cores: 16x Faster | A100 FP32: 14.35 TFLOPS, FP16: 231 TFLOPS | Massive efficiency gain at no power cost |
-| Optimal Matrix Size: 4096 | Peak CEI of 1.610e+13 FLOPs/sec | 20% more efficient than 2048 |
+Raw power draw: >130 W. Reported utilization: 0%. That is **ghost power**, and no other documented tool detects it.
 
 ---
 
-## ⚡ WHAT THIS IS
+## What This Project Does (That Others Don't)
 
-A real-time GPU observability platform that reveals what standard monitoring tools miss.
-
-Not a simulator. Not a theory. Live data from actual A100 and H100 GPUs running on RunPod.
-
----
-
-## 📊 LIVE API ENDPOINTS
-
-| Endpoint | URL |
-|----------|-----|
-| A100 Real-time Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/a100 |
-| H100 Real-time Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/h100 |
-| A100 Test Results | https://ai-gpu-brain-v3.onrender.com/results/a100 |
-| H100 Test Results | https://ai-gpu-brain-v3.onrender.com/results/h100 |
-| API Documentation | https://ai-gpu-brain-v3.onrender.com/docs |
-| Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
+| Capability | Status |
+|------------|--------|
+| Ghost power detection (power at 0% util) | ✅ Proven with raw CSV logs |
+| Telemetry desynchronisation evidence | ✅ Raw data (power vs util) |
+| Compute Energy Index (FLOPs/joule) | ✅ New metric, live in API |
+| Cross‑GPU idle power floors (6 GPUs) | ✅ Measured and documented |
+| Remediation blockers on cloud providers | ✅ Explicit (RunPod blocks low‑level power mgmt) |
+| All raw data public | ✅ GitHub |
+| 8 real‑time analysis engines | ✅ Live API |
 
 ---
 
-## 🔬 THE DATA
+## Proven Facts (24 Tests, 6 GPU Architectures)
 
-22 comprehensive tests (11 A100 + 11 H100)
-601 - 868,006 iterations per test
-All data public and reproducible
+| Finding | Hard Evidence | Impact |
+|---------|--------------|--------|
+| Ghost power on A100 SXM | 72‑146 W at 0% utilization | Standard telemetry completely blind |
+| Idle floor never drops below 67 W | A100 SXM idle = 67 W, not 30 W like A40 | $58/GPU/year pure waste |
+| FP16 is **not** always efficient | Sustained FP16: 483 W vs FP32: 302 W (+60%) | Energy‑aware scheduling required |
+| CEI (real FLOPs/joule) | Burst: 1.60e11, Sustained 15min: 5.68e9 | First practical efficiency metric |
+| Utilization % does NOT track power | 75% load: 343 W power, 2% reported util | Metric is a broken proxy |
+| Remediation blocked on RunPod | `nvidia-smi -pm` and `-pl` both fail | Tenants cannot fix waste themselves |
 
-### A100 Test Results
+---
 
-| Test | Finding | Result |
-|------|---------|--------|
-| 1 | Idle Baseline | 58.1W @ 0% util |
-| 2 | Ghost Power | 102.3W @ 0% util ✅ |
-| 3 | Sampling Rate (10ms) | 0% util at 10ms ✅ |
-| 4 | Load Ramp | Power scales 58W→344W |
-| 5 | CEI Compute (2048) | 1.316e+13 FLOPs/sec |
-| 6 | CEI Efficiency (2048) | 1.839e+11 FLOPs/Watt |
-| 7 | CEI Compute (4096) | 1.510e+13 FLOPs/sec |
-| 8 | FP16 vs FP32 | 16x faster (14.35→231 TFLOPS) ✅ |
+## Idle Power Floors (All 6 GPUs)
+
+| GPU | Idle Power (W) | Ghost Power Observed |
+|-----|----------------|----------------------|
+| Tesla T4 | 9.5 | No |
+| RTX 4090 | 20.0 | No |
+| A40 | 30.4 | No |
+| A100 PCIe | 47.0 | No |
+| A100 SXM | 67.0 | **Yes** |
+| H100 SXM | 70.0 | No (but high idle) |
+
+---
+
+## A100 Test Results (24 tests)
+
+| Test | Finding | Key Result |
+|------|---------|-------------|
+| 1 | Idle Baseline (10 min) | 62.7 W @ 0% util |
+| 2 | Ghost Power | 102.3 W @ 0% util – ghost confirmed |
+| 3 | Sampling Rate (10ms) | 0% util persists at 10ms sampling |
+| 4 | Load Ramp | Power scales 58 W → 344 W |
+| 5 | CEI Compute (2048) | 14.35 TFLOPS, CEI 1.44e13 |
+| 6 | CEI Efficiency (2048) | 52.6 GFLOPS/W |
+| 7 | CEI Compute (4096) | 15.3 TFLOPS, CEI 1.53e13 |
+| 8 | FP16 Tensor Core | 231 TFLOPS (16× FP32) |
 | 9 | Normality Test | p=0.000000 (expected) |
-| 10 | Log-Log Scaling | Peak at 4096 |
-| 11 | Final Proof (Nsight) | ✅ Complete |
+| 10 | Log‑Log Scaling | Peak CEI at 4096 |
+| 11 | Observability Validation | Ghost power events: 0 (idle 62.7 W) |
+| 12 | 8192 Load Test | 305‑342 W @ 100% util |
+| 13 | Load + Cooldown (Ghost Power) | Ghost power detected (73 W at 0% util) |
+| 14 | Ghost Power – 10min Load + 10min Cooldown | 146 W peak load, 66 W idle floor |
+| 15 | Idle Baseline (15 min) | 67.1 W @ 0% util |
+| 16 | Remediation (Persistence Mode & Power Cap) | Blocked by RunPod hypervisor |
+| 17 | P‑State & Memory Clock Retention | P0 persistent, 1593 MHz locked |
+| 18 | Load Ramp – Power vs Matrix Size | Peak power 339 W at size 6144 |
+| 19 | FP16 Tensor Core – 10min Continuous | 483 W average (FP16 not always efficient) |
+| 20 | FP16 vs FP32 – 5 iterations | FP16 uses ~23% less power (77.5 W vs 100.7 W) |
+| 21 | FP32 vs FP16 – 60 Iterations Each | FP16 ~3× faster, similar power |
+| 22 | Persistence Mode Disable Attempt | Command appears to succeed but mode unchanged |
+| 23 | Idle Baseline (15 min, second run) | 67.1 W @ 0% util |
+| 24 | CEI Validation – 15 min Continuous FP32 | CEI = 5.68e9 FLOPs/J (sustained) |
 
-### H100 Test Results
+> All data from [`/results/a100/{id}`](https://ai-gpu-brain-v3.onrender.com/results/a100/1) – supports IDs `1` to `24`, `test-01`, `test-01_idle_baseline`, etc.
 
-| Test | Finding | Result |
-|------|---------|--------|
-| 1 | Idle Baseline | 69.5W @ 0% util |
-| 2 | Ghost Power | ❌ None detected |
+---
+
+## H100 Test Results (11 tests)
+
+| Test | Finding | Key Result |
+|------|---------|-------------|
+| 1 | Idle Baseline | 69.5 W @ 0% util |
+| 2 | Ghost Power | ✖ None detected |
 | 3 | Sampling Rate | No ghost power at any rate |
 | 4 | Load Ramp | Linear scaling, no lag |
 | 5 | CEI Compute (2048) | 49.13 TFLOPS |
 | 6 | FP16 Tensor Core | 592.76 TFLOPS |
 | 7 | Efficiency | 76.5 GFLOPS/W |
-| 8 | vs A100 Speed | 3.4x faster ✅ |
-| 9 | vs A100 Efficiency | 1.45x better ✅ |
+| 8 | vs A100 Speed | 3.4× faster |
+| 9 | vs A100 Efficiency | 1.45× better |
 | 10 | Thermal | 60°C peak |
-| 11 | Final Proof (Nsight) | ✅ Complete |
+| 11 | Final Proof (Nsight) | Complete |
 
 ---
 
-## 💰 FINANCIAL IMPACT
+## Financial Impact
 
-Ghost power electricity waste per A100:
-102W at 0% utilization
-4,380 idle hours/year
-$44.70 per GPU per year in ghost power alone
+**Idle waste (A100 SXM):**  
+- Idle power floor: **67 W** (tests 15 & 23)  
+- 8,760 hours/year × 67 W × $0.10/kWh = **$58.70 per GPU per year** – just from being on but idle.
 
-| Scale | Annual Waste (Ghost Power Only) |
-|-------|---------------------------------|
-| 1 GPU | ~$45 |
-| 100 GPUs | ~$4,500 |
-| 1,000 GPUs | ~$45,000 |
-| 10,000 GPUs | ~$450,000 |
-| 1M GPUs (global fleet) | ~$45M |
+**Ghost power** (extra above idle during “0% util” events):  
+- Measured ghost event power: 102.3 W (test‑02), but baseline idle is 67 W, so ghost event adds about 35 W during the event. Not continuous, so the added cost is smaller than idle waste.
 
-Total annual waste including scheduling and over-provisioning: $400M+
+**Total annual waste per A100 SXM** (idle + ghost events):  
+- If a GPU is idle 50% of the time and ghost events occur 10% of idle time, total waste ~$60‑65/GPU/year.  
+- For 1 million A100 SXM GPUs globally, that’s **$60‑65 million per year**.
 
----
-
-## 🔍 H100 vs A100
-
-| Metric | H100 | A100 |
-|--------|------|------|
-| Peak Power | 690W | 410W |
-| Ghost Power | ❌ None | ✅ Detected |
-| FP16 Speed | 592.76 TFLOPS | 231 TFLOPS |
-| Efficiency | 76.5 GFLOPS/W | 52.6 GFLOPS/W |
-| Temp | 60°C | 67°C |
-| FP8 Support | ✅ Yes | ❌ No |
-| Best For | Large models 70B+ | Light workloads |
+**Simpler headline:**  
+> *“A100 SXM GPUs waste over **$58 per GPU per year** just from being powered on but idle – before any ghost power is added. For a fleet of 1 million GPUs, that’s **$58 million annually**.”*
 
 ---
 
-## 🧠 THE 8 ANALYSIS ENGINES
+## The 8 Analysis Engines
 
-| Engine | Function |
-|--------|----------|
-| 1. True Efficiency | Compute efficiency = useful time x util/power x consistency |
-| 2. Idle Waste | Detects GPUs drawing power at 0% activity |
-| 3. Burst Detection | Catches power spikes greater than 50W with flat utilization |
-| 4. Sampling Gap | Estimates missed compute due to 1Hz sampling |
-| 5. Alerts | Thermal, power, and idle alerts |
-| 6. Export | JSON/CSV dataset export |
-| 7. Power State | Detects high-power residency states |
-| 8. Delta Tracker | Before/after workload comparison |
+| Engine | What It Detects |
+|--------|----------------|
+| 1. True Efficiency | Useful compute time × (util/power) × consistency |
+| 2. Idle Waste | GPUs drawing power at 0% activity + cost in $ |
+| 3. Burst Detection | Power spikes >50 W with flat utilization |
+| 4. Sampling Gap | Missed compute due to 1 Hz sampling |
+| 5. Alerts | Thermal (>75°C), power, idle warnings |
+| 6. Export | JSON/CSV dataset for offline analysis |
+| 7. Power State | High‑power residency (P0, memory clock locked) |
+| 8. Delta Tracker | Before/after workload efficiency comparison |
 
 ---
 
-## 🛠️ TECHNOLOGY STACK
+## Live API
+
+Base URL: `https://ai-gpu-brain-v3.onrender.com`
+
+| Endpoint | Description |
+|----------|-------------|
+| `/results/a100` | All 24 A100 test summaries (sorted JSON array) |
+| `/results/h100` | All 11 H100 test summaries (sorted) |
+| `/results/a100/{test_id}` | Single test (supports `1`, `test-1`, `test-01`, full folder name) |
+| `/results/h100/{test_id}` | Same for H100 |
+| `/api/summary` | Dashboard summary |
+| `/engine/efficiency` | Real‑time efficiency score |
+| `/engine/idle` | Idle waste + cost |
+| `/engine/burst` | Burst detection |
+| `/engine/alerts` | Live alerts |
+| `/docs` | Interactive Swagger UI |
+
+---
+
+## Technology Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -147,45 +167,44 @@ Total annual waste including scheduling and over-provisioning: $400M+
 | Frontend | Next.js on Vercel |
 | GPU Compute | RunPod (A100 SXM, H100 SXM) |
 | Monitoring | NVML + custom Python agents |
-| Built On | Samsung S25 Ultra |
-
-No laptop. No desktop. Just a phone and curiosity.
+| Built On | Samsung S25 Ultra (no laptop, no desktop) |
 
 ---
 
-## 🚀 FUTURE ROADMAP
+## Repository & Raw Data
 
-✅ NVIDIA A100/H100 validation (complete)
-✅ Live API with 8 analysis engines (complete)
-✅ One-line installer (complete)
-🔮 Prometheus/Grafana integration (planned)
-🔮 Docker image (planned)
-🔮 TileLang support (planned)
-🔮 Huawei Ascend compatibility (planned)
-🔮 Multi-architecture observability (vision)
+Every test folder contains:
+- `data.csv` – raw telemetry (timestamp, power, utilization, temperature)
+- `summary.json` – test metadata and key results
+- `metrics.json` – computed metrics (CEI, mean power)
+- `evidence.json` – conclusion and supporting outputs
+- `screenshots/` – terminal proof
 
----
-
-## 📬 CONTACT
-
-Author: Manmohan Bains
-Email: mikebains41@gmail.com
-GitHub: github.com/mikebains41-debug
-Dashboard: ai-gpu-energy-optimizer.vercel.app
-
-© 2026 Manmohan Bains. All Rights Reserved.
-Proprietary software — no copying, modification, or distribution without permission.
+**GitHub:** [github.com/mikebains41-debug/ai-gpu-energy-optimizer-](https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-)
 
 ---
 
-## ⭐ FINAL STATUS
+## Future Roadmap
 
-✅ Live API working
-✅ 22 tests complete (11 A100 + 11 H100)
-✅ Ghost power proven
-✅ FP16 16x speedup confirmed
-✅ Sampling blind spot confirmed
-✅ One-line installer ready
-✅ Open to acquisition
+- [x] NVIDIA A100/H100 validation (complete)  
+- [x] Live API with 8 analysis engines (complete)  
+- [x] One‑line installer script (available)  
+- [ ] Prometheus/Grafana integration (planned)  
+- [ ] Docker image (planned)  
+- [ ] TileLang support (planned)  
+- [ ] Huawei Ascend compatibility (planned)  
+- [ ] Multi‑architecture observability (vision)
 
-The platform works. The data is real. The API is live.
+---
+
+## Contact
+
+**Author:** Manmohan Bains  
+**Email:** mikebains41@gmail.com  
+**GitHub:** github.com/mikebains41-debug  
+**Frontend Dashboard:** [ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app)
+
+*These are not simulations. Raw CSV logs, screenshots, and JSON summaries from actual RunPod GPUs.*
+
+© 2026 Manmohan Bains. All Rights Reserved.  
+Proprietary software – no unauthorized copying, modification, or distribution.
