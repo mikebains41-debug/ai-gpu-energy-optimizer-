@@ -7,7 +7,7 @@
   "gpu_tests": [
     {
       "gpu": "A100",
-      "tests_completed": 23,
+      "tests_completed": 24,
       "ghost_power": true,
       "telemetry_lag": true,
       "fp32_tflops": 15.3,
