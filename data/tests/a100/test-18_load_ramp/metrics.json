@@ -1,0 +1,25 @@
+{
+  "test_id": "test-18",
+  "metrics": {
+    "power_w": {
+      "512": 188.95,
+      "1024": 288.21,
+      "2048": 300.19,
+      "4096": 333.05,
+      "6144": 339.10,
+      "8192": 305.33
+    },
+    "utilization_percent": {
+      "512": 65,
+      "1024": 93,
+      "2048": 100,
+      "4096": 100,
+      "6144": 100,
+      "8192": 100
+    },
+    "peak_power_w": 339.10,
+    "peak_power_matrix_size": 6144,
+    "bandwidth_saturation_power_w": 305.33,
+    "bandwidth_saturation_size": 8192
+  }
+}
