@@ -1,7 +1,0 @@
-{
-  "test_id": "test-17",
-  "evidence_type": "nvidia-smi -q logs",
-  "file": "data.csv",
-  "sample_lines": "Minute 1: Performance State P0, Memory 1593 MHz; Minute 10: same.",
-  "conclusion": "The A100 SXM does not downclock memory or leave P0 after workload, confirming persistent high‑power state."
-}

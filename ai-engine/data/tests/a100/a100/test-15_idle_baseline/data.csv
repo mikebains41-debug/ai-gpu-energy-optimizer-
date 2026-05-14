@@ -1,6 +1,0 @@
-cd ~/ai-gpu-energy-optimizer-
-mkdir -p data/tests/a100/test-15_idle_baseline
-cp /root/idle_baseline.csv data/tests/a100/test-15_idle_baseline/data.csv
-git add data/tests/a100/test-15_idle_baseline/data.csv
-git commit -m "Add Test-15 idle baseline CSV"
-git push origin main

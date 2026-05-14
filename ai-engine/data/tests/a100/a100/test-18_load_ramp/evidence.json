@@ -1,8 +1,0 @@
-{
-  "test_id": "test-18",
-  "evidence_type": "raw_csv_and_screenshots",
-  "file": "data.csv",
-  "sample_lines": "Head shows idle→load transition for 512; tail shows 8192 load and cooldown return to idle.",
-  "averages_source": "awk command from terminal screenshot",
-  "conclusion": "Power increases with matrix size until memory bandwidth becomes the bottleneck, then power drops."
-}

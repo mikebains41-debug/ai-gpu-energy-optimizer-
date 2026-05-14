@@ -1,7 +1,0 @@
-{
-  "test_id": "test-23",
-  "evidence_type": "screenshot_and_log",
-  "screenshot": "screenshots/idle_baseline.png",
-  "log_summary": "900 seconds of idle logging with progress every 60 seconds.",
-  "conclusion": "A100 SXM idle power floor is ~67 W, far above efficient GPUs like A40 (30.4 W). This baseline is required for energy subtraction in active tests."
-}

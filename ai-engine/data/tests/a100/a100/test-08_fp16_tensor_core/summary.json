@@ -1,9 +1,0 @@
-{
-  "test_id": "test-08",
-  "name": "A100 FP16 Tensor Core",
-  "mean_tflops": 231.08,
-  "mean_time_ms": 0.5948,
-  "iterations": 1440905,
-  "duration_minutes": 15,
-  "status": "complete"
-}
