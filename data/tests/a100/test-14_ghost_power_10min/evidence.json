@@ -1,0 +1,13 @@
+{
+  "test_id": "test-14",
+  "evidence_type": "raw_csv_and_screenshots",
+  "file": "data.csv",
+  "screenshots": "17 screenshots in screenshots/ folder (screenshot_01.jpg to screenshot_17.jpg)",
+  "key_observations": [
+    "LOAD phase: power spikes to 146 W, 131 W, 134 W, etc., while reported utilisation is 0% (occasional 3-4% spikes at start).",
+    "COOLDOWN phase: power stays at ~78 W for the first 60 seconds, then gradually declines to ~66 W over 10 minutes.",
+    "Utilisation remains 0% throughout cooldown.",
+    "Temperature rises from 27°C to 29°C during load, then slowly drops back."
+  ],
+  "conclusion": "The A100 SXM draws significant power (up to 146 W) while reporting 0% utilisation, and the idle floor never falls below 66 W, proving ghost power and telemetry desynchronisation."
+}
