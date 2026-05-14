@@ -2,17 +2,19 @@
   "report": {
     "title": "A100 vs H100 Complete Test Report",
     "author": "Manmohan Bains",
-    "date": "2026-05-08"
+    "date": "2026-05-14"
   },
   "gpu_tests": [
     {
       "gpu": "A100",
-      "tests_completed": 11,
+      "tests_completed": 23,
       "ghost_power": true,
       "telemetry_lag": true,
       "fp32_tflops": 15.3,
-      "fp16_tflops": 231,
-      "efficiency_gflops_w": 52.6
+      "fp16_tflops": 231.08,
+      "efficiency_gflops_w": 52.6,
+      "idle_power_w": 67.1,
+      "cei_flops_per_joule": 5680000000
     },
     {
       "gpu": "H100",
@@ -21,7 +23,8 @@
       "telemetry_lag": false,
       "fp32_tflops": 49.13,
       "fp16_tflops": 592.8,
-      "efficiency_gflops_w": 76.5
+      "efficiency_gflops_w": 76.5,
+      "idle_power_w": 69.5
     }
   ]
 }
