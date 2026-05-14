@@ -1,0 +1,13 @@
+{
+  "test_id": "test-24",
+  "metrics": {
+    "average_power_w": 302.37,
+    "total_iterations": 90000,
+    "total_flops": 1.55e15,
+    "total_energy_j": 272130,
+    "cei_flops_per_joule": 5.68e9,
+    "duration_sec": 900,
+    "power_range_w": "~290-310 (estimated)",
+    "utilization_percent": 100
+  }
+}
