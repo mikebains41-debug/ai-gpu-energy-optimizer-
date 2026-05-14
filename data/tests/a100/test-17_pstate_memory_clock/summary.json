@@ -1,0 +1,11 @@
+{
+  "test_id": "test-17",
+  "name": "P-State & Memory Clock Retention",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "duration_minutes": 10,
+  "samples": 10,
+  "pstate": "P0 (persistent)",
+  "memory_clock_mhz": 1593,
+  "finding": "GPU remained in P0 with memory clock locked at 1593 MHz throughout the 10‑minute test after load.",
+  "status": "complete"
+}
