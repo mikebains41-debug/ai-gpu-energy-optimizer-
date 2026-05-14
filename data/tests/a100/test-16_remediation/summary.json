@@ -1,0 +1,18 @@
+{
+  "test_id": "test-16",
+  "name": "Remediation (Power Management) – Persistence Mode & Power Cap",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "date": "2026-05-13",
+  "commands_attempted": [
+    "nvidia-smi -pm 0",
+    "nvidia-smi -pl 200"
+  ],
+  "results": {
+    "persistence_mode": "Unknown Error – unable to set",
+    "power_cap": "Insufficient Permissions – failed to set",
+    "current_power_limit_W": 500
+  },
+  "root_cause": "RunPod hypervisor blocks low-level GPU power management from containers.",
+  "conclusion": "Remediation not possible on standard RunPod instances. Environment limitation.",
+  "status": "Blocked by platform"
+}
