@@ -1,0 +1,9 @@
+{
+  "test_id": "test-09",
+  "name": "A100 Normality Test",
+  "samples": 8247,
+  "mean_cei": 1.900e13,
+  "skewness": -47.1473,
+  "is_normal": false,
+  "status": "complete"
+}
