@@ -1,0 +1,6 @@
+{
+  "test_id": "test-16",
+  "metrics": {
+    "note": "No power metrics captured because both remediation commands were blocked by the hypervisor."
+  }
+}

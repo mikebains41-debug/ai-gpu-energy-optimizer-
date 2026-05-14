@@ -1,0 +1,15 @@
+{
+  "test_id": "test-19",
+  "metrics": {
+    "average_power_w": 482.70,
+    "min_power_w": 66.75,
+    "max_power_w": 501.86,
+    "utilization_percent": "0-100",
+    "temperature_mean_c": 38,
+    "duration_sec": 600,
+    "iterations": 60000,
+    "total_flops": 1.030e15,
+    "total_energy_j": 289620,
+    "cei_flops_per_joule": 3.56e9
+  }
+}
