@@ -1,0 +1,12 @@
+{
+  "test_id": "test-07",
+  "metrics": {
+    "mean_kernel_time_ms": 2.92,
+    "mean_cei": 4.70e13,
+    "mean_tflops": 47.0,
+    "iterations": 60,
+    "duration_minutes": 10,
+    "warmup_iteration_ms": 95.37,
+    "stability": "Stable after iteration 2"
+  }
+}

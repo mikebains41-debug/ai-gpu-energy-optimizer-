@@ -1,0 +1,12 @@
+{
+  "test_id": "test-03",
+  "metrics": {
+    "1s_power_range_w": "75.50 - 75.74",
+    "1s_utilization_percent": 0,
+    "100ms_power_w": 75.56,
+    "100ms_utilization_percent": 0,
+    "10ms_power_w": 75.44,
+    "10ms_utilization_percent": 0,
+    "conclusion": "No ghost power detected at any sampling rate"
+  }
+}
