@@ -1,0 +1,4 @@
+{
+  "test_id": "test-12",
+  "evidence": "Full CSV log of 20‑minute load at 8192×8192 matmul, showing stable power ~330 W at 100% utilization. No ghost power detected during load (as expected). CSV available as data.csv."
+}

@@ -1,0 +1,8 @@
+{
+  "test": "A100 PCIe Ghost Power Test",
+  "result": "PASS",
+  "idle_power_range": "45.1–50.5 W",
+  "utilization": "0%",
+  "ghost_power": "None (no >70W)",
+  "file": "a100_pcie_cooldown.csv"
+}

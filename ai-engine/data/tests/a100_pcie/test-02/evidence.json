@@ -1,0 +1,14 @@
+{
+  "test_name": "A100 PCIe Ghost Power Test",
+  "timestamp": "2026-05-11T05:54:46Z",
+  "cooldown_duration_seconds": 7440,
+  "idle_power_w_start": 50.46,
+  "idle_power_w_end": 45.12,
+  "max_power_during_cooldown_w": 50.46,
+  "min_power_during_cooldown_w": 45.12,
+  "utilization_percent": 0,
+  "ghost_power_threshold_w": 70,
+  "ghost_power_detected": false,
+  "verdict": "PASS",
+  "notes": "Power gradually drops from 50W to 45W over 2 hours. No spikes >70W."
+}

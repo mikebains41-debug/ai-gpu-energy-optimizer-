@@ -1,0 +1,12 @@
+{
+  "test_id": "test-22",
+  "metrics": {
+    "command_success_reported": true,
+    "actual_persistence_mode_after": "Enabled",
+    "power_w": 66.16,
+    "pstate": "P0",
+    "memory_clock_mhz": 1593,
+    "temperature_c": "N/A",
+    "conclusion": "No effective change; idle power floor unchanged at 66W."
+  }
+}
