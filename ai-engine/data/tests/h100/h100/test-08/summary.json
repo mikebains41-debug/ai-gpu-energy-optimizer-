@@ -1,0 +1,10 @@
+{
+  "test_id": "test-08",
+  "name": "H100 FP16 Tensor Core",
+  "gpu_type": "H100",
+  "mean_tflops": 592.8,
+  "mean_time_ms": 0.2319,
+  "iterations": 868006,
+  "duration_minutes": 10,
+  "status": "complete"
+}

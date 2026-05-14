@@ -1,0 +1,11 @@
+{
+  "test_id": "test-04",
+  "name": "H100 Load Ramp Test",
+  "gpu_type": "H100",
+  "idle_power_w": 75.2,
+  "peak_power_w": 591.5,
+  "peak_utilization": 52,
+  "linear_scaling": true,
+  "ghost_power": false,
+  "status": "complete"
+}
