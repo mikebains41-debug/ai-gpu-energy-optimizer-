@@ -1,0 +1,23 @@
+{
+  "test_id": "test-20",
+  "name": "FP16 vs FP32 – 5 Iterations (2048×2048 matmul)",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "date": "2026-05-13",
+  "workload": "torch.matmul(2048×2048)",
+  "iterations": 5,
+  "precision_comparison": {
+    "FP32": {
+      "mean_kernel_time_ms": 1.40,
+      "avg_power_W": 79,
+      "utilization_percent": "0-4%"
+    },
+    "FP16": {
+      "mean_kernel_time_ms": 0.34,
+      "avg_power_W": 77,
+      "utilization_percent": "0-4%",
+      "speedup": 4.0
+    }
+  },
+  "conclusion": "FP16 is approximately 4x faster than FP32 in burst mode. Preliminary test — see test-21 for 60-iteration sustained comparison.",
+  "status": "complete"
+}
