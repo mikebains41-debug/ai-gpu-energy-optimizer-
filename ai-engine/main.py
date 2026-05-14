@@ -13,6 +13,45 @@ import os
 import time
 from typing import List, Dict, Optional
 
+app = FastAPI(title="AI GPU Energy Optimizer", version="3.0.0")
+
+# ========== HELPER FOR FLEXIBLE TEST ID ==========
+def find_test_result(base_dir: str, test_id: str):
+    if not os.path.isdir(base_dir):
+        return None
+    tid = test_id.lower()
+    folders = os.listdir(base_dir)
+    # exact match
+    for f in folders:
+        if f.lower() == tid:
+            cand = os.path.join(base_dir, f, "summary.json")
+            if os.path.exists(cand):
+                return cand
+    # prefix match
+    for f in folders:
+        if f.lower().startswith(tid):
+            cand = os.path.join(base_dir, f, "summary.json")
+            if os.path.exists(cand):
+                return cand
+    # numeric short id (e.g., "11")
+    if test_id.isdigit():
+        padded = f"test-{int(test_id):02d}"
+        for f in folders:
+            if f.lower().startswith(padded):
+                cand = os.path.join(base_dir, f, "summary.json")
+                if os.path.exists(cand):
+                    return cand
+    # handle "test-9"
+    if tid.startswith("test-") and tid[5:].isdigit():
+        num = int(tid[5:])
+        padded = f"test-{num:02d}"
+        for f in folders:
+            if f.lower().startswith(padded):
+                cand = os.path.join(base_dir, f, "summary.json")
+                if os.path.exists(cand):
+                    return cand
+    return None
+
 # ========== ENGINE 1: TRUE EFFICIENCY ==========
 def calculate_true_efficiency(metrics_history: List[Dict]) -> Dict:
     if len(metrics_history) < 2:
@@ -252,38 +291,6 @@ def save_metrics(metrics):
     except Exception:
         pass
 
-# ========== DYNAMIC TEST RESULTS SCANNER ==========
-def load_test_results(gpu_type: str = "a100") -> List[Dict]:
-    results = []
-    base_path = f"/opt/render/project/src/data/tests/{gpu_type}"
-    if not os.path.exists(base_path):
-        return results
-    for test_dir in sorted(os.listdir(base_path)):
-        if not test_dir.startswith("test-"):
-            continue
-        summary_file = os.path.join(base_path, test_dir, "summary.json")
-        if os.path.exists(summary_file):
-            try:
-                with open(summary_file, "r") as f:
-                    data = json.load(f)
-                    if "test_id" not in data:
-                        data["test_id"] = test_dir
-                    results.append(data)
-            except Exception:
-                pass
-    return results
-
-# ========== APP INITIALIZATION ==========
-app = FastAPI(title="AI GPU Energy Optimizer", version="3.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 metrics_store = load_metrics()
 VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").split(",")
 
@@ -318,184 +325,60 @@ def get_metrics_list() -> List[Dict]:
             result.append(m_copy)
     return result
 
+# ========== CORS ==========
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # ========== TEST RESULTS ENDPOINTS ==========
 @app.get("/results/a100")
 def get_a100_results():
-    return load_test_results("a100")
+    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    out = []
+    if os.path.isdir(base):
+        for f in os.listdir(base):
+            p = os.path.join(base, f, "summary.json")
+            if os.path.exists(p):
+                with open(p) as fp:
+                    out.append(json.load(fp))
+    return out
 
 @app.get("/results/h100")
 def get_h100_results():
-    return load_test_results("h100")
+    base = "/opt/render/project/src/ai-engine/data/tests/h100"
+    out = []
+    if os.path.isdir(base):
+        for f in os.listdir(base):
+            p = os.path.join(base, f, "summary.json")
+            if os.path.exists(p):
+                with open(p) as fp:
+                    out.append(json.load(fp))
+    return out
 
-#@app.get("/results/a100/{test_id}")
-#def get_a100_test_result(test_id: str):
-#    test_folder = f"/opt/render/project/src/data/tests/a100/{test_id}"
-#    summary_file = f"{test_folder}/summary.json"
-#    if os.path.exists(summary_file):
-#        with open(summary_file, "r") as f:
-#            return json.load(f)
-#    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
-#
-#@app.get("/results/h100/{test_id}")
-#def get_h100_test_result(test_id: str):
-#    test_folder = f"/opt/render/project/src/data/tests/h100/{test_id}"
-#    summary_file = f"{test_folder}/summary.json"
-#    if os.path.exists(summary_file):
-#        with open(summary_file, "r") as f:
-#            return json.load(f)
-#    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
-#
-## ========== DASHBOARD SUMMARY ENDPOINT ==========
-#@app.get("/api/summary")
-#def get_dashboard_summary():
-#    possible_paths = [
-#        "/opt/render/project/src/data/dashboard-summary.json",
-#        "data/dashboard-summary.json",
-#        "../data/dashboard-summary.json",
-#        "/opt/render/project/src/dashboard-summary.json"
-#    ]
-#    for path in possible_paths:
-#        if os.path.exists(path):
-#            with open(path, "r") as f:
-#                return json.load(f)
-#    return {"error": "Summary file not found", "paths_checked": possible_paths}
-#
-## ========== CORE ENDPOINTS ==========
-#@app.get("/health")
-#def health_check():
-#    return {"status": "ok", "service": "ai-gpu-brain-v3", "engines": 8}
-#
-#@app.get("/")
-#def root():
-#    return {
-#        "message": "AI GPU Energy Optimizer API",
-#        "docs": "/docs",
-#        "health": "/health",
-#        "engines": 8,
-#        "contact": "mikebains41@gmail.com"
-#    }
-#
-#@app.get("/metrics")
-#def get_metrics():
-#    return metrics_store
-#
-#@app.get("/metrics/a100")
-#def get_a100_metrics():
-#    return {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
-#
-#@app.get("/metrics/h100")
-#def get_h100_metrics():
-#    return {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
-#
-#@app.post("/api/v1/metrics")
-#async def receive_metrics(metrics: dict, authorization: Optional[str] = Header(None)):
-#    if not authorization or not authorization.startswith("Bearer "):
-#        raise HTTPException(status_code=401, detail="Invalid authorization")
-#    api_key = authorization.replace("Bearer ", "")
-#    if not validate_api_key(api_key):
-#        raise HTTPException(status_code=401, detail="Invalid API key")
-#    cluster_id = metrics.get("cluster_id", "unknown")
-#    if cluster_id not in metrics_store:
-#        metrics_store[cluster_id] = []
-#    metrics_store[cluster_id].append(metrics)
-#    if len(metrics_store[cluster_id]) > 500:
-#        metrics_store[cluster_id] = metrics_store[cluster_id][-500:]
-#    save_metrics(metrics_store)
-#    return {"status": "ok", "received": True}
-#
-## ========== ENGINE 1-8 ENDPOINTS ==========
-#@app.get("/engine/efficiency")
-#def get_efficiency():
-#    return calculate_true_efficiency(get_metrics_list())
-#
-#@app.get("/engine/idle")
-#def get_idle():
-#    return calculate_idle_waste(get_metrics_list())
-#
-#@app.get("/engine/burst")
-#def get_burst():
-#    return detect_compute_bursts(get_metrics_list())
-#
-#@app.get("/engine/sampling")
-#def get_sampling():
-#    return estimate_sampling_gap(get_metrics_list())
-#
-#@app.get("/engine/alerts")
-#def get_alerts():
-#    return evaluate_alerts(get_metrics_list())
-#
-#@app.get("/engine/export")
-#def get_export(format: str = "json"):
-#    return export_dataset(get_metrics_list(), format)
-#
-#@app.get("/engine/powerstate")
-#def get_powerstate():
-#    return detect_power_state(get_metrics_list())
-#
-#@app.get("/engine/delta")
-#def get_delta(baseline_sec: int = 60, after_sec: int = 60):
-#    return calculate_efficiency_delta(get_metrics_list(), baseline_sec, after_sec)
-#
-## ========== WEBSOCKET ==========
-#@app.websocket("/ws")
-#async def websocket_endpoint(websocket: WebSocket):
-#    await manager.connect(websocket)
-#    try:
-#        while True:
-#            await asyncio.sleep(2)
-#            await websocket.send_json({"type": "ping", "timestamp": datetime.now().isoformat()})
-#    except WebSocketDisconnect:
-#        manager.disconnect(websocket)
-#
-#if __name__ == "__main__":
-#    import uvicorn
-#    port = int(os.environ.get("PORT", 10000))
-#    uvicorn.run(app, host="0.0.0.0", port=port)
-#
-#@app.get("/debug/list_tests")
-#def list_tests():
-#    import os
-#    base = os.path.join(os.path.dirname(__file__), "data", "tests", "a100")
-#    if not os.path.exists(base):
-#        return {"error": f"Path {base} does not exist"}
-#    folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
-#    return {"base_path": base, "folders": folders}
-#
-#def find_test_result(base_dir, test_id):
-#    if not os.path.isdir(base_dir):
-#        return None
-#    tid = test_id.lower()
-#    folders = os.listdir(base_dir)
-#    # exact match
-#    for f in folders:
-#        if f.lower() == tid:
-#            cand = os.path.join(base_dir, f, "summary.json")
-#            if os.path.exists(cand):
-#                return cand
-#    # prefix match
-#    for f in folders:
-#        if f.lower().startswith(tid):
-#            cand = os.path.join(base_dir, f, "summary.json")
-#            if os.path.exists(cand):
-#                return cand
-#    # numeric short id
-#    if test_id.isdigit():
-#        padded = f"test-{int(test_id):02d}"
-#        for f in folders:
-#            if f.lower().startswith(padded):
-#                cand = os.path.join(base_dir, f, "summary.json")
-#                if os.path.exists(cand):
-#                    return cand
-#    # handle test-9
-#    if tid.startswith("test-") and tid[5:].isdigit():
-#        num = int(tid[5:])
-#        padded = f"test-{num:02d}"
-#        for f in folders:
-#            if f.lower().startswith(padded):
-#                cand = os.path.join(base_dir, f, "summary.json")
-#                if os.path.exists(cand):
-#                    return cand
-#    return None
+@app.get("/results/a100/count")
+def count_a100():
+    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    c = 0
+    if os.path.isdir(base):
+        for f in os.listdir(base):
+            if os.path.exists(os.path.join(base, f, "summary.json")):
+                c += 1
+    return {"total_a100_tests": c}
+
+@app.get("/results/h100/count")
+def count_h100():
+    base = "/opt/render/project/src/ai-engine/data/tests/h100"
+    c = 0
+    if os.path.isdir(base):
+        for f in os.listdir(base):
+            if os.path.exists(os.path.join(base, f, "summary.json")):
+                c += 1
+    return {"total_h100_tests": c}
+
 @app.get("/results/a100/{test_id}")
 def get_a100_test_result(test_id: str):
     base = "/opt/render/project/src/ai-engine/data/tests/a100"
@@ -504,6 +387,7 @@ def get_a100_test_result(test_id: str):
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
     with open(path) as f:
         return json.load(f)
+
 @app.get("/results/h100/{test_id}")
 def get_h100_test_result(test_id: str):
     base = "/opt/render/project/src/ai-engine/data/tests/h100"
@@ -512,4 +396,119 @@ def get_h100_test_result(test_id: str):
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
     with open(path) as f:
         return json.load(f)
-# force redeploy
+
+# ========== DASHBOARD SUMMARY ENDPOINT ==========
+@app.get("/api/summary")
+def get_dashboard_summary():
+    possible_paths = [
+        "/opt/render/project/src/data/dashboard-summary.json",
+        "data/dashboard-summary.json",
+        "../data/dashboard-summary.json",
+        "/opt/render/project/src/dashboard-summary.json"
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+    return {"error": "Summary file not found", "paths_checked": possible_paths}
+
+# ========== CORE ENDPOINTS ==========
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "ai-gpu-brain-v3", "engines": 8}
+
+@app.get("/")
+def root():
+    return {
+        "message": "AI GPU Energy Optimizer API",
+        "docs": "/docs",
+        "health": "/health",
+        "engines": 8,
+        "contact": "mikebains41@gmail.com"
+    }
+
+@app.get("/metrics")
+def get_metrics():
+    return metrics_store
+
+@app.get("/metrics/a100")
+def get_a100_metrics():
+    return {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
+
+@app.get("/metrics/h100")
+def get_h100_metrics():
+    return {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
+
+@app.post("/api/v1/metrics")
+async def receive_metrics(metrics: dict, authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization")
+    api_key = authorization.replace("Bearer ", "")
+    if not validate_api_key(api_key):
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    cluster_id = metrics.get("cluster_id", "unknown")
+    if cluster_id not in metrics_store:
+        metrics_store[cluster_id] = []
+    metrics_store[cluster_id].append(metrics)
+    if len(metrics_store[cluster_id]) > 500:
+        metrics_store[cluster_id] = metrics_store[cluster_id][-500:]
+    save_metrics(metrics_store)
+    return {"status": "ok", "received": True}
+
+# ========== ENGINE 1-8 ENDPOINTS ==========
+@app.get("/engine/efficiency")
+def get_efficiency():
+    return calculate_true_efficiency(get_metrics_list())
+
+@app.get("/engine/idle")
+def get_idle():
+    return calculate_idle_waste(get_metrics_list())
+
+@app.get("/engine/burst")
+def get_burst():
+    return detect_compute_bursts(get_metrics_list())
+
+@app.get("/engine/sampling")
+def get_sampling():
+    return estimate_sampling_gap(get_metrics_list())
+
+@app.get("/engine/alerts")
+def get_alerts():
+    return evaluate_alerts(get_metrics_list())
+
+@app.get("/engine/export")
+def get_export(format: str = "json"):
+    return export_dataset(get_metrics_list(), format)
+
+@app.get("/engine/powerstate")
+def get_powerstate():
+    return detect_power_state(get_metrics_list())
+
+@app.get("/engine/delta")
+def get_delta(baseline_sec: int = 60, after_sec: int = 60):
+    return calculate_efficiency_delta(get_metrics_list(), baseline_sec, after_sec)
+
+# ========== WEBSOCKET ==========
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await asyncio.sleep(2)
+            await websocket.send_json({"type": "ping", "timestamp": datetime.now().isoformat()})
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+# ========== DEBUG ==========
+@app.get("/debug/list_tests")
+def list_tests():
+    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    if not os.path.exists(base):
+        return {"error": f"Path {base} does not exist"}
+    folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
+    return {"base_path": base, "folders": folders}
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
