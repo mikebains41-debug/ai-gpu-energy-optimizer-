@@ -1,0 +1,14 @@
+{
+  "test_id": "test-05",
+  "metrics": {
+    "mean_kernel_time_ms": 1.1970,
+    "std_dev_ms": 0.0018,
+    "min_kernel_time_ms": null,
+    "max_kernel_time_ms": null,
+    "mean_cei": 1.435e13,
+    "mean_tflops": 14.35,
+    "error_percent": 0.15,
+    "iterations": 30,
+    "warmup_iterations": 10
+  }
+}

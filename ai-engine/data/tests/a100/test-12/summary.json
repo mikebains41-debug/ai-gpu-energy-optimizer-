@@ -1,0 +1,13 @@
+{
+  "test_id": "test-12",
+  "name": "A100 8192 Load Test",
+  "gpu_model": "NVIDIA A100 (8192 matrix size)",
+  "platform": "RunPod",
+  "test_date": "2026-05-11",
+  "duration_sec": null,
+  "load_minutes": 20,
+  "matrix_size": "8192×8192 FP32",
+  "power_w_range": "305–342",
+  "utilization_percent": 100,
+  "status": "complete"
+}

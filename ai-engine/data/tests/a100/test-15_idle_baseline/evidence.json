@@ -1,0 +1,7 @@
+{
+  "test_id": "test-15",
+  "evidence_type": "raw_csv",
+  "file": "data.csv",
+  "sample_lines": "First 5 and last 5 lines of CSV show stable idle power ~67W at 0% util.",
+  "conclusion": "A100 SXM idle floor is ~67W, far above efficient GPUs like A40 (30.4W). Required for ghost power energy subtraction."
+}

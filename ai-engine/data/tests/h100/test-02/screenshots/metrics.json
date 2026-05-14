@@ -1,0 +1,12 @@
+{
+  "test_id": "test-02",
+  "metrics": {
+    "mean_power_w": 75.6,
+    "min_power_w": 75.50,
+    "max_power_w": 75.99,
+    "utilization_percent": 0,
+    "temperature_c": 29,
+    "samples": 55,
+    "ghost_power_events": 0
+  }
+}

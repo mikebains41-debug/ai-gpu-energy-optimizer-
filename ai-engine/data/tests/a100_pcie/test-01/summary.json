@@ -1,0 +1,8 @@
+{
+  "test": "A100 PCIe Mixed Idle-Load",
+  "result": "INCONCLUSIVE for ghost power",
+  "idle_power": "~47.3 W",
+  "load_power": "~300 W",
+  "ghost_power": "Not tested (no cooldown)",
+  "file": "a100_pcie_mixed_load_no_cooldown.csv"
+}

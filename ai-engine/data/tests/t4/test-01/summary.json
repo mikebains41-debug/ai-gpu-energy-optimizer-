@@ -1,0 +1,8 @@
+{
+  "test": "Tesla T4 Idle Power Test",
+  "result": "PASS",
+  "idle_power": "~9.6 W",
+  "utilization": "0%",
+  "ghost_power": "None",
+  "file": "t4_idle_60s.csv"
+}

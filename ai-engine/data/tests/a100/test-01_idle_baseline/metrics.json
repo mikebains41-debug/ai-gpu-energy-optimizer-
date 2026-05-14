@@ -1,0 +1,16 @@
+{
+  "test_id": "test-01",
+  "metrics": {
+    "mean_power_w": 62.7,
+    "min_power_w": 62.53,
+    "max_power_w": 62.87,
+    "utilization_percent": 0,
+    "temperature_c": 40,
+    "duration_minutes": 10,
+    "samples": 601,
+    "start_time": "2026/05/09 03:57:48.161",
+    "end_time": "2026/05/09 04:07:46.281",
+    "stability": "Excellent",
+    "power_variation_w": "0.34"
+  }
+}

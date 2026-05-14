@@ -1,0 +1,15 @@
+{
+  "test_id": "test-24",
+  "evidence_type": "screenshots_and_log",
+  "screenshots": [
+    "screenshots/screenshot_01.jpg",
+    "screenshots/screenshot_02.jpg",
+    "screenshots/screenshot_03.jpg"
+  ],
+  "key_results": {
+    "average_power_w": 302.37,
+    "total_flops": "1.55e15",
+    "cei": "5.68e9 FLOPs/J"
+  },
+  "conclusion": "The A100 SXM delivers 5.68×10⁹ FLOPs/J under sustained 2048×2048 FP32 matmul. This is a realistic, integrated energy efficiency metric for memory‑bound workloads."
+}

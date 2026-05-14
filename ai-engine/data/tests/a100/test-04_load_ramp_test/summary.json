@@ -1,0 +1,13 @@
+{
+  "test_id": "test-04",
+  "name": "A100 Load Ramp Test",
+  "ghost_power_detected": true,
+  "ghost_power_w": 73.2,
+  "ghost_power_util": 0,
+  "severe_lag_detected": true,
+  "severe_lag_power_w": 357.7,
+  "severe_lag_util": 0,
+  "peak_power_w": 357.7,
+  "peak_util": 100,
+  "status": "complete"
+}

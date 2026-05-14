@@ -1,0 +1,13 @@
+{
+  "test_id": "test-15",
+  "metrics": {
+    "mean_power_w": 67.1,
+    "min_power_w": 66.5,
+    "max_power_w": 68.0,
+    "std_power_w": 0.3,
+    "utilization_percent": 0,
+    "temperature_mean_c": 27,
+    "duration_sec": 900,
+    "sample_count": 900
+  }
+}
