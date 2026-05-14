@@ -451,3 +451,12 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+@app.get("/debug/list_tests")
+def list_tests():
+    import os
+    base = os.path.join(os.path.dirname(__file__), "data", "tests", "a100")
+    if not os.path.exists(base):
+        return {"error": f"Path {base} does not exist"}
+    folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
+    return {"base_path": base, "folders": folders}
