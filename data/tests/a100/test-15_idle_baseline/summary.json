@@ -1,0 +1,13 @@
+{
+  "test_id": "test-15",
+  "name": "A100 SXM Idle Baseline (15 min)",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "duration_sec": 900,
+  "samples": 900,
+  "mean_power_w": 67.1,
+  "power_range_w": "66.5 - 68.0",
+  "utilization_percent": 0,
+  "temperature_c": 27,
+  "status": "complete",
+  "notes": "Baseline idle power floor for ghost power subtraction."
+}
