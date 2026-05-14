@@ -1,7 +1,0 @@
-timestamp,power_w,util_pct,temp_c
-2026/05/13 18:52:01.870,66.75,0,27
-2026/05/13 18:52:02.901,66.75,0,27
-2026/05/13 18:52:03.931,501.86,100,44
-2026/05/13 18:52:05.013,484.80,99,49
-... (remaining 596 seconds of data omitted for brevity; full log captured in original run)
-average_power,482.70,0-100,38

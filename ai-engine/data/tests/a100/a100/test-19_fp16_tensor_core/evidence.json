@@ -1,8 +1,0 @@
-{
-  "test_id": "test-19",
-  "evidence_type": "raw_csv_and_screenshots",
-  "file": "data.csv",
-  "average_power_source": "awk command from terminal screenshot",
-  "head_samples": "First lines show idle; load starts at 501.86W, 100% util.",
-  "conclusion": "FP16 tensor core draws 482.70W average, 60% higher than FP32 (302W), demonstrating lower energy efficiency for this workload."
-}
