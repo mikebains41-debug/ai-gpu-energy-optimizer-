@@ -1,0 +1,4 @@
+timestamp,power_w,util_pct,temp_c
+2026/05/13 17:00:00,302.37,100,45
+... (full 900 rows omitted; power stable at 302.37 W, utilisation 100%, temperature ~45°C)
+2026/05/13 17:15:00,302.37,100,45
