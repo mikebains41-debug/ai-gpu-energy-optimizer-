@@ -1221,3 +1221,136 @@ def debug_path():
         "cwd": os.getcwd(),
         "dir_listing": os.listdir(data_dir) if os.path.exists(data_dir) else None
     }
+
+# ========== REAL COMPARATIVE ANALYSIS ==========
+
+def load_all_summaries(gpu: str):
+    base = os.path.join(get_data_dir(), "tests", gpu)
+    summaries = []
+    if not os.path.isdir(base):
+        return summaries
+    for folder in sort_by_test_number(os.listdir(base)):
+        spath = os.path.join(base, folder, "summary.json")
+        if os.path.exists(spath):
+            with open(spath) as f:
+                s = json.load(f)
+            s["_folder"] = folder
+            summaries.append(s)
+    return summaries
+
+@app.get("/compare/gpu")
+def compare_gpu():
+    """A100 vs H100 head-to-head on RunPod."""
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        ghost = [s for s in summaries if s.get("ghost_power_detected")]
+        cei_vals = [s["cei_flops_per_joule"] for s in summaries if "cei_flops_per_joule" in s]
+        power_vals = [s["mean_power_w"] for s in summaries if "mean_power_w" in s]
+        idle_vals = [s["idle_power_w"] for s in summaries if "idle_power_w" in s]
+        out[gpu] = {
+            "tests_total": len(summaries),
+            "ghost_power_tests": len(ghost),
+            "ghost_power_rate_pct": round(len(ghost)/len(summaries)*100, 1) if summaries else 0,
+            "peak_ghost_watts": max((s.get("ghost_power_w", 0) for s in ghost), default=0),
+            "mean_cei": round(sum(cei_vals)/len(cei_vals), 2) if cei_vals else None,
+            "mean_power_w": round(sum(power_vals)/len(power_vals), 2) if power_vals else None,
+            "mean_idle_w": round(sum(idle_vals)/len(idle_vals), 2) if idle_vals else None,
+        }
+    return {
+        "comparison": out,
+        "findings": {
+            "ghost_power": "Confirmed on A100 SXM, absent on H100 SXM",
+            "idle_floor": "A100 ~67W, H100 ~69.5W",
+            "cei_advantage": "H100 delivers higher FLOPs/J — pending sustained test confirmation"
+        }
+    }
+
+@app.get("/compare/precision")
+def compare_precision():
+    """FP32 vs FP16 vs FP8 across both GPUs."""
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        by_precision = {}
+        for s in summaries:
+            prec = s.get("precision", "").upper()
+            if not prec:
+                continue
+            if prec not in by_precision:
+                by_precision[prec] = []
+            by_precision[prec].append(s)
+        precision_summary = {}
+        for prec, tests in by_precision.items():
+            cei_vals = [t["cei_flops_per_joule"] for t in tests if "cei_flops_per_joule" in t]
+            power_vals = [t["mean_power_w"] for t in tests if "mean_power_w" in t]
+            precision_summary[prec] = {
+                "test_count": len(tests),
+                "mean_cei": round(sum(cei_vals)/len(cei_vals), 2) if cei_vals else None,
+                "mean_power_w": round(sum(power_vals)/len(power_vals), 2) if power_vals else None,
+            }
+        out[gpu] = precision_summary
+    return {"comparison": out, "note": "FP8 available on H100 only"}
+
+@app.get("/compare/workload")
+def compare_workload():
+    """Compare test categories: idle vs load vs ghost power vs CEI."""
+    categories = {
+        "idle_baseline": ["idle", "baseline"],
+        "ghost_power": ["ghost"],
+        "load_ramp": ["load_ramp", "ramp"],
+        "cei_compute": ["cei"],
+        "fp16_tensor": ["fp16", "tensor"],
+        "cooldown": ["cooldown"]
+    }
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        gpu_out = {}
+        for cat, keywords in categories.items():
+            matched = [s for s in summaries if any(kw in s.get("name","").lower() or kw in s.get("_folder","").lower() for kw in keywords)]
+            power_vals = [s["mean_power_w"] for s in matched if "mean_power_w" in s]
+            gpu_out[cat] = {
+                "test_count": len(matched),
+                "mean_power_w": round(sum(power_vals)/len(power_vals), 2) if power_vals else None,
+                "tests": [s.get("name", s["_folder"]) for s in matched]
+            }
+        out[gpu] = gpu_out
+    return {"comparison": out}
+
+@app.get("/compare/matrix_size")
+def compare_matrix_size():
+    """2048x2048 vs 4096x4096 compute efficiency."""
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        by_size = {}
+        for s in summaries:
+            size = str(s.get("matrix_size", ""))
+            if not size:
+                continue
+            if size not in by_size:
+                by_size[size] = []
+            by_size[size].append(s)
+        size_summary = {}
+        for size, tests in by_size.items():
+            cei_vals = [t["cei_flops_per_joule"] for t in tests if "cei_flops_per_joule" in t]
+            power_vals = [t["mean_power_w"] for t in tests if "mean_power_w" in t]
+            size_summary[size] = {
+                "test_count": len(tests),
+                "mean_cei": round(sum(cei_vals)/len(cei_vals), 2) if cei_vals else None,
+                "mean_power_w": round(sum(power_vals)/len(power_vals), 2) if power_vals else None,
+            }
+        out[gpu] = size_summary
+    return {"comparison": out}
+
+@app.get("/compare")
+def list_comparisons():
+    return {
+        "endpoints": {
+            "/compare/gpu": "A100 vs H100 head-to-head",
+            "/compare/precision": "FP32 vs FP16 vs FP8",
+            "/compare/workload": "idle vs load vs ghost power vs CEI by category",
+            "/compare/matrix_size": "2048x2048 vs 4096x4096 efficiency"
+        }
+    }
