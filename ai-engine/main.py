@@ -537,7 +537,7 @@ def get_data_dir():
 
 # ========== CSV LOADER ==========
 def load_csv_for_plot(gpu: str, test_id: str):
-    base = f"get_data_dir()/tests/{gpu}"
+    base = os.path.join(get_data_dir(), "tests", gpu)
     path = find_test_result(base, test_id)
     if not path:
         return None, None
@@ -594,7 +594,7 @@ def generate_prometheus_metrics():
     out.append('# HELP gpu_test_mean_power_watts Mean power per recorded test')
     out.append('# TYPE gpu_test_mean_power_watts gauge')
     for g in ["a100", "h100"]:
-        base = f"get_data_dir()/tests/{g}"
+        base = os.path.join(get_data_dir(), "tests", g)
         if not os.path.isdir(base):
             continue
         for folder in sort_by_test_number(os.listdir(base)):
@@ -898,7 +898,7 @@ def list_standards():
 # ========== AUTOMATED DETECTION ENGINE ==========
 
 def load_csv_for_plot(gpu: str, test_id: str):
-    base = f"get_data_dir()/tests/{gpu}"
+    base = os.path.join(get_data_dir(), "tests", gpu)
     if not os.path.isdir(base):
         return None, None
     for folder in os.listdir(base):
@@ -932,7 +932,7 @@ def run_detection(gpu: str, test_id: str):
     n = min(len(power), len(util))
     if n == 0:
         # Fallback to summary.json
-        base = f"get_data_dir()/tests/{gpu}"
+        base = os.path.join(get_data_dir(), "tests", gpu)
         path = find_test_result(base, test_id)
         if path:
             with open(path) as f:
@@ -1143,7 +1143,7 @@ def detect_test(gpu: str, test_id: str):
 def detect_all(gpu: str):
     if gpu not in ["a100", "h100"]:
         raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    base = f"get_data_dir()/tests/{gpu}"
+    base = os.path.join(get_data_dir(), "tests", gpu)
     if not os.path.isdir(base):
         raise HTTPException(status_code=404, detail=f"No data for {gpu}")
     results = []
@@ -1185,7 +1185,7 @@ def detect_test(gpu: str, test_id: str):
 def detect_all(gpu: str):
     if gpu not in ["a100", "h100"]:
         raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    base = f"get_data_dir()/tests/{gpu}"
+    base = os.path.join(get_data_dir(), "tests", gpu)
     if not os.path.isdir(base):
         raise HTTPException(status_code=404, detail=f"No data for {gpu}")
     results = []
