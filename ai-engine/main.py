@@ -544,8 +544,8 @@ def load_csv_for_plot(gpu: str, test_id: str):
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
             timestamps.append(i)
-            pw = row.get("power_draw_watts") or row.get("power_w") or row.get("power") or "0"
-            ut = row.get("utilization_percent") or row.get("utilization") or row.get("util") or "0"
+            pw = row.get("power_draw_watts") or row.get("power_w") or row.get("power") or row.get("power.draw [W]") or row.get(" power.draw [W]") or "0"
+            ut = row.get("utilization_percent") or row.get("utilization") or row.get("util") or row.get("utilization.gpu [%]") or row.get(" utilization.gpu [%]") or "0"
             te = row.get("temperature_celsius") or row.get("temperature_c") or row.get("temp") or "0"
             try:
                 power.append(float(pw))
