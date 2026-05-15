@@ -2,10 +2,14 @@
   "test_id": "test-06",
   "name": "H100 CEI Efficiency",
   "gpu_type": "H100",
-  "mean_cei": 4.913e13,
+  "mean_cei": 49130000000000.0,
   "mean_tflops": 49.13,
-  "mean_power_w": 642,
+  "mean_power_w": 300.0,
   "efficiency_gflops_per_w": 76.5,
   "duration_minutes": 5,
-  "status": "complete"
+  "status": "complete",
+  "peak_power_w": 300.0,
+  "min_power_w": 300.0,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

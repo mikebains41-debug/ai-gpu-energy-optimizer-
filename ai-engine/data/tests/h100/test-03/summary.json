@@ -2,9 +2,18 @@
   "test_id": "test-03",
   "name": "H100 Sampling Rate Test",
   "gpu_type": "H100",
-  "sampling_rates": ["1s", "100ms", "10ms"],
+  "sampling_rates": [
+    "1s",
+    "100ms",
+    "10ms"
+  ],
   "power_w": 75.5,
   "utilization_percent": 0,
   "ghost_power_detected": false,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 75.5,
+  "peak_power_w": 75.5,
+  "min_power_w": 75.5,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

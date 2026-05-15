@@ -6,6 +6,7 @@
   "samples": 10,
   "pstate": "P0 (persistent)",
   "memory_clock_mhz": 1593,
-  "finding": "GPU remained in P0 with memory clock locked at 1593 MHz throughout the 10‑minute test after load.",
-  "status": "complete"
+  "finding": "GPU remained in P0 with memory clock locked at 1593 MHz throughout the 10\u2011minute test after load.",
+  "status": "complete",
+  "backfilled": true
 }

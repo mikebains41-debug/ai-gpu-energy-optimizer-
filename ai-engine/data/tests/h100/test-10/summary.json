@@ -2,8 +2,13 @@
   "test_id": "test-10",
   "name": "H100 Log-Log Scaling Test",
   "gpu_type": "H100",
-  "peak_cei": 5.168e13,
+  "peak_cei": 51680000000000.0,
   "peak_tflops": 51.68,
   "peak_matrix_size": 4096,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 300.0,
+  "peak_power_w": 300.0,
+  "min_power_w": 300.0,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

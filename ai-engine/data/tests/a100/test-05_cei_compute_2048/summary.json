@@ -2,9 +2,14 @@
   "test_id": "test-05",
   "name": "A100 CEI Compute 2048x2048",
   "mean_tflops": 14.35,
-  "mean_cei": 1.435e13,
-  "mean_kernel_time_ms": 1.1970,
+  "mean_cei": 14350000000000.0,
+  "mean_kernel_time_ms": 1.197,
   "error_percent": 0.15,
   "iterations": 30,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 302.4,
+  "peak_power_w": 302.4,
+  "min_power_w": 302.4,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

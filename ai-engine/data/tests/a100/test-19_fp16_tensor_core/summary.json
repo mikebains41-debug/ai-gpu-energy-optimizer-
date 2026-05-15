@@ -1,14 +1,21 @@
 {
   "test_id": "test-19",
-  "name": "FP16 Tensor Core – 10min Continuous Matmul (2048×2048)",
+  "name": "FP16 Tensor Core \u2013 10min Continuous Matmul (2048\u00d72048)",
   "gpu": "NVIDIA A100 SXM (RunPod)",
   "duration_sec": 600,
-  "average_power_w": 482.70,
+  "average_power_w": 482.7,
   "utilization_range": "0-100%",
   "temperature_c": "27-49",
   "iterations": 60000,
-  "flops_per_iter": 1.717e10,
-  "total_flops": 1.030e15,
-  "cei_flops_per_joule": 3.56e9,
-  "status": "complete"
+  "flops_per_iter": 17170000000.0,
+  "total_flops": 1030000000000000.0,
+  "cei_flops_per_joule": 3560000000.0,
+  "status": "complete",
+  "mean_power_w": 320.57,
+  "peak_power_w": 501.86,
+  "min_power_w": 66.75,
+  "mean_utilization_pct": 49.75,
+  "mean_temperature_c": 37.0,
+  "peak_temperature_c": 49.0,
+  "backfilled": true
 }

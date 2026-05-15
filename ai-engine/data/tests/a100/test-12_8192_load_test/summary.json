@@ -6,8 +6,13 @@
   "test_date": "2026-05-11",
   "duration_sec": null,
   "load_minutes": 20,
-  "matrix_size": "8192×8192 FP32",
-  "power_w_range": "305–342",
+  "matrix_size": "8192\u00d78192 FP32",
+  "power_w_range": "305\u2013342",
   "utilization_percent": 100,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 327.37,
+  "peak_power_w": 342.09,
+  "min_power_w": 305.53,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

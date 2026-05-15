@@ -1,12 +1,12 @@
 {
   "test_id": "test-14",
-  "name": "Ghost Power – 10 min Load + 10 min Cooldown",
+  "name": "Ghost Power \u2013 10 min Load + 10 min Cooldown",
   "gpu": "NVIDIA A100 SXM (RunPod)",
   "date": "2026-05-13",
   "duration_sec": 1200,
   "load_phase_sec": 600,
   "cooldown_phase_sec": 600,
-  "workload": "4096×4096 FP32 torch.matmul, continuous",
+  "workload": "4096\u00d74096 FP32 torch.matmul, continuous",
   "sampling_rate_hz": 1,
   "power_load_max_W": 146.66,
   "power_load_min_W": 66.75,
@@ -19,6 +19,13 @@
   "temperature_load_rise_C": 2,
   "temperature_cooldown_drop_C": 2,
   "ghost_power_detected": true,
-  "conclusion": "Power remained elevated (77–78 W) for first minute of cooldown, then slowly declined to ~66 W but never dropped to a true low‑power idle (e.g., 30 W). Reported utilisation 0% throughout, confirming telemetry desynchronisation.",
-  "status": "complete"
+  "conclusion": "Power remained elevated (77\u201378\u202fW) for first minute of cooldown, then slowly declined to ~66\u202fW but never dropped to a true low\u2011power idle (e.g., 30\u202fW). Reported utilisation 0% throughout, confirming telemetry desynchronisation.",
+  "status": "complete",
+  "mean_power_w": 78.33,
+  "peak_power_w": 134.59,
+  "min_power_w": 66.48,
+  "mean_utilization_pct": 0.63,
+  "mean_temperature_c": 27.56,
+  "peak_temperature_c": 28.0,
+  "backfilled": true
 }
