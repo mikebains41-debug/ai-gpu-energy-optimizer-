@@ -437,15 +437,23 @@ def root():
 
 @app.get("/metrics")
 def get_metrics():
-    return metrics_store
+    if metrics_store:
+        return metrics_store
+    return {"status": "no_live_agent", "a100_tests": 24, "h100_tests": 11, "note": "No live agent connected. Use /results/a100 or /results/h100 for recorded data."}
 
 @app.get("/metrics/a100")
 def get_a100_metrics():
-    return {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
+    live = {k: v for k, v in metrics_store.items() if "a100" in k.lower()}
+    if live:
+        return live
+    return {"status": "no_live_agent", "recorded_tests": 24, "data": "/results/a100", "note": "Live telemetry requires a running monitoring agent. Recorded test data available at /results/a100"}
 
 @app.get("/metrics/h100")
 def get_h100_metrics():
-    return {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
+    live = {k: v for k, v in metrics_store.items() if "h100" in k.lower()}
+    if live:
+        return live
+    return {"status": "no_live_agent", "recorded_tests": 11, "data": "/results/h100", "note": "Live telemetry requires a running monitoring agent. Recorded test data available at /results/h100"}
 
 @app.post("/api/v1/metrics")
 async def receive_metrics(metrics: dict, authorization: Optional[str] = Header(None)):
