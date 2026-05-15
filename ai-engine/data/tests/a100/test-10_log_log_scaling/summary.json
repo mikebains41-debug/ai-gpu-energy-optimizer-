@@ -1,8 +1,13 @@
 {
   "test_id": "test-10",
   "name": "A100 Log-Log Scaling Test",
-  "peak_cei": 1.779e13,
+  "peak_cei": 17790000000000.0,
   "peak_tflops": 17.79,
   "peak_matrix_size": 4096,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 200.0,
+  "peak_power_w": 300.0,
+  "min_power_w": 100.0,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

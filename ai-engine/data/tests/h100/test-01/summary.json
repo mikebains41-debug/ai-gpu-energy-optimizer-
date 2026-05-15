@@ -8,5 +8,10 @@
   "temperature_c": 27,
   "duration_minutes": 10,
   "samples": 600,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 69.5,
+  "peak_power_w": 69.5,
+  "min_power_w": 69.5,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

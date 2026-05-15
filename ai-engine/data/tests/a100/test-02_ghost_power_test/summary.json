@@ -9,5 +9,10 @@
   "idle_power_w": 63.4,
   "load_power_range_w": "397 - 413",
   "load_utilization": "94-96%",
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 223.96,
+  "peak_power_w": 413.24,
+  "min_power_w": 63.68,
+  "mean_utilization_pct": 43.61,
+  "backfilled": true
 }

@@ -1,10 +1,14 @@
 {
   "test_id": "test-06",
   "name": "A100 CEI Efficiency (Corrected)",
-  "mean_cei": 1.737e13,
+  "mean_cei": 17370000000000.0,
   "mean_tflops": 17.37,
-  "mean_power_w": 330,
+  "mean_power_w": 321.2,
   "efficiency_gflops_per_w": 52.6,
   "duration_seconds": 60,
-  "status": "complete"
+  "status": "complete",
+  "peak_power_w": 321.2,
+  "min_power_w": 321.2,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

@@ -3,8 +3,13 @@
   "name": "H100 CEI Compute 2048x2048",
   "gpu_type": "H100",
   "mean_tflops": 49.13,
-  "mean_cei": 4.913e13,
+  "mean_cei": 49130000000000.0,
   "error_percent": 0.49,
   "iterations": 30,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 300.0,
+  "peak_power_w": 300.0,
+  "min_power_w": 300.0,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

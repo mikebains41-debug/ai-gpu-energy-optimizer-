@@ -1,13 +1,13 @@
 {
   "test_id": "test-20",
-  "name": "FP16 vs FP32 – 5 Iterations (2048×2048 matmul)",
+  "name": "FP16 vs FP32 \u2013 5 Iterations (2048\u00d72048 matmul)",
   "gpu": "NVIDIA A100 SXM (RunPod)",
   "date": "2026-05-13",
-  "workload": "torch.matmul(2048×2048)",
+  "workload": "torch.matmul(2048\u00d72048)",
   "iterations": 5,
   "precision_comparison": {
     "FP32": {
-      "mean_kernel_time_ms": 1.40,
+      "mean_kernel_time_ms": 1.4,
       "avg_power_W": 79,
       "utilization_percent": "0-4%"
     },
@@ -18,6 +18,13 @@
       "speedup": 4.0
     }
   },
-  "conclusion": "FP16 is approximately 4x faster than FP32 in burst mode. Preliminary test — see test-21 for 60-iteration sustained comparison.",
-  "status": "complete"
+  "conclusion": "FP16 is approximately 4x faster than FP32 in burst mode. Preliminary test \u2014 see test-21 for 60-iteration sustained comparison.",
+  "status": "complete",
+  "mean_power_w": 89.1,
+  "peak_power_w": 137.28,
+  "min_power_w": 76.06,
+  "mean_utilization_pct": 0.19,
+  "mean_temperature_c": 44.5,
+  "peak_temperature_c": 45.0,
+  "backfilled": true
 }

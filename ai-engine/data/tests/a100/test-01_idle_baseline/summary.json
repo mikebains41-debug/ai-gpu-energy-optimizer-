@@ -1,7 +1,7 @@
 {
   "test_id": "test-01",
   "name": "A100 Idle Baseline",
-  "mean_power_w": 62.7,
+  "mean_power_w": 62.53,
   "power_range_w": "62.53 - 62.87",
   "utilization_percent": 0,
   "temperature_c": 40,
@@ -9,5 +9,9 @@
   "samples": 601,
   "start_time": "2026/05/09 03:57:48.161",
   "end_time": "2026/05/09 04:07:46.281",
-  "status": "complete"
+  "status": "complete",
+  "peak_power_w": 62.87,
+  "min_power_w": 62.53,
+  "mean_utilization_pct": 0.0,
+  "backfilled": true
 }
