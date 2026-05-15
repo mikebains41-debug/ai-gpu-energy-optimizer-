@@ -346,7 +346,7 @@ app.add_middleware(
 # ========== TEST RESULTS ENDPOINTS ==========
 @app.get("/results/a100")
 def get_a100_results():
-    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    base = "get_data_dir()/tests/a100"
     out = []
     if os.path.isdir(base):
         for f in sort_by_test_number(os.listdir(base)):
@@ -358,7 +358,7 @@ def get_a100_results():
 
 @app.get("/results/h100")
 def get_h100_results():
-    base = "/opt/render/project/src/ai-engine/data/tests/h100"
+    base = "get_data_dir()/tests/h100"
     out = []
     if os.path.isdir(base):
         for f in sort_by_test_number(os.listdir(base)):
@@ -370,7 +370,7 @@ def get_h100_results():
 
 @app.get("/results/a100/count")
 def count_a100():
-    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    base = "get_data_dir()/tests/a100"
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
@@ -380,7 +380,7 @@ def count_a100():
 
 @app.get("/results/h100/count")
 def count_h100():
-    base = "/opt/render/project/src/ai-engine/data/tests/h100"
+    base = "get_data_dir()/tests/h100"
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
@@ -390,7 +390,7 @@ def count_h100():
 
 @app.get("/results/a100/{test_id}")
 def get_a100_test_result(test_id: str):
-    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    base = "get_data_dir()/tests/a100"
     path = find_test_result(base, test_id)
     if not path:
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
@@ -399,7 +399,7 @@ def get_a100_test_result(test_id: str):
 
 @app.get("/results/h100/{test_id}")
 def get_h100_test_result(test_id: str):
-    base = "/opt/render/project/src/ai-engine/data/tests/h100"
+    base = "get_data_dir()/tests/h100"
     path = find_test_result(base, test_id)
     if not path:
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
@@ -519,7 +519,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # ========== DEBUG ==========
 @app.get("/debug/list_tests")
 def list_tests():
-    base = "/opt/render/project/src/ai-engine/data/tests/a100"
+    base = "get_data_dir()/tests/a100"
     if not os.path.exists(base):
         return {"error": f"Path {base} does not exist"}
     folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
@@ -529,9 +529,15 @@ def list_tests():
 from fastapi.responses import PlainTextResponse, StreamingResponse
 import csv
 
+def get_data_dir():
+    """Return absolute path to ai-engine/data directory."""
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, "ai-engine", "data")
+
+
 # ========== CSV LOADER ==========
 def load_csv_for_plot(gpu: str, test_id: str):
-    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    base = f"get_data_dir()/tests/{gpu}"
     path = find_test_result(base, test_id)
     if not path:
         return None, None
@@ -588,7 +594,7 @@ def generate_prometheus_metrics():
     out.append('# HELP gpu_test_mean_power_watts Mean power per recorded test')
     out.append('# TYPE gpu_test_mean_power_watts gauge')
     for g in ["a100", "h100"]:
-        base = f"/opt/render/project/src/ai-engine/data/tests/{g}"
+        base = f"get_data_dir()/tests/{g}"
         if not os.path.isdir(base):
             continue
         for folder in sort_by_test_number(os.listdir(base)):
@@ -892,7 +898,7 @@ def list_standards():
 # ========== AUTOMATED DETECTION ENGINE ==========
 
 def load_csv_for_plot(gpu: str, test_id: str):
-    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    base = f"get_data_dir()/tests/{gpu}"
     if not os.path.isdir(base):
         return None, None
     for folder in os.listdir(base):
@@ -926,7 +932,7 @@ def run_detection(gpu: str, test_id: str):
     n = min(len(power), len(util))
     if n == 0:
         # Fallback to summary.json
-        base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+        base = f"get_data_dir()/tests/{gpu}"
         path = find_test_result(base, test_id)
         if path:
             with open(path) as f:
@@ -1137,7 +1143,7 @@ def detect_test(gpu: str, test_id: str):
 def detect_all(gpu: str):
     if gpu not in ["a100", "h100"]:
         raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    base = f"get_data_dir()/tests/{gpu}"
     if not os.path.isdir(base):
         raise HTTPException(status_code=404, detail=f"No data for {gpu}")
     results = []
@@ -1179,7 +1185,7 @@ def detect_test(gpu: str, test_id: str):
 def detect_all(gpu: str):
     if gpu not in ["a100", "h100"]:
         raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    base = f"get_data_dir()/tests/{gpu}"
     if not os.path.isdir(base):
         raise HTTPException(status_code=404, detail=f"No data for {gpu}")
     results = []
@@ -1205,6 +1211,16 @@ def detect_all(gpu: str):
         "anomalous_tests": total_anomalous,
         "summary": results
     }
+
+
+
+@app.on_event("startup")
+def startup_check():
+    """Ensure data directories exist (for fallback)."""
+    data_dir = get_data_dir()
+    os.makedirs(data_dir, exist_ok=True)
+    tests_dir = os.path.join(data_dir, "tests")
+    os.makedirs(tests_dir, exist_ok=True)
 
 
 if __name__ == "__main__":
