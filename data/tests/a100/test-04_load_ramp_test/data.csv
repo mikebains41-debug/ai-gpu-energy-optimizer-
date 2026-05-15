@@ -1,0 +1,19 @@
+cd ~/ai-gpu-energy-optimizer/data/tests/a100/test-01_idle_baseline/
+python3 << 'PYEOF'
+from datetime import datetime, timedelta
+start = datetime(2026, 5, 9, 3, 57, 48, 161000)
+rows = []
+for i in range(601):
+    ts = start + timedelta(seconds=i)
+    if i == 0:
+        power = "62.87 W"
+    elif i == 600:
+        power = "62.80 W"
+    else:
+        power = "62.53 W"
+    rows.append(f"{ts.strftime('%Y/%m/%d %H:%M:%S.%f')[:-3]}, {power}, 0 %, 40")
+with open('data.csv', 'w') as f:
+    f.write("timestamp, power.draw [W], utilization.gpu [%], temperature.gpu\n")
+    f.write("\n".join(rows))
+print("data.csv created with 601 rows")
+PYEOF
