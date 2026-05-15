@@ -28,12 +28,12 @@ A production GPU energy observability platform that detects, measures, and compa
 
 | Endpoint | URL |
 |----------|-----|
-| A100 Live Metrics (if agent active) | `https://ai-gpu-brain-v3.onrender.com/metrics/a100` |
-| H100 Live Metrics (if agent active) | `https://ai-gpu-brain-v3.onrender.com/metrics/h100` |
-| A100 Recorded Test Results (24 tests) | `https://ai-gpu-brain-v3.onrender.com/results/a100` |
-| H100 Recorded Test Results (11 tests) | `https://ai-gpu-brain-v3.onrender.com/results/h100` |
-| Full API Documentation | `https://ai-gpu-brain-v3.onrender.com/docs` |
-| Frontend Dashboard | `https://ai-gpu-energy-optimizer.vercel.app` |
+| A100 Live Metrics (if agent active) | [https://ai-gpu-brain-v3.onrender.com/metrics/a100](https://ai-gpu-brain-v3.onrender.com/metrics/a100) |
+| H100 Live Metrics (if agent active) | [https://ai-gpu-brain-v3.onrender.com/metrics/h100](https://ai-gpu-brain-v3.onrender.com/metrics/h100) |
+| A100 Recorded Test Results (24 tests) | [https://ai-gpu-brain-v3.onrender.com/results/a100](https://ai-gpu-brain-v3.onrender.com/results/a100) |
+| H100 Recorded Test Results (11 tests) | [https://ai-gpu-brain-v3.onrender.com/results/h100](https://ai-gpu-brain-v3.onrender.com/results/h100) |
+| Full API Documentation | [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs) |
+| Frontend Dashboard | [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app) |
 
 ---
 
