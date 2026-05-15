@@ -72,3 +72,14 @@ Source code available upon request for verified partners and sponsors.
 **Contact:** mikebains41@gmail.com  
 **API:** https://ai-gpu-brain-v3.onrender.com/docs  
 **Sponsor endpoint:** https://ai-gpu-brain-v3.onrender.com/sponsor
+
+---
+
+## Roadmap
+
+- Migrate test data from flat files to TimescaleDB for scalable time-series storage and real-time query performance
+- Redis Streams for live multi-GPU telemetry ingestion at scale
+- Celery background workers for continuous ghost power detection
+- Per-provider API key management with RBAC
+- Redis pub/sub for multi-instance WebSocket broadcasting
+- Validation across AWS, CoreWeave, Lambda Labs, and Vast.ai
