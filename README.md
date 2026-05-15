@@ -78,9 +78,9 @@ This project is open to:
 - Cloud GPU compute credits
 - Data center access (AWS, CoreWeave, Lambda, Vast)
 - Research collaboration
-- Seed funding
+- Source code access (upon request for verified partners and sponsors)
 
-Source code is available upon request for verified partners and sponsors.
+**I want to see this platform grow to handle 100 GPUs, then 500 GPUs.** The architecture is designed to scale, and I am actively planning the next stages of infrastructure (TimescaleDB, Redis, background workers) to make that possible.
 
 **Contact:** [mikebains41@gmail.com](mailto:mikebains41@gmail.com)  
 **API Docs:** [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs)  
