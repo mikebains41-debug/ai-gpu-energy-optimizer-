@@ -1123,6 +1123,49 @@ GRAFANA_DASHBOARD = {
 }
 
 
+
+
+# ========== DETECTION ROUTES ==========
+
+@app.get("/detect/{gpu}/{test_id}")
+def detect_test(gpu: str, test_id: str):
+    if gpu not in ["a100", "h100"]:
+        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
+    return run_detection(gpu, test_id)
+
+@app.get("/detect/{gpu}")
+def detect_all(gpu: str):
+    if gpu not in ["a100", "h100"]:
+        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
+    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    if not os.path.isdir(base):
+        raise HTTPException(status_code=404, detail=f"No data for {gpu}")
+    results = []
+    for folder in sort_by_test_number(os.listdir(base)):
+        spath = os.path.join(base, folder, "summary.json")
+        if not os.path.exists(spath):
+            continue
+        with open(spath) as sf:
+            s = json.load(sf)
+        tid = s.get("test_id", folder)
+        result = run_detection(gpu, tid)
+        results.append({
+            "test_id": tid,
+            "name": s.get("name", ""),
+            "events_detected": result.get("events_detected", 0),
+            "status": result.get("status", "UNKNOWN"),
+            "high_severity": sum(1 for e in result.get("events", []) if e.get("severity") == "HIGH")
+        })
+    total_anomalous = sum(1 for r in results if r["status"] == "ANOMALOUS")
+    return {
+        "gpu": gpu,
+        "tests_scanned": len(results),
+        "anomalous_tests": total_anomalous,
+        "summary": results
+    }
+
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
