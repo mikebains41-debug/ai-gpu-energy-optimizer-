@@ -891,39 +891,59 @@ def list_standards():
 
 # ========== AUTOMATED DETECTION ENGINE ==========
 
+def load_csv_for_plot(gpu: str, test_id: str):
+    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    if not os.path.isdir(base):
+        return None, None
+    for folder in os.listdir(base):
+        if test_id in folder:
+            csv_path = os.path.join(base, folder, "data.csv")
+            if os.path.exists(csv_path):
+                import pandas as pd
+                df = pd.read_csv(csv_path)
+                df.columns = [c.strip() for c in df.columns]
+                power_col = next((c for c in df.columns if 'power' in c.lower()), None)
+                util_col = next((c for c in df.columns if 'util' in c.lower()), None)
+                if power_col and util_col:
+                    power_vals = df[power_col].astype(str).str.replace(' W', '', regex=False).astype(float)
+                    util_vals = df[util_col].astype(str).str.replace(' %', '', regex=False).astype(float)
+                    return {"power": power_vals.tolist(), "utilization": util_vals.tolist()}, folder
+    return None, None
+
+
 def run_detection(gpu: str, test_id: str):
     data, folder = load_csv_for_plot(gpu, test_id)
     events = []
-
     if data is None:
         return {"error": f"Test {test_id} not found for {gpu}"}
-
     power = data.get("power", [])
     util = data.get("utilization", [])
-    n = len(power)
-
+    # Clean string values (e.g., "75.61 W" -> 75.61)
+    if power and isinstance(power[0], str):
+        power = [float(p.split()[0]) for p in power]
+    if util and isinstance(util[0], str):
+        util = [float(u.split()[0]) for u in util]
+    n = min(len(power), len(util))
     if n == 0:
-        # Fall back to summary.json for tests without CSV
+        # Fallback to summary.json
         base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
         path = find_test_result(base, test_id)
         if path:
             with open(path) as f:
                 s = json.load(f)
             if s.get("ghost_power_detected"):
-                events.append({
-                    "event": "ghost_power_detected",
-                    "severity": "HIGH",
-                    "evidence": f"Ghost power confirmed: {s.get('ghost_power_w', '?')}W at 0% utilization",
-                    "source": "summary.json"
-                })
-        return {
-            "gpu": gpu, "test_id": test_id,
-            "events": events,
-            "note": "No data.csv — detection from summary.json only"
-        }
-
-    # Detection 1: Ghost Power
-    ghost_samples = [(i, power[i]) for i in range(n) if util[i] == 0 and power[i] > 80]
+                events.append({"event": "ghost_power_detected", "severity": "HIGH", "evidence": f"Ghost power confirmed: {s.get('ghost_power_w', '?')}W at 0% utilization", "source": "summary.json"})
+        return {"gpu": gpu, "test_id": test_id, "events": events, "note": "No data.csv — detection from summary.json only"}
+    # ---- Adaptive baseline detection ----
+    # Take first 10 idle samples (util < 0.1%) as baseline
+    initial_idle = [power[i] for i in range(min(10, n)) if util[i] < 0.1]
+    if not initial_idle:
+        initial_idle = [min(power)]  # fallback
+    import statistics
+    baseline_idle = statistics.median(initial_idle)
+    ghost_threshold = baseline_idle + 5.0   # 5W above median idle
+    # Detection 1: Ghost Power (idle but power > threshold)
+    ghost_samples = [(i, power[i]) for i in range(n) if util[i] < 0.1 and power[i] > ghost_threshold]
     if ghost_samples:
         max_ghost = max(p for _, p in ghost_samples)
         events.append({
@@ -931,15 +951,28 @@ def run_detection(gpu: str, test_id: str):
             "severity": "HIGH",
             "samples": len(ghost_samples),
             "peak_watts": round(max_ghost, 1),
-            "evidence": f"{len(ghost_samples)} samples with power >{80}W at 0% reported utilization",
+            "baseline_idle_w": round(baseline_idle, 2),
+            "threshold_w": round(ghost_threshold, 2),
+            "evidence": f"{len(ghost_samples)} samples with power >{ghost_threshold:.1f}W at <0.1% utilization",
             "impact": "Standard monitoring tools would report this GPU as idle while it draws significant power"
         })
-
-    # Detection 2: Telemetry Desync
+    # Detection 2: Cooldown Anomaly (last 25% of test, idle but power elevated)
+    if n > 60:
+        cooldown_start = int(n * 0.75)
+        cooldown_power = [power[i] for i in range(cooldown_start, n) if util[i] < 0.1]
+        if cooldown_power and max(cooldown_power) > ghost_threshold:
+            events.append({
+                "event": "cooldown_anomaly_detected",
+                "severity": "MEDIUM",
+                "samples": len([p for p in cooldown_power if p > ghost_threshold]),
+                "mean_power_w": round(sum(cooldown_power)/len(cooldown_power), 1),
+                "evidence": f"GPU maintained >{ghost_threshold:.0f}W during final 25% of test at 0% utilization",
+                "impact": "P0 state retention — GPU not returning to low-power idle between workloads"
+            })
+    # Detection 3: Telemetry Desync (power jump >30W while util <5%)
     desync_samples = []
     for i in range(1, n):
-        power_delta = power[i] - power[i-1]
-        if power_delta > 30 and util[i] < 5:
+        if power[i] - power[i-1] > 30 and util[i] < 5:
             desync_samples.append(i)
     if desync_samples:
         events.append({
@@ -949,101 +982,17 @@ def run_detection(gpu: str, test_id: str):
             "evidence": f"Power rose >30W while utilization stayed <5% — {len(desync_samples)} occurrences",
             "impact": "Utilization metric lags or fails to reflect actual compute activity"
         })
-
-    # Detection 3: Cooldown Anomaly
-    if n > 60:
-        last_quarter = power[int(n * 0.75):]
-        last_util = util[int(n * 0.75):]
-        cooldown_high = [p for p, u in zip(last_quarter, last_util) if u == 0 and p > 70]
-        if len(cooldown_high) > 10:
-            events.append({
-                "event": "cooldown_anomaly_detected",
-                "severity": "MEDIUM",
-                "samples": len(cooldown_high),
-                "mean_power_w": round(sum(cooldown_high) / len(cooldown_high), 1),
-                "evidence": f"GPU maintained >{70}W during final 25% of test at 0% utilization",
-                "impact": "P0 state retention — GPU not returning to low-power idle between workloads"
-            })
-
-    # Detection 4: Sustained Idle Drift
-    idle_samples = [power[i] for i in range(n) if util[i] == 0]
-    if len(idle_samples) > 30:
-        mean_idle = sum(idle_samples) / len(idle_samples)
-        if mean_idle > 75:
-            events.append({
-                "event": "sustained_idle_drift",
-                "severity": "MEDIUM",
-                "mean_idle_power_w": round(mean_idle, 1),
-                "expected_floor_w": 67.1,
-                "drift_w": round(mean_idle - 67.1, 1),
-                "evidence": f"Mean idle power {mean_idle:.1f}W exceeds expected floor of 67.1W",
-                "impact": f"${round((mean_idle - 67.1) * 8760 * 0.0001, 2)}/GPU/year excess idle cost"
-            })
-
-    # Detection 5: Burst Efficiency Collapse
-    high_power = [power[i] for i in range(n) if power[i] > 300]
-    if high_power:
-        mean_high = sum(high_power) / len(high_power)
-        high_util = [util[i] for i in range(n) if power[i] > 300]
-        mean_util_at_high = sum(high_util) / len(high_util) if high_util else 0
-        if mean_util_at_high < 10:
-            events.append({
-                "event": "burst_efficiency_collapse",
-                "severity": "HIGH",
-                "mean_power_w": round(mean_high, 1),
-                "mean_utilization_pct": round(mean_util_at_high, 1),
-                "evidence": f"GPU drew {mean_high:.0f}W average while reporting {mean_util_at_high:.0f}% utilization",
-                "impact": "High energy cost with no visible compute output in standard monitoring"
-            })
-
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
     events.sort(key=lambda e: severity_order.get(e.get("severity", "LOW"), 2))
-
     return {
         "gpu": gpu,
         "test_id": test_id,
         "samples_analyzed": n,
         "events_detected": len(events),
         "events": events,
-        "status": "ANOMALOUS" if any(e["severity"] == "HIGH" for e in events) else "NOMINAL" if not events else "WARNING"
+        "status": "ANOMALOUS" if any(e["severity"] == "HIGH" for e in events) else "WARNING" if events else "NOMINAL"
     }
 
-@app.get("/detect/{gpu}/{test_id}")
-def detect_test(gpu: str, test_id: str):
-    if gpu not in ["a100", "h100"]:
-        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    return run_detection(gpu, test_id)
-
-@app.get("/detect/{gpu}")
-def detect_all(gpu: str):
-    if gpu not in ["a100", "h100"]:
-        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
-    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
-    if not os.path.isdir(base):
-        raise HTTPException(status_code=404, detail=f"No data for {gpu}")
-    results = []
-    for folder in sort_by_test_number(os.listdir(base)):
-        spath = os.path.join(base, folder, "summary.json")
-        if not os.path.exists(spath):
-            continue
-        with open(spath) as f:
-            s = json.load(f)
-        tid = s.get("test_id", folder)
-        result = run_detection(gpu, tid)
-        results.append({
-            "test_id": tid,
-            "name": s.get("name", ""),
-            "events_detected": result.get("events_detected", 0),
-            "status": result.get("status", "UNKNOWN"),
-            "high_severity": sum(1 for e in result.get("events", []) if e.get("severity") == "HIGH")
-        })
-    total_anomalous = sum(1 for r in results if r["status"] == "ANOMALOUS")
-    return {
-        "gpu": gpu,
-        "tests_scanned": len(results),
-        "anomalous_tests": total_anomalous,
-        "summary": results
-    }
 
 # ========== MULTI-PROVIDER FRAMEWORK ==========
 
