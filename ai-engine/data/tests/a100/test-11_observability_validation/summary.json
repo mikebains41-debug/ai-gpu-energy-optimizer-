@@ -7,5 +7,10 @@
   "burst_utilization": 100,
   "ghost_power_events": 0,
   "samples": 3044,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 289.11,
+  "peak_power_w": 407.36,
+  "min_power_w": 62.74,
+  "mean_utilization_pct": 67.15,
+  "backfilled": true
 }

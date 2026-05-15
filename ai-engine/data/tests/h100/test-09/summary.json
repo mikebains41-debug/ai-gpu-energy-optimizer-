@@ -6,5 +6,10 @@
   "mean_kernel_time_ms": 2.664,
   "duration_seconds": 60,
   "distribution": "Normal (by CLT)",
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 300.0,
+  "peak_power_w": 300.0,
+  "min_power_w": 300.0,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

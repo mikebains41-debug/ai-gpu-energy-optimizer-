@@ -1,10 +1,19 @@
 {
   "test_id": "test-03",
   "name": "A100 Sampling Rate Test",
-  "sampling_rates": ["1s", "100ms", "10ms"],
+  "sampling_rates": [
+    "1s",
+    "100ms",
+    "10ms"
+  ],
   "ghost_power_detected": true,
   "ghost_power_w": 73.5,
   "ghost_utilization": 0,
   "conclusion": "Ghost power persists at all sampling rates",
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 72.06,
+  "peak_power_w": 73.5,
+  "min_power_w": 63.4,
+  "mean_utilization_pct": 0.09,
+  "backfilled": true
 }

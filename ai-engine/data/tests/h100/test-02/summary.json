@@ -6,5 +6,10 @@
   "power_range_w": "75.50 - 75.99",
   "utilization_percent": 0,
   "ghost_events": 0,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 75.6,
+  "peak_power_w": 75.6,
+  "min_power_w": 75.6,
+  "mean_utilization_pct": 100.0,
+  "backfilled": true
 }

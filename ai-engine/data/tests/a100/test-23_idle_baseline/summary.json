@@ -8,5 +8,6 @@
   "power_range_w": "66.5 - 68.0",
   "utilization_percent": 0,
   "temperature_c": 27,
-  "status": "complete"
+  "status": "complete",
+  "backfilled": true
 }

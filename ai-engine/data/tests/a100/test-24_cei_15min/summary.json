@@ -1,15 +1,22 @@
 {
   "test_id": "test-24",
-  "name": "CEI Validation – 15 min Continuous FP32 Matmul (2048×2048)",
+  "name": "CEI Validation \u2013 15 min Continuous FP32 Matmul (2048\u00d72048)",
   "gpu": "NVIDIA A100 SXM (RunPod)",
   "duration_sec": 900,
   "iterations": 90000,
   "average_power_w": 302.37,
-  "total_flops": 1.55e15,
+  "total_flops": 1550000000000000.0,
   "total_energy_j": 272130,
-  "cei_flops_per_joule": 5.68e9,
-  "workload": "2048×2048 FP32 torch.matmul, 100 matmuls per second",
+  "cei_flops_per_joule": 5680000000.0,
+  "workload": "2048\u00d72048 FP32 torch.matmul, 100 matmuls per second",
   "sampling_rate_hz": 1,
   "status": "complete",
-  "notes": "Sustained workload efficiency metric. Lower than per‑kernel approximation due to idle time and power sampling integration."
+  "notes": "Sustained workload efficiency metric. Lower than per\u2011kernel approximation due to idle time and power sampling integration.",
+  "mean_power_w": 302.37,
+  "peak_power_w": 302.37,
+  "min_power_w": 302.37,
+  "mean_utilization_pct": 100.0,
+  "mean_temperature_c": 45.0,
+  "peak_temperature_c": 45.0,
+  "backfilled": true
 }

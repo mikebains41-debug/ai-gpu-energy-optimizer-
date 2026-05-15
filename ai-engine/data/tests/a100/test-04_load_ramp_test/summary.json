@@ -7,7 +7,11 @@
   "severe_lag_detected": true,
   "severe_lag_power_w": 357.7,
   "severe_lag_util": 0,
-  "peak_power_w": 357.7,
+  "peak_power_w": 340.6,
   "peak_util": 100,
-  "status": "complete"
+  "status": "complete",
+  "mean_power_w": 181.98,
+  "min_power_w": 58.1,
+  "mean_utilization_pct": 14.06,
+  "backfilled": true
 }

@@ -9,5 +9,6 @@
   "utilization_percent": 0,
   "temperature_c": 27,
   "status": "complete",
-  "notes": "Baseline idle power floor for ghost power subtraction."
+  "notes": "Baseline idle power floor for ghost power subtraction.",
+  "backfilled": true
 }
