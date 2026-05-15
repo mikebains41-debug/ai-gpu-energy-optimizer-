@@ -374,7 +374,7 @@ def count_a100():
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
-            if os.path.exists(os.path.join(base, f, "summary.json")):
+            if os.path.isdir(os.path.join(base, f)):
                 c += 1
     return {"total_a100_tests": c}
 
@@ -384,7 +384,7 @@ def count_h100():
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
-            if os.path.exists(os.path.join(base, f, "summary.json")):
+            if os.path.isdir(os.path.join(base, f)):
                 c += 1
     return {"total_h100_tests": c}
 
