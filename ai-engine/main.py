@@ -897,26 +897,6 @@ def list_standards():
 
 # ========== AUTOMATED DETECTION ENGINE ==========
 
-def load_csv_for_plot(gpu: str, test_id: str):
-    base = os.path.join(get_data_dir(), "tests", gpu)
-    if not os.path.isdir(base):
-        return None, None
-    for folder in os.listdir(base):
-        if test_id in folder:
-            csv_path = os.path.join(base, folder, "data.csv")
-            if os.path.exists(csv_path):
-                import pandas as pd
-                df = pd.read_csv(csv_path)
-                df.columns = [c.strip() for c in df.columns]
-                power_col = next((c for c in df.columns if 'power' in c.lower()), None)
-                util_col = next((c for c in df.columns if 'util' in c.lower()), None)
-                if power_col and util_col:
-                    power_vals = df[power_col].astype(str).str.replace(' W', '', regex=False).astype(float)
-                    util_vals = df[util_col].astype(str).str.replace(' %', '', regex=False).astype(float)
-                    return {"power": power_vals.tolist(), "utilization": util_vals.tolist()}, folder
-    return None, None
-
-
 def run_detection(gpu: str, test_id: str):
     data, folder = load_csv_for_plot(gpu, test_id)
     events = []
