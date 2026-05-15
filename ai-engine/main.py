@@ -4,6 +4,7 @@
 # Unauthorized use prohibited.
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException
+from fastapi.responses import PlainTextResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from datetime import datetime
@@ -523,6 +524,314 @@ def list_tests():
         return {"error": f"Path {base} does not exist"}
     folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
     return {"base_path": base, "folders": folders}
+
+# ========== NEW IMPORTS ==========
+from fastapi.responses import PlainTextResponse, StreamingResponse
+import csv
+
+# ========== CSV LOADER ==========
+def load_csv_for_plot(gpu: str, test_id: str):
+    base = f"/opt/render/project/src/ai-engine/data/tests/{gpu}"
+    path = find_test_result(base, test_id)
+    if not path:
+        return None, None
+    folder_path = os.path.dirname(path)
+    csv_path = os.path.join(folder_path, "data.csv")
+    if not os.path.exists(csv_path):
+        return {}, folder_path
+    timestamps, power, utilization, temperature = [], [], [], []
+    with open(csv_path) as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            timestamps.append(i)
+            pw = row.get("power_draw_watts") or row.get("power_w") or row.get("power") or "0"
+            ut = row.get("utilization_percent") or row.get("utilization") or row.get("util") or "0"
+            te = row.get("temperature_celsius") or row.get("temperature_c") or row.get("temp") or "0"
+            try:
+                power.append(float(pw))
+                utilization.append(float(ut))
+                temperature.append(float(te))
+            except:
+                power.append(0); utilization.append(0); temperature.append(0)
+    return {"timestamps": timestamps, "power": power, "utilization": utilization, "temperature": temperature}, folder_path
+
+# ========== PROMETHEUS ==========
+def generate_prometheus_metrics():
+    out = []
+    out.append('# HELP gpu_idle_power_floor_watts Idle power floor in watts')
+    out.append('# TYPE gpu_idle_power_floor_watts gauge')
+    out.append('gpu_idle_power_floor_watts{gpu="a100_sxm"} 67.1')
+    out.append('gpu_idle_power_floor_watts{gpu="h100_sxm"} 69.5')
+    out.append('# HELP gpu_fp32_peak_tflops Peak FP32 TFLOPS')
+    out.append('# TYPE gpu_fp32_peak_tflops gauge')
+    out.append('gpu_fp32_peak_tflops{gpu="a100_sxm"} 15.3')
+    out.append('gpu_fp32_peak_tflops{gpu="h100_sxm"} 49.13')
+    out.append('# HELP gpu_fp16_peak_tflops Peak FP16 TFLOPS')
+    out.append('# TYPE gpu_fp16_peak_tflops gauge')
+    out.append('gpu_fp16_peak_tflops{gpu="a100_sxm"} 231.08')
+    out.append('gpu_fp16_peak_tflops{gpu="h100_sxm"} 592.8')
+    out.append('# HELP gpu_efficiency_gflops_per_watt Compute efficiency GFLOPS/W')
+    out.append('# TYPE gpu_efficiency_gflops_per_watt gauge')
+    out.append('gpu_efficiency_gflops_per_watt{gpu="a100_sxm"} 52.6')
+    out.append('gpu_efficiency_gflops_per_watt{gpu="h100_sxm"} 76.5')
+    out.append('# HELP gpu_cei_flops_per_joule Compute Energy Intensity')
+    out.append('# TYPE gpu_cei_flops_per_joule gauge')
+    out.append('gpu_cei_flops_per_joule{gpu="a100_sxm"} 5680000000')
+    out.append('# HELP gpu_ghost_power_events_total Ghost power events detected')
+    out.append('# TYPE gpu_ghost_power_events_total counter')
+    out.append('gpu_ghost_power_events_total{gpu="a100_sxm"} 1')
+    out.append('gpu_ghost_power_events_total{gpu="h100_sxm"} 0')
+    out.append('# HELP gpu_tests_completed Validation tests completed')
+    out.append('# TYPE gpu_tests_completed gauge')
+    out.append('gpu_tests_completed{gpu="a100_sxm"} 24')
+    out.append('gpu_tests_completed{gpu="h100_sxm"} 11')
+    out.append('# HELP gpu_test_mean_power_watts Mean power per recorded test')
+    out.append('# TYPE gpu_test_mean_power_watts gauge')
+    for g in ["a100", "h100"]:
+        base = f"/opt/render/project/src/ai-engine/data/tests/{g}"
+        if not os.path.isdir(base):
+            continue
+        for folder in sort_by_test_number(os.listdir(base)):
+            spath = os.path.join(base, folder, "summary.json")
+            if not os.path.exists(spath):
+                continue
+            try:
+                with open(spath) as f:
+                    s = json.load(f)
+                tid = s.get("test_id", folder).replace("-", "_")
+                if "mean_power_w" in s:
+                    out.append(f'gpu_test_mean_power_watts{{gpu="{g}",test="{tid}"}} {s["mean_power_w"]}')
+                if "mean_tflops" in s:
+                    out.append(f'gpu_test_tflops{{gpu="{g}",test="{tid}"}} {s["mean_tflops"]}')
+                if "ghost_power_detected" in s:
+                    val = 1 if s["ghost_power_detected"] else 0
+                    out.append(f'gpu_ghost_power_detected{{gpu="{g}",test="{tid}"}} {val}')
+                if "ghost_power_w" in s:
+                    out.append(f'gpu_ghost_power_watts{{gpu="{g}",test="{tid}"}} {s["ghost_power_w"]}')
+            except:
+                continue
+    for cluster_id, measurements in metrics_store.items():
+        if measurements:
+            latest = measurements[-1]
+            if latest.get("gpus"):
+                gd = latest["gpus"][0]
+                lbl = cluster_id.replace("-", "_")
+                if "power_draw_watts" in gd:
+                    out.append(f'gpu_live_power_watts{{cluster="{lbl}"}} {gd["power_draw_watts"]}')
+                if "utilization_percent" in gd:
+                    out.append(f'gpu_live_utilization_percent{{cluster="{lbl}"}} {gd["utilization_percent"]}')
+                if "temperature_celsius" in gd:
+                    out.append(f'gpu_live_temperature_celsius{{cluster="{lbl}"}} {gd["temperature_celsius"]}')
+    return "# GPU Energy Observability Platform\n" + "\n".join(out) + "\n"
+
+@app.get("/metrics/prometheus", response_class=PlainTextResponse)
+def prometheus_metrics():
+    return PlainTextResponse(generate_prometheus_metrics(), media_type="text/plain; version=0.0.4")
+
+# ========== PLOT ENDPOINTS ==========
+@app.get("/plots/{gpu}/{test_id}")
+def get_plot(gpu: str, test_id: str):
+    if gpu not in ["a100", "h100"]:
+        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
+    data, _ = load_csv_for_plot(gpu, test_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail=f"Test {test_id} not found for {gpu}")
+    if not data.get("timestamps"):
+        raise HTTPException(status_code=404, detail=f"No data.csv for {gpu}/{test_id}")
+    return {
+        "data": [
+            {"x": data["timestamps"], "y": data["power"], "name": "Power (W)", "type": "scatter", "mode": "lines", "line": {"color": "#ff6b35", "width": 2}, "yaxis": "y"},
+            {"x": data["timestamps"], "y": data["utilization"], "name": "Utilization (%)", "type": "scatter", "mode": "lines", "line": {"color": "#4ecdc4", "width": 2}, "yaxis": "y2"},
+            {"x": data["timestamps"], "y": data["temperature"], "name": "Temperature (C)", "type": "scatter", "mode": "lines", "line": {"color": "#ffe66d", "width": 1, "dash": "dot"}, "yaxis": "y2"}
+        ],
+        "layout": {
+            "title": f"{gpu.upper()} {test_id} — Power / Utilization / Temperature",
+            "xaxis": {"title": "Sample (seconds)"},
+            "yaxis": {"title": "Power (W)", "side": "left"},
+            "yaxis2": {"title": "Utilization / Temp", "side": "right", "overlaying": "y"},
+            "plot_bgcolor": "#1a1a2e", "paper_bgcolor": "#16213e", "font": {"color": "#eee"}
+        }
+    }
+
+@app.get("/plots/{gpu}/{test_id}/divergence")
+def get_divergence_plot(gpu: str, test_id: str):
+    if gpu not in ["a100", "h100"]:
+        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
+    data, _ = load_csv_for_plot(gpu, test_id)
+    if data is None or not data.get("timestamps"):
+        raise HTTPException(status_code=404, detail=f"No data found for {gpu}/{test_id}")
+    ghost_x, ghost_y = [], []
+    for i, (p, u) in enumerate(zip(data["power"], data["utilization"])):
+        if u == 0 and p > 80:
+            ghost_x.append(i)
+            ghost_y.append(p)
+    return {
+        "data": [
+            {"x": data["timestamps"], "y": data["power"], "name": "Board Power (W)", "type": "scatter", "mode": "lines", "line": {"color": "#ff6b35", "width": 2}, "yaxis": "y"},
+            {"x": data["timestamps"], "y": data["utilization"], "name": "Reported Utilization (%)", "type": "scatter", "mode": "lines", "line": {"color": "#4ecdc4", "width": 2}, "yaxis": "y2"},
+            {"x": ghost_x, "y": ghost_y, "name": "Ghost Power Window", "type": "scatter", "mode": "markers", "marker": {"color": "#ff0055", "size": 7, "symbol": "circle"}, "yaxis": "y"}
+        ],
+        "layout": {
+            "title": f"{gpu.upper()} {test_id} — Telemetry Divergence (Ghost Power)",
+            "annotations": [{"text": "Red = power drawn at 0% reported utilization", "showarrow": False, "x": 0.5, "y": 1.07, "xref": "paper", "yref": "paper", "font": {"color": "#ff0055", "size": 12}}],
+            "xaxis": {"title": "Sample (seconds)"},
+            "yaxis": {"title": "Power (W)", "side": "left"},
+            "yaxis2": {"title": "Utilization (%)", "side": "right", "overlaying": "y", "range": [0, 110]},
+            "plot_bgcolor": "#1a1a2e", "paper_bgcolor": "#16213e", "font": {"color": "#eee"}
+        },
+        "ghost_power_samples": len(ghost_x),
+        "ghost_power_detected": len(ghost_x) > 0
+    }
+
+# ========== REPLAY MODE (SSE) ==========
+@app.get("/replay/{gpu}/{test_id}")
+def replay_info(gpu: str, test_id: str):
+    data, _ = load_csv_for_plot(gpu, test_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Test not found")
+    return {
+        "gpu": gpu, "test_id": test_id,
+        "total_samples": len(data.get("timestamps", [])),
+        "stream_url": f"/replay/{gpu}/{test_id}/stream",
+        "note": "Connect via EventSource. Add ?speed=2.0 for 2x playback."
+    }
+
+@app.get("/replay/{gpu}/{test_id}/stream")
+async def replay_stream(gpu: str, test_id: str, speed: float = 1.0):
+    if gpu not in ["a100", "h100"]:
+        raise HTTPException(status_code=400, detail="gpu must be a100 or h100")
+    data, _ = load_csv_for_plot(gpu, test_id)
+    if data is None or not data.get("timestamps"):
+        raise HTTPException(status_code=404, detail=f"No data for {gpu}/{test_id}")
+    async def stream():
+        n = len(data["timestamps"])
+        delay = max(0.05, 1.0 / max(0.1, speed))
+        yield f"data: {json.dumps({'type': 'start', 'gpu': gpu, 'test_id': test_id, 'total_samples': n})}\n\n"
+        for i in range(n):
+            row = {
+                "type": "telemetry", "sample": i, "total": n,
+                "power_w": data["power"][i],
+                "utilization_pct": data["utilization"][i],
+                "temperature_c": data["temperature"][i],
+                "ghost_power": data["utilization"][i] == 0 and data["power"][i] > 80,
+                "progress_pct": round((i / n) * 100, 1)
+            }
+            yield f"data: {json.dumps(row)}\n\n"
+            await asyncio.sleep(delay)
+        yield f"data: {json.dumps({'type': 'end', 'samples_sent': n})}\n\n"
+    return StreamingResponse(stream(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+# ========== GRAFANA DASHBOARD ==========
+GRAFANA_DASHBOARD = {
+    "title": "GPU Energy Observability Platform",
+    "uid": "gpu-energy-obs",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+        {"id": 1, "title": "Live Power (W)", "type": "timeseries", "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+         "targets": [{"expr": "gpu_live_power_watts", "legendFormat": "{{cluster}}"}],
+         "fieldConfig": {"defaults": {"unit": "watt", "color": {"fixedColor": "#ff6b35", "mode": "fixed"}}}},
+        {"id": 2, "title": "Live Utilization (%)", "type": "timeseries", "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+         "targets": [{"expr": "gpu_live_utilization_percent", "legendFormat": "{{cluster}}"}],
+         "fieldConfig": {"defaults": {"unit": "percent", "max": 100, "color": {"fixedColor": "#4ecdc4", "mode": "fixed"}}}},
+        {"id": 3, "title": "Ghost Power Events", "type": "stat", "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4},
+         "targets": [{"expr": "gpu_ghost_power_events_total", "legendFormat": "{{gpu}}"}],
+         "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color": "green", "value": 0}, {"color": "red", "value": 1}]}}}},
+        {"id": 4, "title": "Idle Power Floor (W)", "type": "stat", "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4},
+         "targets": [{"expr": "gpu_idle_power_floor_watts", "legendFormat": "{{gpu}}"}],
+         "fieldConfig": {"defaults": {"unit": "watt"}}},
+        {"id": 5, "title": "Peak FP32 TFLOPS", "type": "stat", "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
+         "targets": [{"expr": "gpu_fp32_peak_tflops", "legendFormat": "{{gpu}}"}],
+         "fieldConfig": {"defaults": {"unit": "short"}}},
+        {"id": 6, "title": "Efficiency (GFLOPS/W)", "type": "stat", "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4},
+         "targets": [{"expr": "gpu_efficiency_gflops_per_watt", "legendFormat": "{{gpu}}"}],
+         "fieldConfig": {"defaults": {"unit": "short"}}},
+        {"id": 7, "title": "Live Temperature (C)", "type": "timeseries", "gridPos": {"x": 0, "y": 12, "w": 24, "h": 8},
+         "targets": [{"expr": "gpu_live_temperature_celsius", "legendFormat": "{{cluster}}"}],
+         "fieldConfig": {"defaults": {"unit": "celsius", "color": {"fixedColor": "#ffe66d", "mode": "fixed"},
+             "thresholds": {"steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 70}, {"color": "red", "value": 85}]}}}}
+    ]
+}
+
+@app.get("/grafana/dashboard")
+def get_grafana_dashboard():
+    return {"dashboard": GRAFANA_DASHBOARD, "overwrite": True, "folderId": 0}
+
+@app.get("/grafana/dashboard/download", response_class=PlainTextResponse)
+def download_grafana_dashboard():
+    content = json.dumps({"dashboard": GRAFANA_DASHBOARD, "overwrite": True, "folderId": 0}, indent=2)
+    return PlainTextResponse(content, media_type="application/json",
+        headers={"Content-Disposition": "attachment; filename=gpu-energy-dashboard.json"})
+
+# ========== SLURM JOB HOOKS ==========
+JOB_LOG_FILE = os.path.join(DATA_DIR, "slurm_jobs.json")
+
+def load_jobs():
+    if os.path.exists(JOB_LOG_FILE):
+        try:
+            with open(JOB_LOG_FILE) as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_jobs(jobs):
+    try:
+        with open(JOB_LOG_FILE, "w") as f:
+            json.dump(jobs, f, indent=2)
+    except:
+        pass
+
+@app.post("/job/start")
+async def job_start(payload: dict):
+    job_id = payload.get("job_id", f"job_{int(time.time())}")
+    jobs = load_jobs()
+    jobs[job_id] = {
+        "job_id": job_id,
+        "start_time": datetime.now().isoformat(),
+        "end_time": None,
+        "gpu_type": payload.get("gpu_type", "unknown"),
+        "nodes": payload.get("nodes", 1),
+        "user": payload.get("user", "unknown"),
+        "status": "running",
+        "metrics_at_start": {k: v[-1] if v else {} for k, v in metrics_store.items()}
+    }
+    save_jobs(jobs)
+    return {"status": "ok", "job_id": job_id, "message": "Job start recorded"}
+
+@app.post("/job/end")
+async def job_end(payload: dict):
+    job_id = payload.get("job_id")
+    if not job_id:
+        raise HTTPException(status_code=400, detail="job_id required")
+    jobs = load_jobs()
+    if job_id not in jobs:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    jobs[job_id]["end_time"] = datetime.now().isoformat()
+    jobs[job_id]["status"] = "complete"
+    jobs[job_id]["metrics_at_end"] = {k: v[-1] if v else {} for k, v in metrics_store.items()}
+    try:
+        start = datetime.fromisoformat(jobs[job_id]["start_time"])
+        end = datetime.fromisoformat(jobs[job_id]["end_time"])
+        jobs[job_id]["duration_seconds"] = (end - start).total_seconds()
+    except:
+        jobs[job_id]["duration_seconds"] = None
+    save_jobs(jobs)
+    return {"status": "ok", "job_id": job_id, "duration_seconds": jobs[job_id].get("duration_seconds")}
+
+@app.get("/jobs")
+def list_jobs():
+    return load_jobs()
+
+@app.get("/jobs/{job_id}")
+def get_job(job_id: str):
+    jobs = load_jobs()
+    if job_id not in jobs:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    return jobs[job_id]
+
 
 if __name__ == "__main__":
     import uvicorn
