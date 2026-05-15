@@ -346,7 +346,7 @@ app.add_middleware(
 # ========== TEST RESULTS ENDPOINTS ==========
 @app.get("/results/a100")
 def get_a100_results():
-    base = "get_data_dir()/tests/a100"
+    base = os.path.join(get_data_dir(), "tests", "a100")
     out = []
     if os.path.isdir(base):
         for f in sort_by_test_number(os.listdir(base)):
@@ -358,7 +358,7 @@ def get_a100_results():
 
 @app.get("/results/h100")
 def get_h100_results():
-    base = "get_data_dir()/tests/h100"
+    base = os.path.join(get_data_dir(), "tests", "h100")
     out = []
     if os.path.isdir(base):
         for f in sort_by_test_number(os.listdir(base)):
@@ -370,7 +370,7 @@ def get_h100_results():
 
 @app.get("/results/a100/count")
 def count_a100():
-    base = "get_data_dir()/tests/a100"
+    base = os.path.join(get_data_dir(), "tests", "a100")
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
@@ -380,7 +380,7 @@ def count_a100():
 
 @app.get("/results/h100/count")
 def count_h100():
-    base = "get_data_dir()/tests/h100"
+    base = os.path.join(get_data_dir(), "tests", "h100")
     c = 0
     if os.path.isdir(base):
         for f in os.listdir(base):
@@ -390,7 +390,7 @@ def count_h100():
 
 @app.get("/results/a100/{test_id}")
 def get_a100_test_result(test_id: str):
-    base = "get_data_dir()/tests/a100"
+    base = os.path.join(get_data_dir(), "tests", "a100")
     path = find_test_result(base, test_id)
     if not path:
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
@@ -399,7 +399,7 @@ def get_a100_test_result(test_id: str):
 
 @app.get("/results/h100/{test_id}")
 def get_h100_test_result(test_id: str):
-    base = "get_data_dir()/tests/h100"
+    base = os.path.join(get_data_dir(), "tests", "h100")
     path = find_test_result(base, test_id)
     if not path:
         raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
@@ -519,7 +519,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # ========== DEBUG ==========
 @app.get("/debug/list_tests")
 def list_tests():
-    base = "get_data_dir()/tests/a100"
+    base = os.path.join(get_data_dir(), "tests", "a100")
     if not os.path.exists(base):
         return {"error": f"Path {base} does not exist"}
     folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
