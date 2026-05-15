@@ -1227,3 +1227,17 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+@app.get("/debug/path")
+def debug_path():
+    import os
+    data_dir = get_data_dir()
+    tests_dir = os.path.join(data_dir, "tests", "a100", "test-02_ghost_power_test")
+    csv_path = os.path.join(tests_dir, "data.csv")
+    return {
+        "data_dir": data_dir,
+        "tests_dir": tests_dir,
+        "csv_exists": os.path.exists(csv_path),
+        "cwd": os.getcwd(),
+        "dir_listing": os.listdir(data_dir) if os.path.exists(data_dir) else None
+    }
