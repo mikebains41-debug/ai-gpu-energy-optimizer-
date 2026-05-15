@@ -1354,3 +1354,38 @@ def list_comparisons():
             "/compare/matrix_size": "2048x2048 vs 4096x4096 efficiency"
         }
     }
+
+@app.get("/compare/precision/v2")
+def compare_precision_v2():
+    """Parse precision from test names since summary fields may be absent."""
+    import re
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        by_prec = {}
+        for s in summaries:
+            name = (s.get("name","") + " " + s.get("_folder","")).lower()
+            if "fp8" in name: prec = "FP8"
+            elif "fp16" in name: prec = "FP16"
+            elif "fp32" in name: prec = "FP32"
+            else: continue
+            by_prec.setdefault(prec, []).append(s)
+        out[gpu] = {p: {"test_count": len(v), "mean_power_w": round(sum(x["mean_power_w"] for x in v if "mean_power_w" in x) / max(1, sum(1 for x in v if "mean_power_w" in x)), 2) if any("mean_power_w" in x for x in v) else None, "tests": [x.get("name", x["_folder"]) for x in v]} for p, v in by_prec.items()}
+    return {"comparison": out, "note": "Parsed from test names"}
+
+@app.get("/compare/matrix_size/v2")
+def compare_matrix_v2():
+    """Parse matrix size from test names."""
+    out = {}
+    for gpu in ["a100", "h100"]:
+        summaries = load_all_summaries(gpu)
+        by_size = {}
+        for s in summaries:
+            name = (s.get("name","") + " " + s.get("_folder","")).lower()
+            if "8192" in name: size = "8192x8192"
+            elif "4096" in name: size = "4096x4096"
+            elif "2048" in name: size = "2048x2048"
+            else: continue
+            by_size.setdefault(size, []).append(s)
+        out[gpu] = {sz: {"test_count": len(v), "mean_power_w": round(sum(x["mean_power_w"] for x in v if "mean_power_w" in x) / max(1, sum(1 for x in v if "mean_power_w" in x)), 2) if any("mean_power_w" in x for x in v) else None, "tests": [x.get("name", x["_folder"]) for x in v]} for sz, v in by_size.items()}
+    return {"comparison": out}
