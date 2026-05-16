@@ -1496,3 +1496,53 @@ def get_cei_specification():
         ],
         "citation": "Bains, M. (2026). Compute Efficiency Index (CEI) Specification v1.0. github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
     }
+
+# ========== BENCHMARK REPORT ==========
+
+@app.get("/benchmark")
+def get_benchmark():
+    return {
+        "title": "GPU Telemetry Desynchronization and Idle Power Persistence Across NVIDIA AI Accelerators",
+        "author": "Manmohan Bains",
+        "date": "2026-05-14",
+        "contact": "mikebains41@gmail.com",
+        "api": "https://ai-gpu-brain-v3.onrender.com/docs",
+        "dashboard": "https://ai-gpu-energy-optimizer.vercel.app",
+        "executive_summary": {
+            "ghost_power": "A100 SXM draws up to 146.7W at 0% reported utilization",
+            "cei_fp32": "5.68e9 FLOPs/J sustained 15 min continuous FP32",
+            "fp16_energy_trap": "FP16 draws 483W vs FP32 302W — 60% more power, lower CEI",
+            "remediation_blocked": "RunPod hypervisor prevents power capping and persistence mode control"
+        },
+        "ghost_power_evidence": [
+            {"test": "test-02", "duration_sec": 60, "peak_power_w": 102.3, "reported_util_pct": 0},
+            {"test": "test-13", "duration_sec": 660, "peak_power_w": 146.7, "reported_util_pct": 0},
+            {"test": "test-14", "duration_sec": 1200, "peak_power_w": 146.7, "reported_util_pct": 0}
+        ],
+        "idle_power_floors": [
+            {"gpu": "Tesla T4", "idle_w": 9.5, "ghost_power": False},
+            {"gpu": "RTX 4090", "idle_w": 20.0, "ghost_power": False},
+            {"gpu": "A40", "idle_w": 30.4, "ghost_power": False},
+            {"gpu": "A100 PCIe", "idle_w": 47.0, "ghost_power": False},
+            {"gpu": "A100 SXM", "idle_w": 67.0, "ghost_power": True},
+            {"gpu": "H100 SXM", "idle_w": 70.0, "ghost_power": False}
+        ],
+        "precision_comparison": {
+            "fp32": {"avg_power_w": 302, "tflops": 14.35, "cei": 5.68e9},
+            "fp16": {"avg_power_w": 483, "tflops": 231, "cei": 3.56e9},
+            "finding": "FP16 is 16x faster but 60% more power — lower energy efficiency per FLOP"
+        },
+        "financial_impact": {
+            "per_gpu_per_year_usd": 58.70,
+            "at_1000_gpus_usd": 58700,
+            "at_1_million_gpus_usd": 58700000
+        },
+        "links": {
+            "cei_standard": "https://ai-gpu-brain-v3.onrender.com/standards/cei",
+            "cei_specification": "https://ai-gpu-brain-v3.onrender.com/benchmark/cei-specification",
+            "detection": "https://ai-gpu-brain-v3.onrender.com/detect/a100",
+            "test_13_detection": "https://ai-gpu-brain-v3.onrender.com/detect/a100/13",
+            "raw_data": "https://ai-gpu-brain-v3.onrender.com/results/a100"
+        },
+        "citation": "Bains, M. (2026). GPU Telemetry Desynchronization and Idle Power Persistence Across NVIDIA AI Accelerators."
+    }
