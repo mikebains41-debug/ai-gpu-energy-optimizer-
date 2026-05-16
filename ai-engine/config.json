@@ -1,6 +1,0 @@
-{
-  "backend_url": "https://ai-gpu-brain-v2.onrender.com",
-  "cluster_id": "YOUR_CLUSTER_ID_HERE",
-  "api_key": "YOUR_API_KEY_HERE",
-  "check_interval_seconds": 2
-}
