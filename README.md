@@ -112,5 +112,5 @@ This project is open to:
 
 AI + GPU + Energy Optimization Platform | Real‑time dashboard for data center GPU workloads, power efficiency, heat reuse, and AI‑driven energy scheduling.
 
-© 2026 Manmohan Bains. All rights reserved.  
+© 2026 Manmohan Bains. Core engine is proprietary. Results, methodology, and reference implementation are open for verification and research use.
 Proprietary software – no unauthorized copying, modification, or distribution.
