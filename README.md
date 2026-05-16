@@ -2,7 +2,7 @@
 
 **Author:** Manmohan Bains  
 **Contact:** mikebains41@gmail.com  
-**Live API:** [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs)  
+**Live API:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)  
 **Status:** Active — open to partnership
 
 ---
@@ -28,11 +28,11 @@ A production GPU energy observability platform that detects, measures, and compa
 
 | Endpoint | URL |
 |----------|-----|
-| A100 Live Metrics (if agent active) | [https://ai-gpu-brain-v3.onrender.com/metrics/a100](https://ai-gpu-brain-v3.onrender.com/metrics/a100) |
-| H100 Live Metrics (if agent active) | [https://ai-gpu-brain-v3.onrender.com/metrics/h100](https://ai-gpu-brain-v3.onrender.com/metrics/h100) |
-| A100 Recorded Test Results (24 tests) | [https://ai-gpu-brain-v3.onrender.com/results/a100](https://ai-gpu-brain-v3.onrender.com/results/a100) |
-| H100 Recorded Test Results (11 tests) | [https://ai-gpu-brain-v3.onrender.com/results/h100](https://ai-gpu-brain-v3.onrender.com/results/h100) |
-| Full API Documentation | [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs) |
+| A100 Live Metrics (if agent active) | [https://ai-gpu-brain-v2.onrender.com/metrics/a100](https://ai-gpu-brain-v2.onrender.com/metrics/a100) |
+| H100 Live Metrics (if agent active) | [https://ai-gpu-brain-v2.onrender.com/metrics/h100](https://ai-gpu-brain-v2.onrender.com/metrics/h100) |
+| A100 Recorded Test Results (24 tests) | [https://ai-gpu-brain-v2.onrender.com/results/a100](https://ai-gpu-brain-v2.onrender.com/results/a100) |
+| H100 Recorded Test Results (11 tests) | [https://ai-gpu-brain-v2.onrender.com/results/h100](https://ai-gpu-brain-v2.onrender.com/results/h100) |
+| Full API Documentation | [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs) |
 | Frontend Dashboard | [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app) |
 
 ---
@@ -56,7 +56,7 @@ A production GPU energy observability platform that detects, measures, and compa
 ## The CEI Standard
 
 Compute Energy Intensity (CEI) is a metric defined by this project: it measures floating‑point operations delivered per joule during a sustained workload. Reference values and full methodology are available at:  
-[https://ai-gpu-brain-v3.onrender.com/standards/cei](https://ai-gpu-brain-v3.onrender.com/standards/cei)
+[https://ai-gpu-brain-v2.onrender.com/standards/cei](https://ai-gpu-brain-v2.onrender.com/standards/cei)
 
 ---
 
@@ -83,8 +83,8 @@ This project is open to:
 **I want to see this platform grow to handle 100 GPUs, then 500 GPUs.** The architecture is designed to scale, and I am actively planning the next stages of infrastructure (TimescaleDB, Redis, background workers) to make that possible.
 
 **Contact:** [mikebains41@gmail.com](mailto:mikebains41@gmail.com)  
-**API Docs:** [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs)  
-**Sponsor endpoint:** [https://ai-gpu-brain-v3.onrender.com/sponsor](https://ai-gpu-brain-v3.onrender.com/sponsor)
+**API Docs:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)  
+**Sponsor endpoint:** [https://ai-gpu-brain-v2.onrender.com/sponsor](https://ai-gpu-brain-v2.onrender.com/sponsor)
 
 ---
 
