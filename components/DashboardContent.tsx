@@ -455,7 +455,7 @@ export default function DashboardContent() {
 
       {/* Estimated Cost Modeling */}
       <div className="bg-gray-900 rounded-lg p-6 border border-green-700">
-        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Estimated Power Cost Reduction (Modeled from Recorded Test Sessions)</h3>
+        <h3 className="text-sm font-semibold text-green-400 mb-4">💰 Estimated Power Cost Reduction (Per GPU — Single GPU Measured on RunPod)</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-800">
             <span className="text-gray-300">Switch light workloads from H100 → A100</span>
@@ -470,7 +470,7 @@ export default function DashboardContent() {
             <span className="text-green-400 font-bold">Estimated ~${monthlySavingsOffPeak.toFixed(0)}/month</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-4">Based on measured test data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W. Assumes $0.12/kWh and continuous operation. Actual savings depend on workload characteristics and pricing.</p>
+        <p className="text-xs text-gray-500 mt-4">Per GPU estimate. Based on measured test data: H100 {Math.round(h100Power)}W, A100 {Math.round(a100Power)}W. Assumes $0.12/kWh and continuous operation. Multiply by GPU count for fleet estimates. Actual savings depend on workload characteristics and pricing.</p>
       </div>
 
       {/* Observed Test Data & Optimization Hypotheses */}
