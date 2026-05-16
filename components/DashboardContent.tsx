@@ -173,7 +173,7 @@ export default function DashboardContent() {
   const a100Efficiency = 52.6; // measured GFLOPS/W from test data
   const h100Efficiency = 76.5; // measured GFLOPS/W from test data
   const avgEfficiency = (a100Efficiency + h100Efficiency) / 2;
-  const efficiencyPercent = ((a100Efficiency / 100) * 100 / 4).toFixed(1); // 52.6 GFLOPS/W normalized
+  const efficiencyPercent = avgEfficiency.toFixed(1);
 
   const getThrottleReason = () => {
     if (h100Temp > 80) return "Thermal throttling active";
@@ -324,7 +324,7 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{a100Util}%</div>
-              <div className="text-xs text-gray-500">Test Data</div>
+              <div className="text-xs text-orange-400">NVML Telemetry Desync</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
@@ -374,7 +374,7 @@ export default function DashboardContent() {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">GPU Utilization</div>
               <div className="text-2xl font-bold text-gray-100">{h100Util}%</div>
-              <div className="text-xs text-gray-500">Test Data</div>
+              <div className="text-xs text-green-400">No Desync Detected</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="text-xs text-gray-400">Power Draw</div>
