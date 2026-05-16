@@ -1389,3 +1389,110 @@ def compare_matrix_v2():
             by_size.setdefault(size, []).append(s)
         out[gpu] = {sz: {"test_count": len(v), "mean_power_w": round(sum(x["mean_power_w"] for x in v if "mean_power_w" in x) / max(1, sum(1 for x in v if "mean_power_w" in x)), 2) if any("mean_power_w" in x for x in v) else None, "tests": [x.get("name", x["_folder"]) for x in v]} for sz, v in by_size.items()}
     return {"comparison": out}
+
+# ========== CEI SPECIFICATION ENDPOINT ==========
+
+@app.get("/benchmark/cei-specification")
+def get_cei_specification():
+    return {
+        "title": "Compute Efficiency Index (CEI) — Specification v1.0",
+        "author": "Manmohan Bains",
+        "date": "2026-05-14",
+        "contact": "mikebains41@gmail.com",
+        "definition": {
+            "formula": "CEI = Total FLOPs executed / Total energy consumed (Joules)",
+            "unit": "FLOPs per joule (FLOPs/J)",
+            "description": "CEI measures the amount of useful floating-point computation performed per joule of energy consumed by the GPU"
+        },
+        "sampling_methodology": {
+            "tool": "nvidia-smi (NVML) polling",
+            "default_frequency_hz": 1,
+            "permitted_frequencies": ["1 Hz", "100 ms", "10 ms"],
+            "minimum_duration_sec": 60,
+            "sustained_test_duration_sec": 900,
+            "synchronization": "Power samples aligned with timestamps at same instant as utilization"
+        },
+        "workload_definition": {
+            "kernel": "torch.matmul (GEMM) square matrices",
+            "precision": ["FP32", "FP16", "FP8 (H100 only)"],
+            "matrix_sizes_tested": [512, 1024, 2048, 4096, 6144, 8192],
+            "execution_pattern": "Continuous repeated multiplication, no idle gaps",
+            "warmup": "First 10 iterations discarded to avoid CUDA context initialisation overhead"
+        },
+        "energy_calculation": {
+            "method": "Sum of (P_i x delta_t) for all samples",
+            "non_uniform_sampling": "Trapezoidal integration",
+            "idle_baseline_subtraction": "Optional — subtract idle floor power to isolate workload-driven energy"
+        },
+        "flops_calculation": {
+            "formula": "2 x N^3 FLOPs per N×N matrix multiplication",
+            "multiple_iterations": "k iterations = k x 2N^3 total FLOPs",
+            "tensor_cores": "Count as equivalent FP32 FLOPs (2N^3 per iteration)"
+        },
+        "classification_thresholds": [
+            {"range": "> 1.0e10", "class": "Excellent"},
+            {"range": "5e9 - 1e10", "class": "Good"},
+            {"range": "1e9 - 5e9", "class": "Moderate"},
+            {"range": "< 1e9", "class": "Inefficient"}
+        ],
+        "reference_values": {
+            "a100_sxm_fp32_2048_sustained": {
+                "cei": 5.68e9,
+                "avg_power_w": 302.37,
+                "duration_sec": 900,
+                "iterations": 90000,
+                "total_flops": 1.546e15,
+                "total_energy_j": 272133,
+                "platform": "RunPod"
+            },
+            "a100_sxm_fp16_2048_sustained": {
+                "cei": 3.56e9,
+                "avg_power_w": 483,
+                "duration_sec": 600,
+                "platform": "RunPod"
+            },
+            "a100_sxm_fp32_2048_burst": {
+                "cei": 1.60e11,
+                "note": "Burst — excludes idle overhead and cooldown energy"
+            }
+        },
+        "example_calculation": {
+            "test": "test-24",
+            "workload": "2048x2048 FP32 torch.matmul, 90000 iterations, 900 seconds",
+            "avg_power_w": 302.37,
+            "energy_j": 272133,
+            "total_flops": 1.546e15,
+            "cei": 5.68e9,
+            "note": "Lower than burst CEI because includes idle overhead and cooldown energy"
+        },
+        "reporting_format": {
+            "required_fields": [
+                "gpu_model",
+                "precision",
+                "matrix_size",
+                "iterations",
+                "duration_sec",
+                "energy_j",
+                "total_flops",
+                "cei_flops_per_joule"
+            ],
+            "optional_fields": [
+                "idle_power_subtracted",
+                "sampling_rate_hz",
+                "driver_version",
+                "cuda_version"
+            ]
+        },
+        "reproducibility_requirements": [
+            "Public raw logs (CSV) and JSON summaries must be provided",
+            "Exact GPU model, driver version, and CUDA version must be stated",
+            "Any power capping or clock settings must be disclosed",
+            "Test must be repeatable on any equivalent cloud instance"
+        ],
+        "future_extensions": [
+            "Multi-GPU and multi-node CEI",
+            "Real-time streaming CEI via Prometheus exporter",
+            "Carbon-aware CEI — grams of CO2 per FLOP"
+        ],
+        "citation": "Bains, M. (2026). Compute Efficiency Index (CEI) Specification v1.0. github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
+    }
