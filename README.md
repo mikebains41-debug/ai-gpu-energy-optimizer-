@@ -7,6 +7,15 @@
 
 ---
 
+## Quick Start
+
+```bash
+# See real GPU energy data in seconds
+curl https://ai-gpu-brain-v2.onrender.com/results/a100
+curl https://ai-gpu-brain-v2.onrender.com/standards/cei
+curl https://ai-gpu-brain-v2.onrender.com/compare/gpu
+```
+
 ## What This Is
 
 A production GPU energy observability platform that detects, measures, and compares real power behavior across NVIDIA AI accelerators. Built from live telemetry collected on RunPod infrastructure across A100 SXM and H100 SXM GPUs.
