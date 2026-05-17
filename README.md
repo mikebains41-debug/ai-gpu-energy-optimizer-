@@ -1,154 +1,18 @@
-# GPU Energy Optimizer
+# AI GPU Energy Optimizer
 
-**Author:** Manmohan Bains  
-**Contact:** mikebains41@gmail.com  
-**Live API:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)  
-**Status:** Active — open to partnership
+## 📊 Benchmark Contribution (Optional)
 
----
+The GPU Energy Optimizer includes an opt-in telemetry sharing feature to build the CEI benchmark dataset. By enabling contribution, you help map systematic telemetry divergence across cloud providers and improve DESYNC/GHOST detection accuracy. All data is anonymized, aggregated, and used strictly for research and standardization. You retain full ownership of your raw metrics and may disable sharing at any time.
 
-## Quick Start
+**Enable via Docker Compose:**
+\`\`\`
+CEI_TELEMETRY=true
+\`\`\`
 
-```bash
-# See real GPU energy data in seconds
-curl https://ai-gpu-brain-v2.onrender.com/results/a100
-curl https://ai-gpu-brain-v2.onrender.com/standards/cei
-curl https://ai-gpu-brain-v2.onrender.com/compare/gpu
-```
+**What we collect:** GPU model, cloud provider, power draw, utilization, workload type, anonymized anomaly flags.
 
-## What This Is
+**What we NEVER collect:** Instance IDs, account names, job payloads, IP addresses, or API keys.
 
-A production GPU energy observability platform that detects, measures, and compares real power behavior across NVIDIA AI accelerators. Built from live telemetry collected on RunPod infrastructure across A100 SXM and H100 SXM GPUs.
+For data requests or enterprise DPA: privacy@ai-gpu-optimizer.com
 
----
-
-## Key Findings
-
-- **Ghost power confirmed:** A100 SXM draws up to 146.7 W at 0% reported utilization
-- **Idle floor:** 67.1 W on A100, 69.5 W on H100
-- **CEI (FP32):** 5.68 billion FLOPs per joule on A100 SXM
-- **FP16 power:** 60% higher than FP32 at equivalent matrix size
-- **Telemetry desync:** Confirmed across multiple test runs
-- **Hypervisor restrictions:** Persistence mode and power capping blocked on RunPod
-
----
-
-## API Endpoints (Live)
-
-| Endpoint | URL |
-|----------|-----|
-| A100 Live Metrics (if agent active) | [https://ai-gpu-brain-v2.onrender.com/metrics/a100](https://ai-gpu-brain-v2.onrender.com/metrics/a100) |
-| H100 Live Metrics (if agent active) | [https://ai-gpu-brain-v2.onrender.com/metrics/h100](https://ai-gpu-brain-v2.onrender.com/metrics/h100) |
-| A100 Recorded Test Results (24 tests) | [https://ai-gpu-brain-v2.onrender.com/results/a100](https://ai-gpu-brain-v2.onrender.com/results/a100) |
-| H100 Recorded Test Results (11 tests) | [https://ai-gpu-brain-v2.onrender.com/results/h100](https://ai-gpu-brain-v2.onrender.com/results/h100) |
-| Full API Documentation | [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs) |
-| Frontend Dashboard | [https://ai-gpu-energy-optimizer.vercel.app](https://ai-gpu-energy-optimizer.vercel.app) |
-
----
-
-## What the API Does
-
-**51 endpoints** covering:
-
-- Real‑time ghost power detection
-- Compute Energy Intensity (CEI) benchmarking
-- A100 vs H100 comparative analysis
-- FP32 vs FP16 vs FP8 efficiency comparison
-- Matrix size scaling analysis (2048 to 8192)
-- Prometheus metrics export
-- Grafana dashboard integration
-- SSE replay of recorded test runs
-- Job tracking and duration measurement
-
----
-
-## The CEI Standard
-
-Compute Energy Intensity (CEI) is a metric defined by this project: it measures floating‑point operations delivered per joule during a sustained workload. Reference values and full methodology are available at:  
-[https://ai-gpu-brain-v2.onrender.com/standards/cei](https://ai-gpu-brain-v2.onrender.com/standards/cei)
-
----
-
-## Validated On
-
-| Provider | GPU | Tests |
-|----------|-----|-------|
-| RunPod | A100 SXM | 24 |
-| RunPod | H100 SXM | 11 |
-
-**Pending:** AWS, CoreWeave, Lambda Labs, Vast.ai
-
----
-
-
----
-
-## Run Your Own GPU Test
-
-Test your own NVIDIA GPU and compare results against our dataset:
-
-```bash
-git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
-cd ai-gpu-energy-optimizer-/reference
-pip install torch pynvml requests
-python gpu_agent.py --api-key anonymous
-```
-
-Runs 4 tests: idle baseline, ghost power detection, CEI benchmark, FP16 vs FP32.
-Results saved locally as JSON and submitted to the API.
-
----
-
-## Reproduce CEI Results
-
-Minimal single-test verification:
-
-```bash
-python reference/cei_reference.py
-```
-
-Expected on A100 SXM: ~5.68 billion FLOPs/Joule
-
-## Partnership
-
-This project is open to:
-
-- Cloud GPU compute credits
-- Data center access (AWS, CoreWeave, Lambda, Vast)
-- Research collaboration
-- Source code access (upon request for verified partners and sponsors)
-
-**I want to see this platform grow to handle 100 GPUs, then 500 GPUs.** The architecture is designed to scale, and I am actively planning the next stages of infrastructure (TimescaleDB, Redis, background workers) to make that possible.
-
-**Contact:** [mikebains41@gmail.com](mailto:mikebains41@gmail.com)  
-**API Docs:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)  
-
----
-
-## Roadmap
-
-- Migrate test data from flat files to TimescaleDB for scalable time‑series storage and real‑time query performance
-- Redis Streams for live multi‑GPU telemetry ingestion at scale
-- Celery background workers for continuous ghost power detection
-- Per‑provider API key management with RBAC
-- Redis pub/sub for multi‑instance WebSocket broadcasting
-- Validation across AWS, CoreWeave, Lambda Labs, and Vast.ai
-
----
-
-## About
-
-AI + GPU + Energy Optimization Platform | Real‑time dashboard for data center GPU workloads, power efficiency, heat reuse, and AI‑driven energy scheduling.
-
-© 2026 Manmohan Bains. Core engine is proprietary. Results, methodology, and reference implementation are open for verification and research use.
-
-## ⚡ 60-Second Install
-
-```bash
-# 1. Install Docker (skip if already installed)
-curl -fsSL https://get.docker.com | sh
-
-# 2. Clone and run
-git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
-cd ai-gpu-energy-optimizer-
-docker-compose up
+*© 2026 Mike Bains. This notice is for informational purposes and does not constitute legal advice.*
