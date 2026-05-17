@@ -141,3 +141,14 @@ This project is open to:
 AI + GPU + Energy Optimization Platform | Real‑time dashboard for data center GPU workloads, power efficiency, heat reuse, and AI‑driven energy scheduling.
 
 © 2026 Manmohan Bains. Core engine is proprietary. Results, methodology, and reference implementation are open for verification and research use.
+
+## ⚡ 60-Second Install
+
+```bash
+# 1. Install Docker (skip if already installed)
+curl -fsSL https://get.docker.com | sh
+
+# 2. Clone and run
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+cd ai-gpu-energy-optimizer-
+docker-compose up
