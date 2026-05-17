@@ -10,12 +10,19 @@ GPU energy observability platform with multi-provider anomaly detection — per-
 
 Service| URL
 Live API Docs| https://ai-gpu-brain-v2.onrender.com/docs
+
 Frontend Dashboard| https://ai-gpu-energy-optimizer.vercel.app
+
 A100 Metrics| https://ai-gpu-brain-v2.onrender.com/metrics/a100
+
 H100 Metrics| https://ai-gpu-brain-v2.onrender.com/metrics/h100
+
 A100 Results| https://ai-gpu-brain-v2.onrender.com/results/a100
+
 H100 Results| https://ai-gpu-brain-v2.onrender.com/results/h100
+
 CEI Standard| https://ai-gpu-brain-v2.onrender.com/standards/cei
+
 GPU Compare API| https://ai-gpu-brain-v2.onrender.com/compare/gpu
 
 ---
