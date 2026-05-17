@@ -142,7 +142,7 @@ curl https://ai-gpu-brain-v2.onrender.com/standards/cei
 
 ## 📡 API Coverage
 
-51+ endpoints covering:
+30+ endpoints covering:
 
 - Real-time ghost power detection
 - Compute Energy Intensity (CEI) benchmarking
