@@ -461,7 +461,6 @@ def list_tests():
     folders = sorted([d for d in os.listdir(base) if d.startswith("test-")])
     return {"base_path": base, "folders": folders}
 
-# ─── GHOST POWER ─────────────────────────────────────────────────────────────
 
 @app.get("/ghost-power")
 def ghost_power_summary():
@@ -479,66 +478,26 @@ def ghost_power_summary():
             {"test_id": "test-13", "ghost_power_w": 146.66, "reported_utilization_pct": 0, "duration_sec": 660, "samples_affected": 17},
             {"test_id": "test-14", "ghost_power_w": 134.59, "reported_utilization_pct": 0, "duration_sec": 1200},
         ],
-        "root_cause": "NVML telemetry desync — power and utilization counters update on different clocks. Power rises before kernel start and persists after kernel end.",
-        "remediation_attempted": [
-            "nvidia-smi -pm 0 — blocked by RunPod hypervisor",
-            "nvidia-smi -pl 200 — insufficient permissions",
-        ],
+        "root_cause": "NVML telemetry desync - power and utilization counters update on different clocks.",
         "financial_impact_usd": {
             "per_gpu_per_year": 58.70,
             "at_1000_gpus": 58700,
             "at_1_million_gpus": 58700000,
-            "assumption": "$0.12/kWh, continuous operation",
         },
     }
 
 @app.get("/compare")
 def list_comparisons():
-    return {
-        "available": [
-            "/compare/gpu",
-            "/compare/precision",
-            "/compare/matrix-size",
-            "/compare/ghost-power",
-            "/compare/idle",
-        ]
-    }
+    return {"available": ["/compare/gpu", "/compare/precision", "/compare/matrix-size", "/compare/ghost-power", "/compare/idle"]}
 
 @app.get("/compare/gpu")
 def compare_gpu():
     return {
         "comparison": "A100 SXM vs H100 SXM",
         "platform": "RunPod",
-        "summary": {
-            "a100_sxm": {
-                "idle_power_w": 67.1,
-                "peak_power_w": 501.86,
-                "fp32_tflops": 14.35,
-                "fp16_tflops": 231.08,
-                "cei_fp32_sustained": 5.68e9,
-                "efficiency_gflops_per_w": 52.6,
-                "ghost_power_detected": True,
-                "ghost_power_peak_w": 146.66,
-                "total_tests": 24,
-            },
-            "h100_sxm": {
-                "idle_power_w": 69.5,
-                "peak_power_w": 412.0,
-                "fp32_tflops": 49.13,
-                "fp16_tflops": 592.8,
-                "cei_fp32_burst": 4.91e13,
-                "efficiency_gflops_per_w": 76.5,
-                "ghost_power_detected": False,
-                "total_tests": 11,
-            },
-        },
-        "key_differences": [
-            "H100 FP32 throughput 2.8x higher (49.13 vs 17.37 TFLOPS)",
-            "H100 FP16 throughput 2.6x higher (592.8 vs 231.08 TFLOPS)",
-            "H100 efficiency 45% better (76.5 vs 52.6 GFLOPS/W)",
-            "A100 ghost power confirmed — H100 shows none across all 11 tests",
-            "A100 locks to P0 post-load — H100 scales power linearly",
-        ],
+        "a100_sxm": {"idle_power_w": 67.1, "peak_power_w": 501.86, "fp32_tflops": 14.35, "fp16_tflops": 231.08, "cei_fp32_sustained": 5.68e9, "efficiency_gflops_per_w": 52.6, "ghost_power_detected": True, "ghost_power_peak_w": 146.66, "total_tests": 24},
+        "h100_sxm": {"idle_power_w": 69.5, "peak_power_w": 412.0, "fp32_tflops": 49.13, "fp16_tflops": 592.8, "cei_fp32_burst": 4.91e13, "efficiency_gflops_per_w": 76.5, "ghost_power_detected": False, "total_tests": 11},
+        "key_differences": ["H100 FP32 throughput 2.8x higher (49.13 vs 17.37 TFLOPS)", "H100 FP16 throughput 2.6x higher (592.8 vs 231.08 TFLOPS)", "H100 efficiency 45% better (76.5 vs 52.6 GFLOPS/W)", "A100 ghost power confirmed - H100 shows none across all 11 tests"],
     }
 
 @app.get("/compare/precision")
@@ -547,57 +506,23 @@ def compare_precision():
         "comparison": "FP32 vs FP16 on A100 SXM",
         "gpu": "NVIDIA A100 SXM (RunPod)",
         "matrix_size": "2048x2048",
-        "results": {
-            "fp32_sustained_15min": {
-                "test_id": "test-24",
-                "precision": "FP32",
-                "duration_sec": 900,
-                "iterations": 90000,
-                "avg_power_w": 302.37,
-                "tflops": 14.35,
-                "total_energy_j": 272130,
-                "cei_flops_per_joule": 5.68e9,
-                "cei_class": "Good",
-            },
-            "fp16_sustained_10min": {
-                "test_id": "test-19",
-                "precision": "FP16",
-                "duration_sec": 600,
-                "iterations": 60000,
-                "avg_power_w": 482.7,
-                "peak_power_w": 501.86,
-                "tflops": 231.08,
-                "cei_flops_per_joule": 3.56e9,
-                "cei_class": "Moderate",
-            },
-            "burst_60iter": {
-                "test_id": "test-21",
-                "fp32_kernel_ms": 1.44,
-                "fp16_kernel_ms": 0.48,
-                "fp16_speedup": "3x faster sustained",
-                "note": "Both show 0% reported utilization — telemetry desync in both precisions",
-            },
-        },
-        "analysis": {
-            "throughput_ratio": "FP16 is 16x faster in throughput",
-            "power_ratio": "FP16 draws 60% more power (482.7W vs 302.4W)",
-            "cei_ratio": "FP32 CEI is 1.6x better (5.68e9 vs 3.56e9 FLOPs/J)",
-            "recommendation": "FP32 for energy efficiency. FP16 for max throughput.",
-        },
+        "fp32_sustained_15min": {"test_id": "test-24", "precision": "FP32", "duration_sec": 900, "iterations": 90000, "avg_power_w": 302.37, "tflops": 14.35, "total_energy_j": 272130, "cei_flops_per_joule": 5.68e9, "cei_class": "Good"},
+        "fp16_sustained_10min": {"test_id": "test-19", "precision": "FP16", "duration_sec": 600, "iterations": 60000, "avg_power_w": 482.7, "peak_power_w": 501.86, "tflops": 231.08, "cei_flops_per_joule": 3.56e9, "cei_class": "Moderate"},
+        "analysis": {"throughput_ratio": "FP16 is 16x faster in throughput", "power_ratio": "FP16 draws 60% more power (482.7W vs 302.4W)", "cei_ratio": "FP32 CEI is 1.6x better", "recommendation": "FP32 for energy efficiency. FP16 for max throughput."},
     }
 
 @app.get("/compare/matrix-size")
 def compare_matrix_size():
     return {
-        "comparison": "Power vs Matrix Size — A100 SXM",
+        "comparison": "Power vs Matrix Size - A100 SXM",
         "test_id": "test-18",
         "precision": "FP32",
         "data_points": [
-            {"matrix_size": 512,  "power_w": 188.95, "note": "Compute underutilized"},
+            {"matrix_size": 512, "power_w": 188.95},
             {"matrix_size": 1024, "power_w": 240.0},
-            {"matrix_size": 2048, "power_w": 302.4,  "note": "CEI baseline"},
+            {"matrix_size": 2048, "power_w": 302.4},
             {"matrix_size": 4096, "power_w": 330.0},
-            {"matrix_size": 6144, "power_w": 339.1,  "note": "Peak power"},
+            {"matrix_size": 6144, "power_w": 339.1, "note": "Peak power"},
             {"matrix_size": 8192, "power_w": 327.37, "note": "Memory bandwidth saturation"},
         ],
         "conclusion": "Power peaks at 6144x6144 then drops. CEI peaks at 4096x4096.",
@@ -607,19 +532,21 @@ def compare_matrix_size():
 def compare_ghost_power():
     return {
         "comparison": "Ghost Power: A100 SXM vs H100 SXM",
-        "a100_sxm": {
-            "ghost_power_detected": True,
-            "tests_affected": 4,
-            "total_tests": 24,
-            "peak_ghost_power_w": 146.66,
-            "idle_floor_w
+        "a100_sxm": {"ghost_power_detected": True, "tests_affected": 4, "total_tests": 24, "peak_ghost_power_w": 146.66, "idle_floor_w": 67.1, "pstate": "P0 persistent after load", "memory_clock_mhz": 1593},
+        "h100_sxm": {"ghost_power_detected": False, "tests_affected": 0, "total_tests": 11, "idle_floor_w": 69.5, "load_scaling": "Linear - clean telemetry"},
+        "conclusion": "Ghost power specific to A100 SXM on RunPod. H100 shows no desync across all 11 tests.",
+    }
 
-git add ai-engine/main.py
-git commit -m "fix: add ghost power endpoints, fix compare/precision, matrix-size, idle comparisons"
-git push origin main
-cd ~/ai-gpu-energy-optimizer-
-cp ~/gpu-core-private/ai-engine/main.py ai-engine/main.py
-git add ai-engine/main.py
-git commit -m "fix: sync all fixed API endpoints to public repo"
-git push origin main
-
+@app.get("/compare/idle")
+def compare_idle():
+    return {
+        "comparison": "Idle Power Floors by GPU",
+        "data": [
+            {"gpu": "Tesla T4", "idle_w": 9.5, "ghost_power": False},
+            {"gpu": "RTX 4090", "idle_w": 20.0, "ghost_power": False},
+            {"gpu": "A40", "idle_w": 30.4, "ghost_power": False},
+            {"gpu": "A100 PCIe", "idle_w": 47.0, "ghost_power": False},
+            {"gpu": "A100 SXM", "idle_w": 67.1, "ghost_power": True, "source": "measured test-15 test-23"},
+            {"gpu": "H100 SXM", "idle_w": 69.5, "ghost_power": False, "source": "measured h100/test-01"},
+        ],
+    }
