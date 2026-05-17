@@ -506,7 +506,7 @@ def compare_gpu():
         "comparison": "A100 SXM vs H100 SXM",
         "platform": "RunPod",
         "a100_sxm": {"idle_power_w": 67.1, "peak_power_w": 501.86, "fp32_tflops": 14.35, "fp16_tflops": 231.08, "cei_fp32_sustained": 5.68e9, "efficiency_gflops_per_w": 52.6, "ghost_power_detected": True, "ghost_power_peak_w": 146.66, "total_tests": 24},
-        "h100_sxm": {"idle_power_w": 69.5, "peak_power_w": 412.0, "fp32_tflops": 49.13, "fp16_tflops": 592.8, "cei_fp32_burst": 4.91e13, "efficiency_gflops_per_w": 76.5, "ghost_power_detected": False, "total_tests": 11},
+        "h100_sxm": {"idle_power_w": 69.5, "peak_power_w": 412.0, "fp32_tflops": 49.13, "fp16_tflops": 592.8, "cei_fp32_burst_per_kernel": 4.91e13, "note": "Burst measurement - not directly comparable to A100 sustained CEI", "efficiency_gflops_per_w": 76.5, "ghost_power_detected": False, "total_tests": 11},
         "key_differences": ["H100 FP32 throughput 2.8x higher (49.13 vs 17.37 TFLOPS)", "H100 FP16 throughput 2.6x higher (592.8 vs 231.08 TFLOPS)", "H100 efficiency 45% better (76.5 vs 52.6 GFLOPS/W)", "A100 ghost power confirmed - H100 shows none across all 11 tests"],
     }
 
