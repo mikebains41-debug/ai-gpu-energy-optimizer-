@@ -560,3 +560,43 @@ def compare_idle():
             {"gpu": "H100 SXM", "idle_w": 69.5, "ghost_power": False, "source": "measured h100/test-01"},
         ],
     }
+
+
+@app.get("/standards/cei")
+def get_cei_standard():
+    return {
+        "metric": "CEI",
+        "name": "Compute Energy Intensity",
+        "version": "1.0",
+        "formula": "CEI = Total FLOPs / Total Joules",
+        "unit": "FLOPs/J",
+        "sampling_method": "1Hz via nvidia-smi power readings",
+        "workload_classes": ["FP32 GEMM", "FP16 GEMM", "Tensor Core"],
+        "normalization": "Exclude idle baseline, include cooldown energy",
+        "reference_value": {"gpu": "A100 SXM", "precision": "FP32", "duration_sec": 900, "cei": 5680000000},
+        "thresholds": {"excellent": ">10B", "good": "5-10B", "moderate": "1-5B", "poor": "<1B"},
+        "github": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
+    }
+
+@app.get("/standards")
+def list_standards():
+    return [{"metric": "CEI", "name": "Compute Energy Intensity", "url": "/standards/cei"}]
+
+@app.get("/grafana/dashboard")
+def get_grafana_dashboard():
+    return {
+        "title": "GPU Energy Optimizer",
+        "description": "Power, utilization, CEI and ghost power monitoring",
+        "panels": [
+            {"title": "Power vs Utilization", "metric": "power_w vs utilization_pct"},
+            {"title": "CEI Over Time", "metric": "cei_flops_per_joule"},
+            {"title": "Idle Floor by GPU", "metric": "idle_power_w"},
+            {"title": "Ghost Power Events", "metric": "ghost_power_detected"},
+        ],
+        "prometheus_endpoint": "https://ai-gpu-brain-v2.onrender.com/metrics/prometheus",
+        "download": "https://ai-gpu-brain-v2.onrender.com/grafana/dashboard/download"
+    }
+
+@app.get("/grafana/dashboard/download")
+def download_grafana_dashboard():
+    return {"message": "Grafana dashboard JSON coming soon"}
