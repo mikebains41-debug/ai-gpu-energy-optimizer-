@@ -80,6 +80,35 @@ Compute Energy Intensity (CEI) is a metric defined by this project: it measures 
 
 ---
 
+
+---
+
+## Run Your Own GPU Test
+
+Test your own NVIDIA GPU and compare results against our dataset:
+
+```bash
+git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+cd ai-gpu-energy-optimizer-/reference
+pip install torch pynvml requests
+python gpu_agent.py --api-key anonymous
+```
+
+Runs 4 tests: idle baseline, ghost power detection, CEI benchmark, FP16 vs FP32.
+Results saved locally as JSON and submitted to the API.
+
+---
+
+## Reproduce CEI Results
+
+Minimal single-test verification:
+
+```bash
+python reference/cei_reference.py
+```
+
+Expected on A100 SXM: ~5.68 billion FLOPs/Joule
+
 ## Partnership
 
 This project is open to:
