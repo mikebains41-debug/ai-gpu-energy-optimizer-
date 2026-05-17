@@ -327,23 +327,33 @@ def get_a100_results():
 def get_h100_results():
     return load_test_results("h100")
 
-@app.get("/results/a100/{test_id}")
-def get_a100_test_result(test_id: str):
-    test_folder = f"/opt/render/project/src/data/tests/a100/{test_id}"
-    summary_file = f"{test_folder}/summary.json"
-    if os.path.exists(summary_file):
-        with open(summary_file, "r") as f:
-            return json.load(f)
-    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
+@app.get("/results/a100/{test_num}")
+def get_a100_test_result(test_num: str):
+    base = "/opt/render/project/src/data/tests/a100"
+    padded = test_num.zfill(2)
+    prefix = f"test-{padded}"
+    if os.path.exists(base):
+        for folder in sorted(os.listdir(base)):
+            if folder == prefix or folder.startswith(prefix):
+                path = os.path.join(base, folder, "summary.json")
+                if os.path.exists(path):
+                    with open(path) as f:
+                        return json.load(f)
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-24")
 
-@app.get("/results/h100/{test_id}")
-def get_h100_test_result(test_id: str):
-    test_folder = f"/opt/render/project/src/data/tests/h100/{test_id}"
-    summary_file = f"{test_folder}/summary.json"
-    if os.path.exists(summary_file):
-        with open(summary_file, "r") as f:
-            return json.load(f)
-    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found")
+@app.get("/results/h100/{test_num}")
+def get_h100_test_result(test_num: str):
+    base = "/opt/render/project/src/data/tests/h100"
+    padded = test_num.zfill(2)
+    prefix = f"test-{padded}"
+    if os.path.exists(base):
+        for folder in sorted(os.listdir(base)):
+            if folder == prefix or folder.startswith(prefix):
+                path = os.path.join(base, folder, "summary.json")
+                if os.path.exists(path):
+                    with open(path) as f:
+                        return json.load(f)
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-11")
 
 # ========== DASHBOARD SUMMARY ENDPOINT ==========
 @app.get("/api/summary")
