@@ -123,7 +123,7 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 - A100 SXM cooldown stabilization observed near 66–78W
 - RTX 4090 cooldown returned near 20W idle after sustained load
 - Tesla T4 idle baseline observed near 9.6W
-- No persistent ghost power detected on validated hardware
+- Ghost power observed up to ~146W at 0% utilization on A100 SXM hardware
 - FP16 tensor workloads showed higher sustained power draw than expected during full tensor utilization
 - CEI benchmarking validated across A100 SXM and H100 SXM GPUs
 - Telemetry synchronization confirmed across repeated sustained-load test runs
