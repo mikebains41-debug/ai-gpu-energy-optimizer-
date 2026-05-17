@@ -77,7 +77,6 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 - SQLite default deployment
 - PostgreSQL migration path planned for v2
 
-Need 100+ GPUs? PostgreSQL + TimescaleDB support is on the v2 roadmap.
 
 ---
 
