@@ -93,7 +93,6 @@ This project is open to:
 
 **Contact:** [mikebains41@gmail.com](mailto:mikebains41@gmail.com)  
 **API Docs:** [https://ai-gpu-brain-v2.onrender.com/docs](https://ai-gpu-brain-v2.onrender.com/docs)  
-**Sponsor endpoint:** [https://ai-gpu-brain-v2.onrender.com/sponsor](https://ai-gpu-brain-v2.onrender.com/sponsor)
 
 ---
 
