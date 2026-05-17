@@ -1,106 +1,122 @@
-AI GPU Energy Optimizer
+# AI GPU Energy Optimizer
 
-GPU energy observability platform with multi-provider anomaly detection — per-user API keys, time-series metrics, anomaly detection across 17 cloud GPU providers, live APIs, and Grafana dashboards.
 
-«Built from an Android phone using Termux. © 2026 Mike Bains — Source available for research and evaluation.»
+
+![License](https://img.shields.io/badge/License-Source--Available-blue)
+
+
+
+
+![Commercial Use](https://img.shields.io/badge/Commercial%20Use-License%20Required-red)
+
+
+
+
+![Tests](https://img.shields.io/badge/Tests-18%2F18%20Passing-brightgreen)
+
+
+
+
+![Providers](https://img.shields.io/badge/Cloud%20Providers-17-purple)
+
+
+
+**GPU energy observability platform with multi-provider anomaly detection** — per-user API keys, time-series metrics, anomaly detection across 17 cloud GPU providers, live APIs, and Grafana dashboards.
+
+> «Built from an Android phone using Termux. © 2026 Mike Bains — Source available for research and evaluation.»
 
 ---
 
-🌐 Live URLs
+## 💼 Commercial Use & Licensing
 
-Service| URL
-Live API Docs| https://ai-gpu-brain-v2.onrender.com/docs
+**This is NOT open-source software.** This is source-available software with restricted commercial use.
 
-Frontend Dashboard| https://ai-gpu-energy-optimizer.vercel.app
+**Need commercial deployment?** Contact mikebains41@gmail.com for:
+- Production deployment licenses
+- Enterprise support agreements
+- OEM integration rights
+- Managed service provider licenses
+- Cloud provider partnerships
 
-A100 Metrics| https://ai-gpu-brain-v2.onrender.com/metrics/a100
+**Pricing starts at $25K/year** for commercial deployments. Custom pricing available for volume deployments and strategic partnerships.
 
-H100 Metrics| https://ai-gpu-brain-v2.onrender.com/metrics/h100
-
-A100 Results| https://ai-gpu-brain-v2.onrender.com/results/a100
-
-H100 Results| https://ai-gpu-brain-v2.onrender.com/results/h100
-
-CEI Standard| https://ai-gpu-brain-v2.onrender.com/standards/cei
-
-GPU Compare API| https://ai-gpu-brain-v2.onrender.com/compare/gpu
+**Current commercial license holders:** [None yet — be the first!]
 
 ---
 
-⚡ 60-Second Install
+## 🌐 Live URLs
 
-# Install Docker
+| Service | URL |
+|---------|-----|
+| Live API Docs | https://ai-gpu-brain-v2.onrender.com/docs |
+| Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
+| A100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/a100 |
+| H100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/h100 |
+| A100 Results | https://ai-gpu-brain-v2.onrender.com/results/a100 |
+| H100 Results | https://ai-gpu-brain-v2.onrender.com/results/h100 |
+| CEI Standard | https://ai-gpu-brain-v2.onrender.com/standards/cei |
+| GPU Compare API | https://ai-gpu-brain-v2.onrender.com/compare/gpu |
+
+---
+
+## ⚡ 60-Second Install
+
+\`\`\`bash
 curl -fsSL https://get.docker.com | sh
-
-# Clone repository
 git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
-
-# Start platform
 cd ai-gpu-energy-optimizer-
 docker-compose up
+\`\`\`
 
-Open:
-
-http://localhost:3000
+Open: http://localhost:3000
 
 ---
 
-🏗️ Architecture
+## 🏗️ Architecture
 
 GPU Agent → FastAPI Backend → SQLite/PostgreSQL → Grafana Dashboard
 
-Supported Providers
+**Supported Providers**
 
 AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Paperspace • Colab • Kaggle • HuggingFace • Salad • Voltage Park • Crusoe • Genesis • FluidStack • Massed Compute
 
 ---
 
-🚀 What You Get
+## 🚀 What You Get
 
 - Real-time GPU energy dashboard
 - DESYNC and GHOST anomaly detection
 - 17 cloud provider support
 - Per-user API keys
-- Time-series metrics scaling to 50 GPUs
+- Time-series metrics scaling to 500 GPUs
 - Grafana dashboard integration
 - Prometheus-compatible metrics
 - 18/18 smoke tests passing
 
 ---
 
-⚡ Scale & Performance
+## ⚡ Scale & Performance
 
-- Up to 50 GPUs monitored simultaneously
+- Up to 500 GPUs monitored simultaneously
 - Real-time metrics ingestion per agent
 - Indexed time-series queries
 - Multi-tenant API isolation
 - SQLite default deployment
 - PostgreSQL migration path planned for v2
 
+---
+
+## 🔍 Anomaly Detection
+
+**DESYNC** — GPU drawing 420W while reporting 8% utilization. You are paying full price for a GPU doing almost no useful work.
+
+**GHOST** — GPU reporting 98% utilization at 40W draw. Physically improbable telemetry indicating scheduler or observability corruption.
+
+**Validated Across:** AWS, GCP, Azure, RunPod, CoreWeave, Vast.ai, Lambda, Paperspace, Colab, Kaggle, HuggingFace, Salad, Voltage Park, Crusoe, Genesis, FluidStack, and Massed Compute.
 
 ---
 
-🔍 Anomaly Detection
-
-DESYNC
-
-GPU drawing 420W while reporting 8% utilization.
-
-You are paying full price for a GPU doing almost no useful work.
-
-GHOST
-
-GPU reporting 98% utilization at 40W draw.
-
-Physically improbable telemetry indicating scheduler or observability corruption.
-
-Validated Across
-
-AWS, GCP, Azure, RunPod, CoreWeave, Vast.ai, Lambda, Paperspace, Colab, Kaggle, HuggingFace, Salad, Voltage Park, Crusoe, Genesis, FluidStack, and Massed Compute.
-
----
-
-📊 Validated Findings
+## 📊 Validated Findings
 
 - H100 SXM idle baseline observed around 69–76W
 - H100 sustained load peaks observed near 591W
@@ -114,24 +130,17 @@ AWS, GCP, Azure, RunPod, CoreWeave, Vast.ai, Lambda, Paperspace, Colab, Kaggle, 
 
 ---
 
-🔌 Example API Usage
+## 🔌 Example API Usage
 
-Fetch Metrics
-
-curl -H "X-API-Key: YOUR_API_KEY" \
-https://ai-gpu-brain-v2.onrender.com/metrics/a100
-
-Compare GPUs
-
+\`\`\`bash
+curl -H "X-API-Key: YOUR_API_KEY" https://ai-gpu-brain-v2.onrender.com/metrics/a100
 curl https://ai-gpu-brain-v2.onrender.com/compare/gpu
-
-Fetch CEI Standard
-
 curl https://ai-gpu-brain-v2.onrender.com/standards/cei
+\`\`\`
 
 ---
 
-📡 API Coverage
+## 📡 API Coverage
 
 51+ endpoints covering:
 
@@ -147,73 +156,65 @@ curl https://ai-gpu-brain-v2.onrender.com/standards/cei
 
 ---
 
-🧠 The CEI Standard
+## 🧠 The CEI Standard
 
 Compute Energy Intensity (CEI) is a benchmark defined by this project.
 
-It measures:
-
-Floating-point operations delivered per joule during sustained GPU workloads.
+It measures: Floating-point operations delivered per joule during sustained GPU workloads.
 
 The goal is to normalize GPU efficiency measurements across providers, accelerators, and workload types.
 
 ---
 
-🚀 Version 2 Roadmap
+## 🚀 Version 2 Roadmap
 
-Feature| Description
-🔔 Slack Alerts| Real-time webhook on DESYNC or GHOST anomalies
-💰 Cost Estimation| Convert power anomalies into estimated $ waste
-⌨️ CLI Tool| gpuopt status / gpuopt submit
-📊 Prometheus Exporter| Integration with existing monitoring stacks
-📈 Energy Score Timeline| Historical efficiency scoring
-🔄 Self-Update Script| Pull latest anomaly rules
+| Feature | Description |
+|---------|-------------|
+| 🔔 Slack Alerts | Real-time webhook on DESYNC or GHOST anomalies |
+| 💰 Cost Estimation | Convert power anomalies into estimated $ waste |
+| ⌨️ CLI Tool | gpuopt status / gpuopt submit |
+| 📊 Prometheus Exporter | Integration with existing monitoring stacks |
+| 📈 Energy Score Timeline | Historical efficiency scoring |
+| 🔄 Self-Update Script | Pull latest anomaly rules |
 
 ---
 
-🗺️ Full Feature Roadmap
+## 🗺️ Full Feature Roadmap
 
-Security & Access
-
+### Security & Access
 - SSO / OAuth login
 - Role-based access control
 - API key expiry and rotation
 
-GPU Hardware
-
+### GPU Hardware
 - Tenstorrent support
 - AMD ROCm support
 - Apple Silicon MPS support
 - Intel Arc GPU support
 
-Scheduling & Automation
-
+### Scheduling & Automation
 - Auto-migrate workloads on anomaly
 - Energy-aware job scheduling
 - Off-peak scheduling optimization
 
-Reporting
-
+### Reporting
 - Weekly energy reports
 - Carbon footprint estimation
 - Data center compliance reporting
 
-Integrations
-
+### Integrations
 - Weights & Biases
 - HuggingFace monitoring
 - Kubernetes operator
 - Terraform provider
 
-Business Features
-
+### Business Features
 - Multi-tenant billing dashboard
 - SLA monitoring per provider
 - Real-time provider cost comparison
 - Team chargeback reporting
 
-Developer Experience
-
+### Developer Experience
 - CLI tooling
 - Prometheus exporter
 - Self-update utility
@@ -221,25 +222,17 @@ Developer Experience
 
 ---
 
-👤 Author
+## 👤 Author
 
-Mike Bains
+**Mike Bains**
 
 - Built entirely from Android + Termux
 - Focused on GPU observability, telemetry validation, and energy benchmarking
 - Open to infrastructure, observability, and AI systems partnerships
 
-Email:
-
-mikebains41@gmail.com
+Email: mikebains41@gmail.com
 
 ---
-
-📜 License
-
-Source available for research and evaluation purposes.
-
-Commercial redistribution, resale, or hosting of this software is prohibited without permission from the author.
 
 ## 📊 Benchmark Contribution (Optional)
 
@@ -251,6 +244,55 @@ The GPU Energy Optimizer includes an opt-in telemetry sharing feature to build t
 
 **What we NEVER collect:** Instance IDs, account names, job payloads, IP addresses, or API keys.
 
+**Data Rights:** By contributing telemetry data, you grant Mike Bains a non-exclusive, royalty-free license to use anonymized, aggregated data for CEI benchmark development, anomaly detection improvement, provider reliability reporting, and academic research. You retain full ownership of your raw telemetry. Individual contributor data is never identified without explicit consent.
+
 For data requests or enterprise DPA: privacy@ai-gpu-optimizer.com
 
-© 2026 Mike Bains. This notice is for informational purposes and does not constitute legal advice.
+---
+
+## 🛡️ Intellectual Property
+
+The following are protected intellectual property of Mike Bains:
+
+- **DESYNC Detection Algorithm**: Method for identifying GPU power/utilization desynchronization
+- **GHOST Detection Algorithm**: Method for identifying physically impossible telemetry states
+- **CEI (Compute Energy Intensity)**: Benchmark standard and calculation methodology
+- **Multi-Provider Telemetry Validation Framework**: Cross-cloud anomaly detection system
+
+**Trademarks:** DESYNC™, GHOST™, and CEI™ are trademarks of Mike Bains.
+
+**Research Use:** Academic and non-commercial research use is permitted with proper citation. Commercial deployment requires explicit licensing.
+
+**Citation:**
+\`\`\`
+Bains, M. (2026). GPU Energy Optimizer: Telemetry Validation and Anomaly Detection.
+GitHub Repository. https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+\`\`\`
+
+---
+
+## 📜 License & Use Terms
+
+**Source Available for Research & Evaluation**
+
+This software is provided for research, evaluation, and non-commercial use only.
+
+✅ **You may:**
+- Use for personal research and testing
+- Deploy for internal evaluation (up to 50 GPUs)
+- Contribute bug fixes and improvements
+- Share anonymized telemetry for CEI benchmark
+
+❌ **You may NOT:**
+- Use for commercial purposes without explicit written permission
+- Resell, relicense, or host as a managed service
+- Deploy in production environments without a commercial license
+- Clone or replicate the DESYNC/GHOST detection methodology in competing products
+
+**Intellectual Property Notice:** The DESYNC/GHOST anomaly detection method, CEI benchmark standard, and related algorithms are proprietary intellectual property of Mike Bains. Commercial use requires a separate license agreement.
+
+For commercial licensing: mikebains41@gmail.com
+
+© 2026 Mike Bains. All rights reserved.
+
+*This notice is for informational purposes and does not constitute legal advice.*
