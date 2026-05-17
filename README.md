@@ -246,7 +246,7 @@ The GPU Energy Optimizer includes an opt-in telemetry sharing feature to build t
 
 **Data Rights:** By contributing telemetry data, you grant Mike Bains a non-exclusive, royalty-free license to use anonymized, aggregated data for CEI benchmark development, anomaly detection improvement, provider reliability reporting, and academic research. You retain full ownership of your raw telemetry. Individual contributor data is never identified without explicit consent.
 
-For data requests or enterprise DPA: privacy@ai-gpu-optimizer.com
+For data requests or enterprise DPA: mikebains41@gmail.com
 
 ---
 
