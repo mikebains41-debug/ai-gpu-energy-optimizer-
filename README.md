@@ -297,3 +297,24 @@ For commercial licensing: mikebains41@gmail.com
 © 2026 Mike Bains. All rights reserved.
 
 *This notice is for informational purposes and does not constitute legal advice.*
+
+---
+
+## 🧪 Test Coverage
+
+### Hardware Test Results
+- 25 A100 SXM tests — publicly queryable
+- 11 H100 SXM tests — publicly queryable
+- Query any result: `curl https://ai-gpu-brain-v3.onrender.com/results/a100/1`
+
+### Platform Validation — 40/40 Tests Passing
+
+- All public API endpoints (health, metrics, engine, standards, compare, results)
+- DESYNC and GHOST anomaly detection validated against A100 and H100 power envelopes
+- 17 cloud provider telemetry validation
+- Database operations (insert, query, aggregation)
+- API key authentication and authorization
+- Kubernetes and Run:ai integration hooks
+- CEI benchmark calculation and persistence
+
+**Full test suite: 40/40 passing.**
