@@ -327,21 +327,25 @@ def get_a100_results():
 def get_h100_results():
     return load_test_results("h100")
 
-@app.get("/results/a100/{test_num}", description="Get A100 Test Result (example: test-01 through test-24)")
+@app.get("/results/a100/{test_num}", description="Get A100 Test Result (enter 1 to 24)")
 def get_a100_test_result(test_num: str):
     results = load_test_results("a100")
+    padded = f"test-{test_num.replace('test-','').zfill(2)}"
     for test in results:
-        if test.get("test_id") == test_num:
+        tid = test.get("test_id", "")
+        if tid == test_num or tid == padded:
             return test
-    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: test-01 to test-24")
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Enter a number 1-24")
 
-@app.get("/results/h100/{test_num}", description="Get H100 Test Result (example: test-01 through test-11)")
+@app.get("/results/h100/{test_num}", description="Get H100 Test Result (enter 1 to 11)")
 def get_h100_test_result(test_num: str):
     results = load_test_results("h100")
+    padded = f"test-{test_num.replace('test-','').zfill(2)}"
     for test in results:
-        if test.get("test_id") == test_num:
+        tid = test.get("test_id", "")
+        if tid == test_num or tid == padded:
             return test
-    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: test-01 to test-11")
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Enter a number 1-11")
 
 # ========== DASHBOARD SUMMARY ENDPOINT ==========
 @app.get("/api/summary")
