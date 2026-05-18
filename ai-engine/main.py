@@ -327,33 +327,21 @@ def get_a100_results():
 def get_h100_results():
     return load_test_results("h100")
 
-@app.get("/results/a100/{test_num}")
+@app.get("/results/a100/{test_num}", description="Get A100 Test Result (example: test-01 through test-24)")
 def get_a100_test_result(test_num: str):
-    base = "/opt/render/project/src/data/tests/a100"
-    padded = test_num.zfill(2)
-    prefix = f"test-{padded}"
-    if os.path.exists(base):
-        for folder in sorted(os.listdir(base)):
-            if folder == prefix or folder.startswith(prefix):
-                path = os.path.join(base, folder, "summary.json")
-                if os.path.exists(path):
-                    with open(path) as f:
-                        return json.load(f)
-    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-24")
+    results = load_test_results("a100")
+    for test in results:
+        if test.get("test_id") == test_num:
+            return test
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: test-01 to test-24")
 
-@app.get("/results/h100/{test_num}")
+@app.get("/results/h100/{test_num}", description="Get H100 Test Result (example: test-01 through test-11)")
 def get_h100_test_result(test_num: str):
-    base = "/opt/render/project/src/data/tests/h100"
-    padded = test_num.zfill(2)
-    prefix = f"test-{padded}"
-    if os.path.exists(base):
-        for folder in sorted(os.listdir(base)):
-            if folder == prefix or folder.startswith(prefix):
-                path = os.path.join(base, folder, "summary.json")
-                if os.path.exists(path):
-                    with open(path) as f:
-                        return json.load(f)
-    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-11")
+    results = load_test_results("h100")
+    for test in results:
+        if test.get("test_id") == test_num:
+            return test
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: test-01 to test-11")
 
 # ========== DASHBOARD SUMMARY ENDPOINT ==========
 @app.get("/api/summary")
