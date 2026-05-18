@@ -52,8 +52,8 @@
 | Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
 | A100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/a100 |
 | H100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/h100 |
-| A100 Results (24 tests, use /results/a100/test-01 to test-24) | https://ai-gpu-brain-v2.onrender.com/results/a100 |
-| H100 Results (11 tests, use /results/h100/test-01 to test-11) | https://ai-gpu-brain-v2.onrender.com/results/h100 |
+| A100 Results (24 tests, example: /results/a100/test-01_idle_baseline) | https://ai-gpu-brain-v2.onrender.com/results/a100 |
+| H100 Results (11 tests, example: /results/h100/test-01_idle_baseline) | https://ai-gpu-brain-v2.onrender.com/results/h100 |
 | CEI Standard | https://ai-gpu-brain-v2.onrender.com/standards/cei |
 | GPU Compare API | https://ai-gpu-brain-v2.onrender.com/compare/gpu |
 | CEI Telemetry | https://gpu-core-private.onrender.com/telemetry/stats |
