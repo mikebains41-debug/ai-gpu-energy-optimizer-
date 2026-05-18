@@ -327,21 +327,33 @@ def get_a100_results():
 def get_h100_results():
     return load_test_results("h100")
 
-@app.get("/results/a100/{test_id}", description="Get A100 Test Result (example: test-01 through test-24)")
-def get_a100_test_result(test_id: str):
-    results = load_test_results("a100")
-    for test in results:
-        if test.get("test_id") == test_id:
-            return test
-    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found. Valid range: test-01 to test-24")
+@app.get("/results/a100/{test_num}")
+def get_a100_test_result(test_num: str):
+    base = "/opt/render/project/src/data/tests/a100"
+    padded = test_num.zfill(2)
+    prefix = f"test-{padded}"
+    if os.path.exists(base):
+        for folder in sorted(os.listdir(base)):
+            if folder == prefix or folder.startswith(prefix):
+                path = os.path.join(base, folder, "summary.json")
+                if os.path.exists(path):
+                    with open(path) as f:
+                        return json.load(f)
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-24")
 
-@app.get("/results/h100/{test_id}", description="Get H100 Test Result (example: test-01 through test-11)")
-def get_h100_test_result(test_id: str):
-    results = load_test_results("h100")
-    for test in results:
-        if test.get("test_id") == test_id:
-            return test
-    raise HTTPException(status_code=404, detail=f"Test '{test_id}' not found. Valid range: test-01 to test-11")
+@app.get("/results/h100/{test_num}")
+def get_h100_test_result(test_num: str):
+    base = "/opt/render/project/src/data/tests/h100"
+    padded = test_num.zfill(2)
+    prefix = f"test-{padded}"
+    if os.path.exists(base):
+        for folder in sorted(os.listdir(base)):
+            if folder == prefix or folder.startswith(prefix):
+                path = os.path.join(base, folder, "summary.json")
+                if os.path.exists(path):
+                    with open(path) as f:
+                        return json.load(f)
+    raise HTTPException(status_code=404, detail=f"Test {test_num} not found. Valid range: 1-11")
 
 # ========== DASHBOARD SUMMARY ENDPOINT ==========
 @app.get("/api/summary")
@@ -494,7 +506,7 @@ def compare_gpu():
         "comparison": "A100 SXM vs H100 SXM",
         "platform": "RunPod",
         "a100_sxm": {"idle_power_w": 67.1, "peak_power_w": 501.86, "fp32_tflops": 14.35, "fp16_tflops": 231.08, "cei_fp32_sustained": 5.68e9, "efficiency_gflops_per_w": 52.6, "ghost_power_detected": True, "ghost_power_peak_w": 146.66, "total_tests": 24},
-        "h100_sxm": {"idle_power_w": 69.5, "peak_power_w": 412.0, "fp32_tflops": 49.13, "fp16_tflops": 592.8, "cei_fp32_burst": 4.91e13, "efficiency_gflops_per_w": 76.5, "ghost_power_detected": False, "total_tests": 11},
+        "h100_sxm": {"idle_power_w": 69.5, "peak_power_w": 412.0, "fp32_tflops": 49.13, "fp16_tflops": 592.8, "cei_fp32_burst_per_kernel": 4.91e13, "note": "Burst measurement - not directly comparable to A100 sustained CEI", "efficiency_gflops_per_w": 76.5, "ghost_power_detected": False, "total_tests": 11},
         "key_differences": ["H100 FP32 throughput 2.8x higher (49.13 vs 17.37 TFLOPS)", "H100 FP16 throughput 2.6x higher (592.8 vs 231.08 TFLOPS)", "H100 efficiency 45% better (76.5 vs 52.6 GFLOPS/W)", "A100 ghost power confirmed - H100 shows none across all 11 tests"],
     }
 
@@ -548,3 +560,43 @@ def compare_idle():
             {"gpu": "H100 SXM", "idle_w": 69.5, "ghost_power": False, "source": "measured h100/test-01"},
         ],
     }
+
+
+@app.get("/standards/cei")
+def get_cei_standard():
+    return {
+        "metric": "CEI",
+        "name": "Compute Energy Intensity",
+        "version": "1.0",
+        "formula": "CEI = Total FLOPs / Total Joules",
+        "unit": "FLOPs/J",
+        "sampling_method": "1Hz via nvidia-smi power readings",
+        "workload_classes": ["FP32 GEMM", "FP16 GEMM", "Tensor Core"],
+        "normalization": "Exclude idle baseline, include cooldown energy",
+        "reference_value": {"gpu": "A100 SXM", "precision": "FP32", "duration_sec": 900, "cei": 5680000000},
+        "thresholds": {"excellent": ">10B", "good": "5-10B", "moderate": "1-5B", "poor": "<1B"},
+        "github": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
+    }
+
+@app.get("/standards")
+def list_standards():
+    return [{"metric": "CEI", "name": "Compute Energy Intensity", "url": "/standards/cei"}]
+
+@app.get("/grafana/dashboard")
+def get_grafana_dashboard():
+    return {
+        "title": "GPU Energy Optimizer",
+        "description": "Power, utilization, CEI and ghost power monitoring",
+        "panels": [
+            {"title": "Power vs Utilization", "metric": "power_w vs utilization_pct"},
+            {"title": "CEI Over Time", "metric": "cei_flops_per_joule"},
+            {"title": "Idle Floor by GPU", "metric": "idle_power_w"},
+            {"title": "Ghost Power Events", "metric": "ghost_power_detected"},
+        ],
+        "prometheus_endpoint": "https://ai-gpu-brain-v2.onrender.com/metrics/prometheus",
+        "download": "https://ai-gpu-brain-v2.onrender.com/grafana/dashboard/download"
+    }
+
+@app.get("/grafana/dashboard/download")
+def download_grafana_dashboard():
+    return {"message": "Grafana dashboard JSON coming soon"}
