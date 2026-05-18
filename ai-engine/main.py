@@ -581,8 +581,8 @@ def get_grafana_dashboard():
             {"title": "Idle Floor by GPU", "metric": "idle_power_w"},
             {"title": "Ghost Power Events", "metric": "ghost_power_detected"},
         ],
-        "prometheus_endpoint": "https://ai-gpu-brain-v2.onrender.com/metrics/prometheus",
-        "download": "https://ai-gpu-brain-v2.onrender.com/grafana/dashboard/download"
+        "prometheus_endpoint": "https://ai-gpu-brain-v3.onrender.com/metrics/prometheus",
+        "download": "https://ai-gpu-brain-v3.onrender.com/grafana/dashboard/download"
     }
 
 @app.get("/grafana/dashboard/download")
