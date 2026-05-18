@@ -52,10 +52,11 @@
 | Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
 | A100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/a100 |
 | H100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/h100 |
-| A100 Results | https://ai-gpu-brain-v2.onrender.com/results/a100 |
-| H100 Results | https://ai-gpu-brain-v2.onrender.com/results/h100 |
+| A100 Results (24 tests, use /results/a100/test-01 to test-24) | https://ai-gpu-brain-v2.onrender.com/results/a100 |
+| H100 Results (11 tests, use /results/h100/test-01 to test-11) | https://ai-gpu-brain-v2.onrender.com/results/h100 |
 | CEI Standard | https://ai-gpu-brain-v2.onrender.com/standards/cei |
 | GPU Compare API | https://ai-gpu-brain-v2.onrender.com/compare/gpu |
+| CEI Telemetry | https://gpu-core-private.onrender.com/telemetry/stats |
 
 ---
 
@@ -119,7 +120,7 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 ## 📊 Validated Findings
 
 - H100 SXM idle baseline observed around 69–76W
-- H100 sustained load peaks observed near 591W
+- H100 sustained load peaks observed near 412W (burst kernel up to 591W recorded separately)
 - A100 SXM cooldown stabilization observed near 66–78W
 - RTX 4090 cooldown returned near 20W idle after sustained load
 - Tesla T4 idle baseline observed near 9.6W
