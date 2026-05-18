@@ -1,0 +1,44 @@
+{
+  "test_id": "test-20",
+  "name": "FP16 vs FP32 – 5 Iterations Each (2048×2048 matmul)",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "date": "2026/05/13",
+  "metrics": {
+    "fp32": {
+      "iterations": 60,
+      "avg_time_ms": 2.45,
+      "min_time_ms": 1.40,
+      "max_time_ms": 63.03,
+      "avg_power_w": 98.73,
+      "min_power_w": 76.06,
+      "max_power_w": 137.28,
+      "avg_utilization_pct": 0,
+      "max_utilization_pct": 0,
+      "avg_temp_c": 44,
+      "power_delta_w": 61.22,
+      "ghost_power_detected": true
+    },
+    "fp16": {
+      "iterations": 60,
+      "avg_time_ms": 0.52,
+      "min_time_ms": 0.34,
+      "max_time_ms": 135.74,
+      "avg_power_w": 77.61,
+      "min_power_w": 76.69,
+      "max_power_w": 78.72,
+      "avg_utilization_pct": 0.4,
+      "max_utilization_pct": 4,
+      "avg_temp_c": 45,
+      "power_delta_w": 2.03,
+      "ghost_power_detected": false
+    },
+    "comparison": {
+      "speed_improvement": "4.7x faster with FP16",
+      "power_reduction_w": 21.12,
+      "power_reduction_pct": 21.4,
+      "fp32_ghost_power": true,
+      "fp16_ghost_power": false,
+      "recommendation": "FP16 preferred — faster, lower power, stable telemetry"
+    }
+  }
+}
