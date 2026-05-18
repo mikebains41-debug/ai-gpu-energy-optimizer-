@@ -1,5 +1,5 @@
 {
-  "test_id": "test_b",
+  "test_id": "test-23",
   "name": "A100 SXM Idle Baseline",
   "gpu": "NVIDIA A100 SXM (RunPod)",
   "duration_sec": 900,
