@@ -303,7 +303,7 @@ For commercial licensing: mikebains41@gmail.com
 ## 🧪 Test Coverage
 
 ### Hardware Test Results
-- 25 A100 SXM tests — publicly queryable
+- 24 A100 SXM tests — publicly queryable
 - 11 H100 SXM tests — publicly queryable
 - Query any result: `curl https://ai-gpu-brain-v3.onrender.com/results/a100/1`
 
