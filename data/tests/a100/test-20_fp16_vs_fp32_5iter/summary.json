@@ -1,0 +1,35 @@
+{
+  "test_id": "test-20",
+  "name": "FP16 vs FP32 – 5 Iterations Each (2048×2048 matmul)",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "date": "2026/05/13",
+  "start_time": "2026/05/13 07:05:09.296",
+  "end_time": "2026/05/13 07:05:12.925",
+  "status": "complete",
+  "fp32": {
+    "iterations": 60,
+    "avg_time_ms": 2.45,
+    "avg_power_w": 98.73,
+    "min_power_w": 76.06,
+    "max_power_w": 137.28,
+    "avg_utilization_pct": 0,
+    "temperature_c": 44
+  },
+  "fp16": {
+    "iterations": 60,
+    "avg_time_ms": 0.52,
+    "avg_power_w": 77.61,
+    "min_power_w": 76.69,
+    "max_power_w": 78.72,
+    "avg_utilization_pct": 0.4,
+    "temperature_c": 45
+  },
+  "findings": {
+    "fp32_power_ramp_detected": true,
+    "ghost_power_detected": true,
+    "ghost_power_note": "FP32 drawing up to 137.28W at 0% utilization",
+    "fp16_faster_ratio": "4.7x faster than FP32",
+    "fp16_lower_power": true
+  },
+  "conclusion": "FP16 is 4.7x faster and draws significantly less power. FP32 shows ghost power behavior — increasing wattage at 0% reported utilization."
+}
