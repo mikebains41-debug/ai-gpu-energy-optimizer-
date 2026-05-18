@@ -48,14 +48,14 @@
 
 | Service | URL |
 |---------|-----|
-| Live API Docs | https://ai-gpu-brain-v2.onrender.com/docs |
+| Live API Docs | https://ai-gpu-brain-v3.onrender.com/docs |
 | Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
-| A100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/a100 |
-| H100 Metrics | https://ai-gpu-brain-v2.onrender.com/metrics/h100 |
-| A100 Results (24 tests, example: /results/a100/test-01_idle_baseline) | https://ai-gpu-brain-v2.onrender.com/results/a100 |
-| H100 Results (11 tests, example: /results/h100/test-01_idle_baseline) | https://ai-gpu-brain-v2.onrender.com/results/h100 |
-| CEI Standard | https://ai-gpu-brain-v2.onrender.com/standards/cei |
-| GPU Compare API | https://ai-gpu-brain-v2.onrender.com/compare/gpu |
+| A100 Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/a100 |
+| H100 Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/h100 |
+| A100 Results (24 tests, example: /results/a100/test-01_idle_baseline) | https://ai-gpu-brain-v3.onrender.com/results/a100 |
+| H100 Results (11 tests, example: /results/h100/test-01_idle_baseline) | https://ai-gpu-brain-v3.onrender.com/results/h100 |
+| CEI Standard | https://ai-gpu-brain-v3.onrender.com/standards/cei |
+| GPU Compare API | https://ai-gpu-brain-v3.onrender.com/compare/gpu |
 | CEI Telemetry | https://gpu-core-private.onrender.com/telemetry/stats |
 
 ---
@@ -134,9 +134,9 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 ## 🔌 Example API Usage
 
 \`\`\`bash
-curl -H "X-API-Key: YOUR_API_KEY" https://ai-gpu-brain-v2.onrender.com/metrics/a100
-curl https://ai-gpu-brain-v2.onrender.com/compare/gpu
-curl https://ai-gpu-brain-v2.onrender.com/standards/cei
+curl -H "X-API-Key: YOUR_API_KEY" https://ai-gpu-brain-v3.onrender.com/metrics/a100
+curl https://ai-gpu-brain-v3.onrender.com/compare/gpu
+curl https://ai-gpu-brain-v3.onrender.com/standards/cei
 \`\`\`
 
 ---
