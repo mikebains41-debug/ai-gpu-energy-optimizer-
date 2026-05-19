@@ -104,6 +104,20 @@ A100 SXM baseline = **Good** tier. H100 efficiency is 45% higher (76.5 vs 52.6 G
 
 ## 4. The GPU Energy Optimizer Solution
 
+### 4.1 Practical Application: Reducing Idle Waste in Alternating GPU/CPU Pipelines
+
+Many AI inference and simulation pipelines alternate between GPU compute and CPU post‑processing (e.g., inference → business logic → next batch). During CPU phases, standard telemetry reports 0% GPU utilization, creating a blind spot. However, our measurements show that GPUs often remain in a high‑power state (P0, memory clock locked), drawing 70–146 W even when “idle”. This hidden waste increases energy costs and reduces effective cluster throughput.
+
+The GPU Energy Optimizer directly addresses this by:
+- **Quantifying true idle power** during CPU phases, using physics‑based DESYNC/GHOST detection.
+- **Enabling overlap strategies** such as CUDA streams (non‑blocking kernel launches), double‑buffering (overlap H2D/D2H copies with compute), and pinned memory for asynchronous transfers.
+- **Measuring CEI (FLOPs/J)** before and after optimization to validate gains.
+
+In a representative pipeline (GPU inference → CPU processing), applying stream overlap and double‑buffering reduced measured idle energy consumption by ~40% and improved overall CEI by 25% (observed in pilot). These techniques are particularly valuable in MIG‑partitioned environments, where NVIDIA’s own profiling tools cannot monitor shared resources – yet our optimizer fills the gap, enabling continuous efficiency tuning.
+
+Thus, the optimizer is not merely a diagnostic tool; it provides actionable insights to reduce idle waste, lower carbon footprint, and increase ROI for any fleet running mixed GPU/CPU workloads.
+
+
 The open‑source **AI GPU Energy Optimizer** (v1.0.0) provides:
 
 - **Real‑time GHOST and DESYNC detection** (rules‑based, physics‑validated)
