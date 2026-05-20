@@ -193,3 +193,15 @@ A standalone Python script any GPU engineer can run with one command. No API, no
 
 ```bash
 pip install pynvml && python ghost_detect.py
+
+### 6.2 Energy Cost Calculator for AI Inference
+Input a model name, GPU type, and workload size and get dollar per million tokens including hidden ghost power waste. The only calculator that accounts for telemetry desynchronization and idle-state power bleed. Supports A100, H100, and 17+ cloud providers.
+
+### 6.3 Lightweight Prometheus + Grafana Dashboard
+A simple docker-compose deployment using open-source Grafana templates for GPU fleet monitoring. Full ghost power and DESYNC observability in one command. Pre-built dashboards for power timeline, CEI heatmap, and anomaly alerts. No complex API required.
+
+All three tools will be released as open source under v2.0 following Phase 2 validation.
+
+---
+
+**Updated: May 19, 2026 | v1.0.0 | Phase 2 seeking $100K sponsored compute**
