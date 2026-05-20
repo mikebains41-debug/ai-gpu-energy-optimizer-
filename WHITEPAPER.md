@@ -183,3 +183,13 @@ All tests to date were conducted independently at personal expense. We are ready
 ---
 
 **End of White Paper – May 19, 2026**
+
+---
+
+## 6. Companion Tools (Open Source — v2.0 Roadmap)
+
+### 6.1 CLI Ghost Power Detector
+A standalone Python script any GPU engineer can run with one command. No API, no database, no setup required.
+
+```bash
+pip install pynvml && python ghost_detect.py
