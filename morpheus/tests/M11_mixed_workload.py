@@ -19,7 +19,6 @@ DURATION = 1500
 MATRIX_SIZE = 4096
 GHOST_W = 90.0
 CEI_REFERENCE = 5.68e9
-
 gpu0_cei = [0]
 gpu1_ghost = [0]
 
@@ -68,11 +67,9 @@ def main():
     t1.join()
     duration = int(time.time() - start)
     cei = gpu0_cei[0]
-    tier = "GOOD" if cei > 5e9 else "LOW"
     passed = cei > 5e9 and gpu1_ghost[0] >= 1
     save_result("M11", "Mixed Workload", passed,
-        {"gpu0_cei": cei, "gpu0_tier": tier,
-         "gpu1_ghost_events": gpu1_ghost[0]}, duration)
+        {"gpu0_cei": cei, "gpu1_ghost_events": gpu1_ghost[0]}, duration)
     print(f"\nM11: {'PASS' if passed else 'FAIL'}")
     print(f"GPU0 CEI: {cei:.3e} | GPU1 Ghost: {gpu1_ghost[0]}")
     sys.exit(0 if passed else 1)

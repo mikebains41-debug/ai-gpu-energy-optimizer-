@@ -3,8 +3,8 @@
 M13 - 1000 GPU Simulation
 Duration: 30 minutes
 GPUs: 2
-What: Each GPU simulates 500 virtual nodes = 1000 total
-Pass: TimescaleDB handles load, no dropped metrics
+What: 2 GPUs simulate 1000 virtual nodes
+Pass: API handles load, under 5 percent failure
 """
 import sys, os, time, requests, datetime, threading, random
 sys.path.insert(0, os.getcwd())
@@ -23,7 +23,7 @@ def simulate_node(gpu_id, node_id, duration):
     while time.time() - start < duration:
         payload = {"metrics": [{
             "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-            "gpu_id": f"gpu-{gpu_id}-virtual-{node_id}",
+            "gpu_id": f"gpu-{gpu_id}-v{node_id}",
             "node_id": f"node-{node_id}",
             "power_watts": s["power_watts"] + random.uniform(-5, 5),
             "gpu_util": s["gpu_util"],
@@ -47,10 +47,9 @@ def main():
     print("="*55)
     print("M13: 1000 GPU Simulation")
     count = get_gpu_count()
-    print(f"Real GPUs: {count} | Virtual nodes: {VIRTUAL_NODES_PER_GPU * 2}")
+    print(f"Real GPUs: {count} | Virtual: {VIRTUAL_NODES_PER_GPU * 2}")
     print("="*55)
     start = time.time()
-    threads = []
     for gpu_id in range(min(count, 2)):
         for node_id in range(VIRTUAL_NODES_PER_GPU):
             t = threading.Thread(
@@ -58,7 +57,6 @@ def main():
                 args=(gpu_id, node_id, DURATION))
             t.daemon = True
             t.start()
-            threads.append(t)
             if node_id % 100 == 0:
                 print(f"[STARTED] GPU{gpu_id} node {node_id}")
     while time.time() - start < DURATION:

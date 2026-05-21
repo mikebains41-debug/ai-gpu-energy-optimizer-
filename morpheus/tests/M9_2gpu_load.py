@@ -8,7 +8,7 @@ Pass: Zero errors across both GPUs
 """
 import sys, os, time, threading
 sys.path.insert(0, os.getcwd())
-from morpheus.tests.utils import get_gpu_stats, get_gpu_name, get_gpu_count, save_result
+from morpheus.tests.utils import get_gpu_stats, get_gpu_count, save_result
 try:
     import torch
 except ImportError:
@@ -17,7 +17,6 @@ except ImportError:
 
 DURATION = 1200
 MATRIX_SIZE = 4096
-
 results = {0: [], 1: []}
 errors = {0: 0, 1: 0}
 
@@ -51,7 +50,7 @@ def main():
     t0.start()
     t1.start()
     while time.time() - start < DURATION:
-        print(f"[RUNNING] GPU0 samples={len(results[0])} GPU1 samples={len(results[1])}")
+        print(f"[RUNNING] GPU0={len(results[0])} GPU1={len(results[1])}")
         time.sleep(10)
     t0.join()
     t1.join()
@@ -61,7 +60,6 @@ def main():
         {"gpu0_samples": len(results[0]), "gpu1_samples": len(results[1]),
          "errors": errors}, duration)
     print(f"\nM9: {'PASS' if passed else 'FAIL'}")
-    print(f"GPU0: {len(results[0])} | GPU1: {len(results[1])} | Errors: {errors}")
     sys.exit(0 if passed else 1)
 
 main()
