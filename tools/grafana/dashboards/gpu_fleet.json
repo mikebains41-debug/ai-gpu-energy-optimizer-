@@ -1,0 +1,11 @@
+{
+  "title": "GPU Energy Optimizer — Ghost Power Dashboard",
+  "uid": "gpu-energy-optimizer",
+  "refresh": "10s",
+  "panels": [
+    {"id":1,"title":"Power Timeline — Ghost Power Spikes","type":"timeseries","gridPos":{"x":0,"y":0,"w":12,"h":8},"targets":[{"expr":"gpu_power_watts","legendFormat":"Power {{gpu_id}}"},{"expr":"gpu_ghost_power_watts > 0","legendFormat":"GHOST {{gpu_id}}"}]},
+    {"id":2,"title":"CEI Heatmap (FLOPs/J)","type":"heatmap","gridPos":{"x":12,"y":0,"w":12,"h":8},"targets":[{"expr":"gpu_cei_flops_per_joule","legendFormat":"{{gpu_id}}"}]},
+    {"id":3,"title":"GHOST & DESYNC Anomaly Feed","type":"timeseries","gridPos":{"x":0,"y":8,"w":12,"h":8},"targets":[{"expr":"gpu_ghost_power_watts > 0","legendFormat":"GHOST {{gpu_id}}"},{"expr":"increase(gpu_desync_events_total[1m])","legendFormat":"DESYNC/min {{gpu_id}}"}]},
+    {"id":4,"title":"Power vs Utilization — Desync Scatter","type":"xychart","gridPos":{"x":12,"y":8,"w":12,"h":8},"targets":[{"expr":"gpu_power_watts","legendFormat":"Power"},{"expr":"gpu_utilization_pct","legendFormat":"Util"}]}
+  ]
+}
