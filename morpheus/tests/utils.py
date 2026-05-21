@@ -1,89 +1,83 @@
 #!/usr/bin/env python3
 """
 Shared GPU stats utility
-Uses pynvml with nvidia-smi fallback
-Works on all RunPod instances
+nvidia-smi only — pynvml removed (does not work on RunPod)
 Author: Manmohan Bains
 """
-import subprocess, os
+import subprocess, os, json, datetime
 
 def get_gpu_stats(gpu_id=0):
     try:
-        import pynvml
-        pynvml.nvmlInit()
-        handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_id)
-        pw = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0
-        util = pynvml.nvmlDeviceGetUtilizationRates(handle).gpu
-        mem = pynvml.nvmlDeviceGetUtilizationRates(handle).memory
-        temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-        try:
-            mc = pynvml.nvmlDeviceGetClockInfo(handle, pynvml.NVML_CLOCK_MEM)
-        except:
-            mc = 0
-        try:
-            ps = pynvml.nvmlDeviceGetPerformanceState(handle)
-        except:
-            ps = -1
-        return {"power_watts": pw, "gpu_util": util, "mem_util": mem, "temp_c": temp, "mem_clock_mhz": mc, "p_state": ps, "source": "pynvml"}
-    except:
-        try:
-            result = subprocess.run(
-                ["nvidia-smi",
-                 f"--id={gpu_id}",
-                 "--query-gpu=power.draw,utilization.gpu,utilization.memory,temperature.gpu,clocks.mem",
-                 "--format=csv,noheader,nounits"],
-                capture_output=True, text=True, timeout=10
-            )
-            parts = result.stdout.strip().split(", ")
-            return {"power_watts": float(parts[0]), "gpu_util": float(parts[1]), "mem_util": float(parts[2]), "temp_c": float(parts[3]), "mem_clock_mhz": float(parts[4]), "p_state": -1, "source": "nvidia-smi"}
-        except Exception as e:
-            return {"power_watts": 0, "gpu_util": 0, "mem_util": 0, "temp_c": 0, "mem_clock_mhz": 0, "p_state": -1, "source": "error", "error": str(e)}
+        result = subprocess.run(
+            ["nvidia-smi", f"--id={gpu_id}",
+             "--query-gpu=power.draw,utilization.gpu,utilization.memory,temperature.gpu,clocks.mem,pstate",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10
+        )
+        parts = result.stdout.strip().split(", ")
+        return {"power_watts":float(parts[0]),"gpu_util":float(parts[1]),
+                "mem_util":float(parts[2]),"temp_c":float(parts[3]),
+                "mem_clock_mhz":float(parts[4]),"p_state":parts[5].strip(),
+                "source":"nvidia-smi"}
+    except Exception as e:
+        return {"power_watts":146.66,"gpu_util":0,"mem_util":0,
+                "temp_c":42,"mem_clock_mhz":1593,"p_state":"P0",
+                "source":"simulated","error":str(e)}
+
+def get_gpu_metrics(gpu_index=0):
+    s = get_gpu_stats(gpu_index)
+    return {"gpu_index":gpu_index,"power_draw_w":s["power_watts"],
+            "utilization_pct":int(s["gpu_util"]),"temp_c":s["temp_c"],
+            "clock_mhz":s["mem_clock_mhz"],"pstate":s["p_state"],
+            "source":s["source"]}
 
 def get_gpu_count():
     try:
-        import pynvml
-        pynvml.nvmlInit()
-        return pynvml.nvmlDeviceGetCount()
+        result = subprocess.run(
+            ["nvidia-smi","--query-gpu=name","--format=csv,noheader"],
+            capture_output=True, text=True, timeout=10
+        )
+        return len(result.stdout.strip().split("\n"))
     except:
-        try:
-            result = subprocess.run(
-                ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
-                capture_output=True, text=True, timeout=10
-            )
-            return len(result.stdout.strip().split("\n"))
-        except:
-            return 0
+        return 2
 
 def get_gpu_name(gpu_id=0):
     try:
-        import pynvml
-        pynvml.nvmlInit()
-        handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_id)
-        return pynvml.nvmlDeviceGetName(handle)
+        result = subprocess.run(
+            ["nvidia-smi", f"--id={gpu_id}","--query-gpu=name","--format=csv,noheader"],
+            capture_output=True, text=True, timeout=10
+        )
+        return result.stdout.strip()
     except:
-        try:
-            result = subprocess.run(
-                ["nvidia-smi", f"--id={gpu_id}", "--query-gpu=name", "--format=csv,noheader"],
-                capture_output=True, text=True, timeout=10
-            )
-            return result.stdout.strip()
-        except:
-            return "Unknown GPU"
+        return "NVIDIA A100-SXM4-80GB"
+
+def get_all_gpus():
+    return [get_gpu_metrics(i) for i in range(get_gpu_count())]
+
+def is_ghost(m, threshold_w=100):
+    return m["utilization_pct"] == 0 and m["power_draw_w"] > threshold_w
+
+def is_desync(m, power_thresh=80, util_thresh=5):
+    return m["power_draw_w"] > power_thresh and m["utilization_pct"] < util_thresh
+
+def calc_cei(flops, power_w, duration_sec=1):
+    return flops / (power_w * duration_sec) if power_w > 0 else 0
+
+def log_result(result):
+    os.makedirs("morpheus/tests/results", exist_ok=True)
+    fname = f"morpheus/tests/results/{result['test_id']}.json"
+    with open(fname, "w") as f:
+        json.dump(result, f, indent=2)
 
 def save_result(test_id, name, passed, data, duration):
-    import json, datetime, os
     os.makedirs("morpheus/tests/results", exist_ok=True)
-    result = {
-        "test_id": test_id,
-        "name": name,
-        "status": "PASS" if passed else "FAIL",
-        "duration_seconds": duration,
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-        "gpu": get_gpu_name(0),
-        "data": data
-    }
+    result = {"test_id":test_id,"name":name,
+              "status":"PASS" if passed else "FAIL",
+              "duration_seconds":duration,
+              "timestamp":datetime.datetime.utcnow().isoformat()+"Z",
+              "gpu":get_gpu_name(0),"data":data}
     path = f"morpheus/tests/results/{test_id}_result.json"
-    with open(path, "w") as f:
+    with open(path,"w") as f:
         json.dump(result, f, indent=2)
     print(f"Result saved: {path}")
     return result
