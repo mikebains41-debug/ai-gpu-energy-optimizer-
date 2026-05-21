@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: ai-gpu-brain-v3
+    runtime: python
+    buildCommand: pip install -r requirements-production.txt
+    startCommand: uvicorn ai-engine/main:app --host 0.0.0.0 --port $PORT --workers 6
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gpu-metrics-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: gpu-redis
+          type: redis
+          property: connectionString
+      - key: ADMIN_SECRET
+        generateValue: true
+
+  - type: redis
+    name: gpu-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: gpu-metrics-db
+    plan: free
+    databaseName: gpu_metrics
+    user: optimizer
