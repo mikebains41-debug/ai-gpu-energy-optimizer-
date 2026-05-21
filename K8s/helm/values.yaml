@@ -1,0 +1,11 @@
+agent:
+  image: ghcr.io/mikebains41-debug/gpu-optimizer-agent:latest
+  apiUrl: https://ai-gpu-brain-v3.onrender.com
+  pollInterval: 5
+  flushInterval: 30
+  ghostThresholdW: 90
+  desyncThresholdW: 100
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 100m

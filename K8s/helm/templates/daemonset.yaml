@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: gpu-energy-optimizer-agent
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: gpu-energy-optimizer-agent
+  template:
+    metadata:
+      labels:
+        app: gpu-energy-optimizer-agent
+    spec:
+      containers:
+      - name: agent
+        image: {{ .Values.agent.image }}
+        securityContext:
+          privileged: true
+        env:
+        - name: API_URL
+          value: {{ .Values.agent.apiUrl }}
+        - name: NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POLL_INTERVAL
+          value: "{{ .Values.agent.pollInterval }}"
+        - name: FLUSH_INTERVAL
+          value: "{{ .Values.agent.flushInterval }}"
+        resources:
+          limits:
+            memory: {{ .Values.agent.resources.limits.memory }}
+            cpu: {{ .Values.agent.resources.limits.cpu }}
+        volumeMounts:
+        - name: nvidia
+          mountPath: /dev/nvidia0
+      volumes:
+      - name: nvidia
+        hostPath:
+          path: /dev/nvidia0
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
