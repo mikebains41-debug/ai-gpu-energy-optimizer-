@@ -25,15 +25,22 @@ def main():
                 ghost_events += 1
                 if is_true_ghost:
                     true_positives += 1
+                    print(f"[TRUE GHOST] GPU{gpu_id} {s['power_watts']:.2f}W")
                 else:
                     false_positives += 1
+                    print(f"[FALSE POS] GPU{gpu_id} {s['power_watts']:.2f}W")
+            elif samples % 60 == 0:
+                print(f"[OK] GPU{gpu_id} {s['power_watts']:.2f}W @ {s['gpu_util']}%")
         time.sleep(1)
+    duration = int(time.time() - start)
     accuracy = (true_positives / ghost_events * 100) if ghost_events > 0 else 100
     passed = accuracy >= 95 and false_positives == 0
     save_result("M19", "Ghost Accuracy", passed,
-        {"ghost_events": ghost_events, "accuracy_pct": accuracy,
-         "false_positives": false_positives, "samples": samples}, int(time.time()))
-    print(f"M19: {'PASS' if passed else 'FAIL'}")
+        {"ghost_events": ghost_events, "true_positives": true_positives,
+         "false_positives": false_positives, "accuracy_pct": accuracy,
+         "samples": samples}, duration)
+    print(f"\nM19: {'PASS' if passed else 'FAIL'}")
+    print(f"Accuracy: {accuracy:.1f}% | FP: {false_positives}")
     sys.exit(0 if passed else 1)
 
 main()

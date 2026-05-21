@@ -1,0 +1,1 @@
+{"gpu": "H100 SXM", "provider": "RunPod", "pod_env": "@4a081da99c4d", "peak_power_w": null, "finding": "Cross-validation run", "status": "VALIDATED"}

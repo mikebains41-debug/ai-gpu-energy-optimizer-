@@ -1,0 +1,1 @@
+{"gpu": "A100 SXM", "provider": "RunPod", "pod_env": "@4a081da99c4d", "peak_power_w": 483, "finding": "FP16 483W vs FP32 302W", "status": "VALIDATED"}
