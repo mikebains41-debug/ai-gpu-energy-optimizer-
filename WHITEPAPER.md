@@ -11,7 +11,7 @@
 
 ## Executive Summary
 
-Standard GPU telemetry – `nvidia-smi`, Prometheus NVML exporter, and cloud dashboards – assumes that low reported utilization equals low power draw and no useful work. This assumption is **false**. In controlled hardware tests on NVIDIA A100 SXM GPUs, we measured a GPU drawing **146.66 watts** while reporting **0% utilization** for extended periods (11+ minutes). We call this a **GHOST anomaly** – physically impossible telemetry that leads to over‑provisioned clusters, wasted energy, and incorrect scaling decisions.
+Standard GPU telemetry – `nvidia-smi`, Prometheus NVML exporter, and cloud dashboards – assumes that low reported utilization equals low power draw and no useful work. This assumption is **false**. In controlled hardware tests on NVIDIA A100 SXM GPUs, we measured a GPU drawing **146.66 watts** while reporting **0% utilization** for extended periods (11+ minutes). We call this a **GHOST anomaly** – sustained elevated power during reported idle/cooldown windows, leading to over‑provisioned clusters, wasted energy, and incorrect scaling decisions.
 
 Furthermore, NVIDIA’s own documentation confirms that **profiling shared GPU resources (MIG partitions) is not supported**, creating a blind spot in multi‑tenant cloud environments where telemetry desynchronisation (DESYNC) can hide silently.
 
