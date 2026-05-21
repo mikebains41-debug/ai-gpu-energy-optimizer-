@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  morpheus-pipeline:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      - API_URL=https://ai-gpu-brain-v3.onrender.com
+      - GHOST_POWER_THRESHOLD_W=90
+      - DESYNC_POWER_THRESHOLD_W=100
+      - DESYNC_UTIL_THRESHOLD_PCT=5
+    command: >
+      sh -c "pip install aiohttp --quiet &&
+             python morpheus/pipeline.py"
+    restart: unless-stopped
