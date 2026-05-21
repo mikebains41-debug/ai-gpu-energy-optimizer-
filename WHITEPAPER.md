@@ -202,6 +202,3 @@ A simple docker-compose deployment using open-source Grafana templates for GPU f
 
 All three tools will be released as open source under v2.0 following Phase 2 validation.
 
----
-
-**Updated: May 19, 2026 | v1.0.0 | Phase 2 seeking $100K sponsored compute**
