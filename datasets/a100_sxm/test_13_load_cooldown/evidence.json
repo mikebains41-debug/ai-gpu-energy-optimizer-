@@ -1,0 +1,1 @@
+{"gpu": "A100 SXM", "provider": "RunPod", "pod_env": "@4a081da99c4d", "peak_power_w": 146.66, "finding": "Ghost power retention after workload", "status": "VALIDATED"}
