@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEI Leaderboard — GPU Energy Efficiency Benchmark</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0d1318;
+  --border: #1a2330;
+  --accent: #00e5ff;
+  --accent2: #ff3d6b;
+  --accent3: #b8ff57;
+  --text: #e8f0f8;
+  --muted: #4a6070;
+  --good: #b8ff57;
+  --moderate: #ffcc00;
+  --poor: #ff3d6b;
+  --excellent: #00e5ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+.container { max-width:1100px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+/* HEADER */
+header { padding:60px 0 40px; border-bottom:1px solid var(--border); }
+.header-tag {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--accent);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.header-tag::before { content:''; width:24px; height:1px; background:var(--accent); }
+h1 {
+  font-size:clamp(36px,6vw,72px);
+  font-weight:800;
+  line-height:0.95;
+  letter-spacing:-2px;
+  margin-bottom:20px;
+}
+h1 span { color:var(--accent); }
+.header-desc { font-size:16px; color:var(--muted); max-width:560px; line-height:1.6; }
+.header-meta { display:flex; gap:32px; margin-top:32px; flex-wrap:wrap; }
+.meta-item { display:flex; flex-direction:column; gap:4px; }
+.meta-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
+.meta-value { font-family:'Space Mono',monospace; font-size:14px; color:var(--text); }
+
+/* GHOST ALERT */
+.ghost-alert {
+  margin:48px 0;
+  border:1px solid var(--accent2);
+  background:rgba(255,61,107,0.05);
+  padding:28px 32px;
+  position:relative;
+}
+.ghost-alert::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent2); }
+.ghost-tag {
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  color:var(--accent2);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.pulse {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--accent2);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.4; transform:scale(0.8); }
+}
+.ghost-alert h2 { font-size:28px; font-weight:800; letter-spacing:-1px; margin-bottom:8px; }
+.ghost-alert p { font-size:14px; color:var(--muted); line-height:1.6; max-width:600px; }
+.red { color:var(--accent2); font-weight:700; }
+.green { color:var(--accent3); font-weight:700; }
+.blue { color:var(--accent); font-weight:700; }
+
+/* VIZ BARS */
+.power-viz { margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,61,107,0.2); }
+.viz-row { display:flex; align-items:center; gap:16px; margin-bottom:10px; }
+.viz-label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); width:120px; flex-shrink:0; }
+.viz-track { flex:1; height:18px; background:rgba(255,255,255,0.03); position:relative; }
+.viz-bar { height:100%; width:0; transition:width 2s cubic-bezier(0.16,1,0.3,1); position:relative; }
+.viz-bar.power-bar { background:var(--accent2); }
+.viz-bar.util-bar { background:var(--accent3); }
+.viz-num { font-family:'Space Mono',monospace; font-size:11px; margin-left:8px; }
+
+/* LEADERBOARD TABLE */
+.section-header { display:flex; align-items:baseline; justify-content:space-between; margin:56px 0 24px; flex-wrap:wrap; gap:8px; }
+.section-title { font-size:13px; font-family:'Space Mono',monospace; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
+.section-note { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); }
+
+table { width:100%; border-collapse:collapse; }
+thead tr { border-bottom:1px solid var(--border); }
+thead th {
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:12px 16px;
+  text-align:left;
+}
+tbody tr {
+  border-bottom:1px solid rgba(26,35,48,0.6);
+  transition:background 0.2s;
+}
+tbody tr:hover { background:rgba(0,229,255,0.03); }
+tbody td { padding:16px; font-size:14px; }
+.rank {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:700;
+}
+.rank.r1 { color:var(--accent); }
+.rank.r2 { color:var(--good); }
+.rank.r3 { color:var(--moderate); }
+.gpu-name { font-weight:700; font-size:15px; }
+.gpu-sub { font-size:11px; color:var(--muted); margin-top:2px; font-family:'Space Mono',monospace; }
+.cei-val {
+  font-family:'Space Mono',monospace;
+  font-size:16px;
+  font-weight:700;
+}
+.tier-badge {
+  display:inline-block;
+  padding:3px 10px;
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  border:1px solid;
+}
+.tier-excellent { color:var(--excellent); border-color:var(--excellent); background:rgba(0,229,255,0.08); }
+.tier-good { color:var(--good); border-color:var(--good); background:rgba(184,255,87,0.08); }
+.tier-moderate { color:var(--moderate); border-color:var(--moderate); background:rgba(255,204,0,0.08); }
+.tier-pending { color:var(--muted); border-color:var(--muted); background:transparent; }
+.ghost-flag {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  padding:3px 8px;
+  border:1px solid var(--accent2);
+  color:var(--accent2);
+  background:rgba(255,61,107,0.08);
+}
+.clean-flag {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  padding:3px 8px;
+  border:1px solid var(--accent3);
+  color:var(--accent3);
+  background:rgba(184,255,87,0.08);
+}
+.pending-flag {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* CEI BAR IN TABLE */
+.cei-bar-wrap { display:flex; align-items:center; gap:10px; }
+.cei-mini-bar { height:4px; background:rgba(255,255,255,0.05); flex:1; max-width:120px; }
+.cei-mini-fill { height:100%; width:0; transition:width 1.5s cubic-bezier(0.16,1,0.3,1); }
+
+/* DEFINITION BOX */
+.def-box {
+  margin:56px 0;
+  border:1px solid var(--border);
+  padding:32px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+}
+@media(max-width:600px) { .def-box { grid-template-columns:1fr; } }
+.def-formula {
+  font-family:'Space Mono',monospace;
+  font-size:20px;
+  color:var(--accent);
+  margin:12px 0;
+  letter-spacing:-0.5px;
+}
+.def-title { font-size:13px; font-family:'Space Mono',monospace; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+.def-text { font-size:14px; color:var(--muted); line-height:1.7; }
+
+/* TIERS */
+.tiers { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); margin:0; }
+@media(max-width:600px) { .tiers { grid-template-columns:1fr 1fr; } }
+.tier-item { background:var(--bg); padding:20px; }
+.tier-name { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+.tier-range { font-family:'Space Mono',monospace; font-size:18px; font-weight:700; margin-bottom:4px; }
+.tier-desc { font-size:12px; color:var(--muted); }
+
+/* STATS ROW */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); margin:56px 0; }
+@media(max-width:600px) { .stats-row { grid-template-columns:1fr 1fr; } }
+.stat-item { background:var(--surface); padding:24px; }
+.stat-num { font-family:'Space Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); margin-bottom:4px; }
+.stat-label { font-size:12px; color:var(--muted); line-height:1.4; }
+
+/* FOOTER */
+footer {
+  border-top:1px solid var(--border);
+  padding:40px 0;
+  margin-top:80px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+}
+.footer-left { font-size:13px; color:var(--muted); }
+.footer-right { display:flex; gap:24px; }
+.footer-link {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  text-decoration:none;
+  letter-spacing:1px;
+  transition:color 0.2s;
+}
+.footer-link:hover { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-tag">GPU Energy Research · v1.0.0 · May 2026</div>
+    <h1>CEI<br><span>Leaderboard</span></h1>
+    <p class="header-desc">The world's first public benchmark ranking GPUs by Compute Energy Intensity — FLOPs per joule, validated on real hardware.</p>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Validated Tests</span>
+        <span class="meta-value">35 Hardware Tests</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">GPUs Benchmarked</span>
+        <span class="meta-value">A100 SXM · H100 SXM</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Provider</span>
+        <span class="meta-value">RunPod · Real Hardware</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Author</span>
+        <span class="meta-value">Manmohan Bains</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- GHOST ALERT -->
+  <div class="ghost-alert">
+    <div class="ghost-tag"><div class="pulse"></div>Critical Finding · Industry First</div>
+    <h2>GHOST Power Confirmed: <span class="red">146.66W at 0% Utilization</span></h2>
+    <p>
+      NVIDIA A100 SXM draws <span class="red">146.66W</span> while reporting
+      <span class="green">0% utilization</span> for extended periods (10+ minutes).
+      No other observability tool detects this. Standard telemetry assumes
+      <span class="blue">low utilization = low power</span>. This assumption is false.
+      At 500 GPUs, this hidden waste costs <span class="red">~$17,445/year</span>.
+    </p>
+    <div class="power-viz">
+      <div class="viz-row">
+        <span class="viz-label">Power Draw</span>
+        <div class="viz-track">
+          <div class="viz-bar power-bar" id="powerBar"></div>
+        </div>
+        <span class="viz-num red">146.66W</span>
+      </div>
+      <div class="viz-row">
+        <span class="viz-label">GPU Utilization</span>
+        <div class="viz-track">
+          <div class="viz-bar util-bar" id="utilBar"></div>
+        </div>
+        <span class="viz-num green">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CEI DEFINITION -->
+  <div class="def-box">
+    <div>
+      <div class="def-title">What is CEI?</div>
+      <div class="def-formula">CEI = FLOPs ÷ Joules</div>
+      <p class="def-text">
+        Compute Energy Intensity measures how efficiently a GPU converts energy into useful computation.
+        Higher is better. A standardized metric that makes cross-provider comparison possible for the first time.
+      </p>
+    </div>
+    <div>
+      <div class="def-title">Tier Scale</div>
+      <div class="tiers" style="margin-top:12px;">
+        <div class="tier-item">
+          <div class="tier-name" style="color:var(--excellent)">Excellent</div>
+          <div class="tier-range" style="color:var(--excellent)">&gt;10B</div>
+          <div class="tier-desc">FLOPs/J</div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-name" style="color:var(--good)">Good</div>
+          <div class="tier-range" style="color:var(--good)">5–10B</div>
+          <div class="tier-desc">FLOPs/J</div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-name" style="color:var(--moderate)">Moderate</div>
+          <div class="tier-range" style="color:var(--moderate)">1–5B</div>
+          <div class="tier-desc">FLOPs/J</div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-name" style="color:var(--poor)">Poor</div>
+          <div class="tier-range" style="color:var(--poor)">&lt;1B</div>
+          <div class="tier-desc">FLOPs/J</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">146W</div>
+      <div class="stat-label">Peak ghost power at 0% utilization</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">5.68B</div>
+      <div class="stat-label">A100 SXM CEI reference (FLOPs/J)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">$17K</div>
+      <div class="stat-label">Annual waste per 500 A100 fleet</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">35</div>
+      <div class="stat-label">Validated hardware tests on real GPUs</div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="section-header">
+    <span class="section-title">CEI Rankings — Validated Hardware</span>
+    <span class="section-note">Updated May 2026 · RunPod Infrastructure</span>
+  </div>
+
+  <table class="leaderboard">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>GPU</th>
+        <th>Provider</th>
+        <th>CEI (FLOPs/J)</th>
+        <th>Tier</th>
+        <th>Ghost Power</th>
+        <th>Tests</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="rank r1">#1</span></td>
+        <td>
+          <div class="gpu-name">H100 SXM</div>
+          <div class="gpu-sub">80GB · SXM5</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">RunPod</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--excellent)">~8.24B</span>
+            <div class="cei-mini-bar"><div class="cei-mini-fill" style="background:var(--excellent);width:0" data-width="82%"></div></div>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-good">Good</span></td>
+        <td><span class="clean-flag">✓ CLEAN</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">11 tests</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank r2">#2</span></td>
+        <td>
+          <div class="gpu-name">A100 SXM</div>
+          <div class="gpu-sub">40GB · SXM4</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">RunPod</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--good)">5.68B</span>
+            <div class="cei-mini-bar"><div class="cei-mini-fill" style="background:var(--good);width:0" data-width="57%"></div></div>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-good">Good</span></td>
+        <td><span class="ghost-flag">⚠ GHOST</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">24 tests</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank r3">#3</span></td>
+        <td>
+          <div class="gpu-name">A100 PCIe</div>
+          <div class="gpu-sub">40GB · PCIe</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">TBD</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--muted)">Pending</span>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-pending">Pending</span></td>
+        <td><span class="pending-flag">— Not tested</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">0 tests</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank">#4</span></td>
+        <td>
+          <div class="gpu-name">RTX 4090</div>
+          <div class="gpu-sub">24GB · PCIe</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">TBD</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--muted)">Pending</span>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-pending">Pending</span></td>
+        <td><span class="pending-flag">— Not tested</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">0 tests</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank">#5</span></td>
+        <td>
+          <div class="gpu-name">T4</div>
+          <div class="gpu-sub">16GB · PCIe</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">TBD</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--muted)">Pending</span>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-pending">Pending</span></td>
+        <td><span class="pending-flag">— Not tested</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">0 tests</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank">#6</span></td>
+        <td>
+          <div class="gpu-name">A40</div>
+          <div class="gpu-sub">48GB · PCIe</div>
+        </td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;">TBD</span></td>
+        <td>
+          <div class="cei-bar-wrap">
+            <span class="cei-val" style="color:var(--muted)">Pending</span>
+          </div>
+        </td>
+        <td><span class="tier-badge tier-pending">Pending</span></td>
+        <td><span class="pending-flag">— Not tested</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">0 tests</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- GHOST FINDINGS TABLE -->
+  <div class="section-header" style="margin-top:64px;">
+    <span class="section-title">Ghost Power Findings</span>
+    <span class="section-note">A100 SXM · RunPod · May 2026</span>
+  </div>
+
+  <table class="leaderboard">
+    <thead>
+      <tr>
+        <th>Test</th>
+        <th>Duration</th>
+        <th>Peak Power</th>
+        <th>Reported Util</th>
+        <th>Finding</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;">Test 02</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">66 samples</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent2)">102.14W</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent3)">0%</span></td>
+        <td style="font-size:13px;color:var(--muted)">Initial ghost detection</td>
+        <td><span class="ghost-flag">GHOST ✓</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;">Test 13</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">660 seconds</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent2)">146.66W</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent3)">0%</span></td>
+        <td style="font-size:13px;color:var(--muted)">Load + 6min cooldown</td>
+        <td><span class="ghost-flag">GHOST ✓</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;">Test 14</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">1200 seconds</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent2)">146.66W</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent3)">0%</span></td>
+        <td style="font-size:13px;color:var(--muted)">Never returned to true idle</td>
+        <td><span class="ghost-flag">GHOST ✓</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;">Test 17</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">Post-load</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--moderate)">P0 locked</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--accent3)">0%</span></td>
+        <td style="font-size:13px;color:var(--muted)">1593MHz clock retained</td>
+        <td><span class="ghost-flag">P-STATE ✓</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;">Test 16</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">—</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--muted)">N/A</span></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--muted)">—</span></td>
+        <td style="font-size:13px;color:var(--muted)">Remediation blocked by hypervisor</td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--muted);padding:3px 8px;">BLOCKED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">
+      © 2026 Manmohan Bains · AI GPU Energy Optimizer · All research conducted at personal expense on real hardware.
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-" class="footer-link" target="_blank">GitHub</a>
+      <a href="https://ai-gpu-brain-v3.onrender.com/docs" class="footer-link" target="_blank">Live API</a>
+      <a href="https://ai-gpu-energy-optimizer.vercel.app" class="footer-link" target="_blank">Dashboard</a>
+      <a href="mailto:mikebains41@gmail.com" class="footer-link">Contact</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// Animate bars on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('powerBar').style.width = '100%';
+    document.getElementById('utilBar').style.width = '2%';
+  }, 300);
+
+  setTimeout(() => {
+    document.querySelectorAll('.cei-mini-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  }, 600);
+});
+</script>
+</body>
+</html>
