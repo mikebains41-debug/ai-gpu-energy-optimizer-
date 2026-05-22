@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import subprocess, os, json, datetime
+import subprocess, os, json, datetime, csv
 
 def get_gpu_stats(gpu_id=0):
     try:
@@ -57,6 +57,29 @@ def is_desync(m, power_thresh=80, util_thresh=5):
 
 def calc_cei(flops, power_w, duration_sec=1):
     return flops / (power_w * duration_sec) if power_w > 0 else 0
+
+def log_sample(test_id, sample_num, stats):
+    os.makedirs("morpheus/tests/results/samples", exist_ok=True)
+    path = f"morpheus/tests/results/samples/{test_id}_samples.csv"
+    write_header = not os.path.exists(path)
+    ghost = 1 if stats["gpu_util"] == 0 and stats["power_watts"] > 100 else 0
+    desync = 1 if stats["power_watts"] > 80 and stats["gpu_util"] < 5 else 0
+    with open(path, "a", newline="") as f:
+        writer = csv.writer(f)
+        if write_header:
+            writer.writerow(["timestamp","sample","power_w","util_pct",
+                             "temp_c","clock_mhz","pstate","ghost","desync"])
+        writer.writerow([
+            datetime.datetime.utcnow().isoformat(),
+            sample_num,
+            stats["power_watts"],
+            stats["gpu_util"],
+            stats["temp_c"],
+            stats["mem_clock_mhz"],
+            stats["p_state"],
+            ghost,
+            desync
+        ])
 
 def log_result(result):
     os.makedirs("morpheus/tests/results", exist_ok=True)
