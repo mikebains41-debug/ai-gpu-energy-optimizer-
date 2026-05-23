@@ -27,3 +27,7 @@ yarn-error.log*
 __pycache__/
 *.pyc
 .env.local
+gpu_log.jsonl
+metrics.json
+*.db
+*.jsonl
