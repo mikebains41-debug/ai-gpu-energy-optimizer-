@@ -112,7 +112,7 @@ After 40+ tests, we isolated the root cause of the GHOST anomaly to a **firmware
 
 **H100 proves it's fixable:** identical test suite on H100 showed clean idle (no ghost power). This is **not physics** — it is firmware debt.
 
-**Impact:** 500,000 A100s × 30% ghost time = 39.75 MW waste = $10.45M/year.
+**Impact:** 1,000 A100s → $21k/year wasted. 100k A100s → $2.1M/year. This is fixable.
 
 ---
 
