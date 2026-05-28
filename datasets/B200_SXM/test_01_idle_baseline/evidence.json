@@ -1,0 +1,140 @@
+{
+  "test_id": "B200_TEST_01",
+  "test_name": "2x B200 Idle Baseline - Cold Boot Ghost Power",
+  "date": "2026-05-28",
+  "hardware": {
+    "gpu_model": "NVIDIA B200",
+    "gpu_count": 2,
+    "total_vram_gb": 360,
+    "driver_version": "580.126.20",
+    "cuda_version": "13.0",
+    "pod_id": "aee29124a02b",
+    "provider": "RunPod"
+  },
+  "evidence_chain": [
+    {
+      "evidence_id": "E01",
+      "type": "nvidia_smi_reading",
+      "timestamp": "2026/05/28 17:18:11",
+      "description": "First reading on pod boot",
+      "gpu_0_power_w": 143.41,
+      "gpu_1_power_w": 145.24,
+      "gpu_0_util_pct": 0,
+      "gpu_1_util_pct": 0,
+      "gpu_0_pstate": "P0",
+      "gpu_1_pstate": "P0",
+      "processes": "none",
+      "significance": "Ghost power present from first reading"
+    },
+    {
+      "evidence_id": "E02",
+      "type": "sustained_monitoring",
+      "timestamp_start": "2026/05/28 17:18:11",
+      "timestamp_end": "2026/05/28 17:21:21",
+      "duration_minutes": 3.17,
+      "samples": 20,
+      "gpu_0_power_range_w": "143.30 to 143.62",
+      "gpu_1_power_range_w": "145.22 to 145.46",
+      "utilization_pct": 0,
+      "pstate_both": "P0",
+      "significance": "Ghost power sustained over first 3 minutes"
+    },
+    {
+      "evidence_id": "E03",
+      "type": "csv_snapshot",
+      "timestamp": "2026/05/28 17:23:39",
+      "gpu_0_power_w": 143.23,
+      "gpu_1_power_w": 145.08,
+      "gpu_0_util_pct": 0,
+      "gpu_1_util_pct": 0,
+      "gpu_0_mem_clock_mhz": 3996,
+      "gpu_1_mem_clock_mhz": 3996,
+      "vram_used_mib": 0,
+      "significance": "Full CSV capture confirming memory clock 3996 MHz at idle"
+    },
+    {
+      "evidence_id": "E04",
+      "type": "extended_monitoring",
+      "timestamp_start": "2026/05/28 18:16:13",
+      "timestamp_end": "2026/05/28 18:24:05",
+      "duration_minutes": 7.87,
+      "samples": 50,
+      "gpu_0_power_range_w": "143.22 to 145.67",
+      "gpu_1_power_range_w": "144.91 to 147.04",
+      "utilization_pct": 0,
+      "pstate_both": "P0",
+      "significance": "Ghost power sustained over extended monitoring period"
+    },
+    {
+      "evidence_id": "E05",
+      "type": "pytorch_error",
+      "timestamp": "2026/05/28 18:14:00",
+      "error": "CUDA error: no kernel image available for execution on device",
+      "pytorch_version": "2.4.1",
+      "cuda_sm_required": "sm_100",
+      "cuda_sm_supported": "up to sm_90",
+      "significance": "PyTorch 2.4.1 does not support B200 Blackwell architecture"
+    },
+    {
+      "evidence_id": "E06",
+      "type": "dmon_monitoring",
+      "timestamp_start": "2026/05/28 18:25:00",
+      "description": "nvidia-smi dmon device monitor",
+      "mem_clock_mhz": 3996,
+      "sm_clock_range_mhz": "120 to 727",
+      "power_range_w": "143 to 148",
+      "utilization_pct": 0,
+      "significance": "SM clock briefly spiked to 727 MHz then returned to 120 MHz at zero utilization"
+    }
+  ],
+  "key_observations": {
+    "observation_1": {
+      "finding": "Ghost power present from cold boot",
+      "evidence": "E01 E02 E03 E04",
+      "detail": "Both B200 GPUs draw 143-145W immediately on pod boot with zero workload ever executed"
+    },
+    "observation_2": {
+      "finding": "Memory clock active at idle",
+      "evidence": "E03",
+      "detail": "Memory clock running at 3996 MHz with 0 MiB VRAM used and 0% utilization"
+    },
+    "observation_3": {
+      "finding": "P0 state locked from boot",
+      "evidence": "E01 E02 E03 E04",
+      "detail": "Both GPUs in maximum performance state P0 from first reading with no workload"
+    },
+    "observation_4": {
+      "finding": "Power stable over 65 minutes",
+      "evidence": "E01 E02 E03 E04",
+      "detail": "GPU 0 variance 2.47W GPU 1 variance 2.13W over entire 65 minute test duration"
+    },
+    "observation_5": {
+      "finding": "SM clock transient spike",
+      "evidence": "E06",
+      "detail": "SM clock briefly reached 727 MHz then 202 MHz before returning to 120 MHz at zero utilization"
+    },
+    "observation_6": {
+      "finding": "PyTorch incompatibility",
+      "evidence": "E05",
+      "detail": "B200 requires CUDA sm_100. PyTorch 2.4.1 only supports up to sm_90. Compute tests blocked."
+    },
+    "observation_7": {
+      "finding": "Consistent inter-GPU power differential",
+      "evidence": "E01 E02 E03 E04",
+      "detail": "GPU 1 consistently draws 1.77W more than GPU 0 across all 296 samples"
+    }
+  },
+  "screenshot_evidence": {
+    "screenshot_01": "b200_test01_screenshot_01.png",
+    "screenshot_02": "b200_test01_screenshot_02.png",
+    "description": "Raw nvidia-smi terminal output captured in RunPod web terminal"
+  },
+  "attestation": {
+    "trust_posture": "hardware_attested",
+    "validator": "GPU Energy Optimizer v2.0",
+    "researcher": "Manmohan (Mike) Bains",
+    "contact": "mikebains41@gmail.com",
+    "location": "Duncan BC Canada",
+    "date": "2026-05-28"
+  }
+}

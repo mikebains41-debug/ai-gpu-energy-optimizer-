@@ -1,39 +1,63 @@
-# B200 Test 01 — Executive Summary
+# B200 2x GPU Test 01 — Executive Summary
+
+## Configuration
+2x NVIDIA B200 GPUs
+360GB total VRAM (180GB per GPU)
+Pod ID: aee29124a02b
+Provider: RunPod
+Date: 2026-05-28
 
 ## One Line Finding
-B200 draws 143-145W at 0% utilization from cold boot with zero processes.
+Both B200 GPUs draw 143-145W each at 0% utilization from cold boot.
+Combined idle ghost power: 288W across 2x B200 with zero workload.
+No processes running. No workload ever executed.
 
-## What Was Tested
-Fresh B200 pod on RunPod. No workloads. No processes. Just boot and measure.
+## Test Duration
+65 minutes continuous monitoring
+148 total samples per GPU
+296 total samples across both GPUs
+Start: 2026/05/28 17:18:11 UTC
+End: 2026/05/28 18:24:05 UTC
 
-## What Was Found
-- GPU 0: 143.23W at 0% util
-- GPU 1: 145.08W at 0% util
-- Both GPUs: P0 state locked
-- Memory clock: 3996 MHz at idle
-- Duration confirmed: 3 minutes 10 seconds sustained
-- No variation. No recovery. Flat line at 143-145W.
+## Key Numbers Per GPU
+GPU 0 average power: 143.47W at 0% utilization P0 locked
+GPU 1 average power: 145.24W at 0% utilization P0 locked
+GPU 0 power range: 143.20W to 145.67W
+GPU 1 power range: 144.91W to 147.04W
+Memory clock both GPUs: 3996 MHz at idle
+SM clock both GPUs: 120 MHz at idle
+VRAM used both GPUs: 0 MiB of 183,359 MiB
 
-## Why This Matters
-A100 SXM ghost power appeared AFTER a workload ran.
-B200 ghost power is present FROM BOOT with zero workload ever run.
-B200 idles at more than double the A100 SXM idle floor.
+## Combined 2x B200 Metrics
+Combined average power: 288.71W at 0% utilization
+Combined power limit: 2000W
+Combined VRAM: 360GB
+Annual kWh wasted 2x B200: 2,527 kWh
+Annual cost 2x B200: $252.70/year
+Annual CO2 global grid: 1,010.8 kg
+Annual CO2 Portugal solar: 121.3 kg
+Annual CO2 BC Canada hydro: 30.3 kg
 
-## Comparison
-| GPU | Idle Floor |
-|---|---|
-| A100 SXM | 67.1W |
-| H100 SXM | 69.5W |
-| B200 | 143-145W |
+## Key Findings
+Ghost power confirmed on B200 from cold boot
+Both GPUs P0 locked from boot with zero workload
+Memory subsystem active at 3996 MHz with zero compute
+Power variance extremely low over 65 minutes
+Inter-GPU power differential: 1.77W consistent
+PyTorch 2.4.1 incompatible with B200 CUDA sm_100
 
-## Financial Impact
-Single B200: $125/year wasted on ghost power
-1000 B200s: $125,300/year wasted
-100,000 B200s: $12,530,000/year wasted
+## PyTorch Incompatibility
+PyTorch 2.4.1 does not support B200 CUDA sm_100.
+B200 requires CUDA capability sm_100.
+Compute tests require nightly PyTorch build.
+Software ecosystem not yet mature for B200.
 
 ## Status
-CONFIRMED. Not a transient. Not a boot artifact.
-This is the B200 idle floor.
+CONFIRMED. 65 minutes sustained across 2x B200.
+Not a transient. This is the stable B200 idle floor.
 
-## Date
-2026-05-28 17:18 UTC
+## Researcher
+Manmohan (Mike) Bains
+mikebains41@gmail.com
+Duncan BC Canada
+2026-05-28

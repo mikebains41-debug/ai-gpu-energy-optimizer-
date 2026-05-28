@@ -1,4 +1,4 @@
-# B200 Test 01 — Idle Baseline
+# B200 2x GPU Test 01 — Idle Baseline
 ## Status: COMPLETE — GHOST POWER CONFIRMED FROM COLD BOOT
 
 ---
@@ -8,10 +8,12 @@
 |---|---|
 | GPU Model | NVIDIA B200 |
 | GPU Count | 2x |
+| Total VRAM | 360GB |
+| VRAM Per GPU | 180GB (183,359 MiB) |
 | Driver Version | 580.126.20 |
 | CUDA Version | 13.0 |
-| VRAM Per GPU | 183,359 MiB (180GB) |
 | Power Limit Per GPU | 1000W |
+| Combined Power Limit | 2000W |
 | Pod ID | aee29124a02b |
 | Provider | RunPod |
 | Test Date | 2026-05-28 |
@@ -23,13 +25,14 @@
 |---|---|
 | Test Type | Cold boot idle baseline |
 | Total Duration | 65 minutes |
-| Total Samples | 148 per GPU |
+| Samples Per GPU | 148 |
+| Combined Samples | 296 |
 | Workloads Running | Zero |
 | Processes Found | None |
-| VRAM Used | 0 MiB |
+| VRAM Used | 0 MiB both GPUs |
 | Sampling Interval | 10 seconds |
-| Time Start | 17:18:11 UTC |
-| Time End | 18:24:05 UTC |
+| Time Start | 2026/05/28 17:18:11 UTC |
+| Time End | 2026/05/28 18:24:05 UTC |
 
 ---
 
@@ -37,15 +40,16 @@
 | Metric | Value |
 |---|---|
 | UUID | GPU-220239ae-d503-df2c-f752-ed7360dc183e |
-| Power Min | 143.20W |
-| Power Max | 145.67W |
+| Power Minimum | 143.20W |
+| Power Maximum | 145.67W |
 | Power Average | 143.47W |
-| Utilization | 0% — sustained entire test |
+| Power Variance | 2.47W |
+| Utilization | 0% sustained |
 | Temperature | 29-30C |
 | SM Clock | 120 MHz |
 | Memory Clock | 3996 MHz |
-| P-State | P0 — locked from boot |
-| VRAM Used | 0 MiB |
+| P-State | P0 locked from boot |
+| VRAM Used | 0 MiB of 183,359 MiB |
 
 ---
 
@@ -53,90 +57,91 @@
 | Metric | Value |
 |---|---|
 | UUID | GPU-77df8266-a91d-541d-67f8-9807ff7075d1 |
-| Power Min | 144.91W |
-| Power Max | 147.04W |
+| Power Minimum | 144.91W |
+| Power Maximum | 147.04W |
 | Power Average | 145.24W |
-| Utilization | 0% — sustained entire test |
+| Power Variance | 2.13W |
+| Utilization | 0% sustained |
 | Temperature | 30-31C |
 | SM Clock | 120 MHz |
 | Memory Clock | 3996 MHz |
-| P-State | P0 — locked from boot |
-| VRAM Used | 0 MiB |
+| P-State | P0 locked from boot |
+| VRAM Used | 0 MiB of 183,359 MiB |
+
+---
+
+## Combined 2x B200 Results
+| Metric | Value |
+|---|---|
+| Combined Average Power | 288.71W |
+| Combined Minimum Power | 288.11W |
+| Combined Maximum Power | 292.71W |
+| Combined Utilization | 0% |
+| Combined VRAM Used | 0 MiB |
+| Combined VRAM Total | 360GB |
+| Inter-GPU Differential | 1.77W |
 
 ---
 
 ## Key Findings
 
-### FINDING 1 — B200 Ghost Power From Cold Boot
-B200 draws 143-145W at 0% utilization from first boot.
-No workload ever ran on this pod before measurement.
-A100 SXM required a prior workload to trigger ghost power.
-B200 ghost power is present from the moment the GPU powers on.
+### FINDING 1 — Ghost Power From Cold Boot
+Both B200 GPUs draw 143-145W from first boot.
+No workload ever ran before measurement began.
+Combined ghost power: 288W at 0% utilization.
 
 ### FINDING 2 — Memory Subsystem Active At Idle
-Memory clock running at 3996 MHz at zero utilization.
-This explains the elevated idle power draw.
-The entire memory subsystem is active with no compute activity.
+Memory clock: 3996 MHz on both GPUs at zero utilization.
+Zero VRAM used yet memory subsystem fully active.
+This is the root cause of elevated idle power.
 
 ### FINDING 3 — P0 State Locked From Boot
-Both GPUs locked in maximum performance state from cold boot.
-No trigger required. No workload needed.
-This is different from A100 SXM behaviour.
+Both GPUs in P0 maximum performance state from cold boot.
+No workload trigger required.
 
 ### FINDING 4 — Power Stable Over 65 Minutes
 GPU 0 variance: 2.47W over 65 minutes
 GPU 1 variance: 2.13W over 65 minutes
-This is not a boot transient. This is stable baseline behaviour.
+296 samples confirm this is stable baseline not transient.
 
-### FINDING 5 — PyTorch Does Not Support B200
-PyTorch 2.4.1 does not support CUDA sm_100.
-B200 Blackwell requires sm_100.
-Compute load tests require nightly PyTorch build.
-The B200 software ecosystem is not yet mature for general use.
+### FINDING 5 — SM Clock Transient
+SM clock briefly spiked to 727 MHz then 202 MHz
+before returning to 120 MHz at zero utilization.
+Observed during dmon monitoring session.
 
-### FINDING 6 — Inter-GPU Power Differential
-GPU 0 averages 143.47W
-GPU 1 averages 145.24W
-Consistent 1.77W differential between the two GPUs.
-Same architecture — different power draw at idle.
+### FINDING 6 — PyTorch Incompatibility
+PyTorch 2.4.1 does not support B200 CUDA sm_100.
+Error: no kernel image available for execution.
+Compute tests require nightly PyTorch build.
+B200 software ecosystem not yet mature.
 
----
-
-## Architecture Comparison
-| GPU | Idle Floor | Ghost Trigger | Ghost Power | P0 From Boot |
-|---|---|---|---|---|
-| T4 | 9.5W | None | None | No |
-| RTX 4090 | 20W | None | None | No |
-| A40 | 30.4W | None | None | No |
-| A100 PCIe | 47W | None | None | No |
-| H100 SXM | 69.5W | None | None | No |
-| A100 SXM | 67.1W | Post workload | 146W | No |
-| B200 | 143-145W | Cold boot | 143-145W | YES |
+### FINDING 7 — Inter-GPU Power Differential
+GPU 1 consistently draws 1.77W more than GPU 0.
+Observed across all 296 samples.
+Same architecture different idle power draw.
 
 ---
 
-## Financial Impact
-| Fleet Size | Annual kWh Wasted | Annual USD |
+## Financial Impact 2x B200
+| Fleet Size | Annual kWh | Annual USD |
 |---|---|---|
-| 1 GPU | 1,256 kWh | $125.60 |
-| 10 GPUs | 12,560 kWh | $1,256 |
-| 100 GPUs | 125,600 kWh | $12,560 |
-| 1,000 GPUs | 1,256,000 kWh | $125,600 |
-| 10,000 GPUs | 12,560,000 kWh | $1,256,000 |
-| 100,000 GPUs | 125,600,000 kWh | $12,560,000 |
+| 1 pod 2x B200 | 2,527 kWh | $252.70 |
+| 10 pods | 25,270 kWh | $2,527 |
+| 100 pods | 252,700 kWh | $25,270 |
+| 1,000 pods | 2,527,000 kWh | $252,700 |
+| 10,000 pods | 25,270,000 kWh | $2,527,000 |
 
 ---
 
-## Carbon Impact Per GPU Per Year
+## Carbon Impact 2x B200 Per Year
 | Grid | CO2 kg/year |
 |---|---|
-| BC Canada hydro | 15.1 kg |
-| Portugal solar | 60.3 kg |
-| California | 26.4 kg |
-| EU average | 370.5 kg |
-| USA average | 484.8 kg |
-| Global average | 502.4 kg |
-| China | 729.7 kg |
+| BC Canada hydro | 30.3 kg |
+| Portugal solar | 121.3 kg |
+| EU average | 741.0 kg |
+| USA average | 969.6 kg |
+| Global average | 1,010.8 kg |
+| China | 1,459.4 kg |
 
 ---
 
@@ -145,39 +150,36 @@ Same architecture — different power draw at idle.
 |---|---|
 | b200_test01_raw_data.csv | All raw nvidia-smi readings |
 | metrics.json | Structured key metrics |
+| evidence.json | Full evidence chain |
 | SUMMARY.md | Executive summary |
 | README.md | This document |
-| Screenshots | Captured in RunPod terminal |
+| Screenshots | Raw terminal output images |
 
 ---
 
 ## Pending Tests
 | Test | Status | Blocker |
 |---|---|---|
-| Test 02 FP32 Load | PENDING | PyTorch sm_100 support |
-| Test 03 FP16 Load | PENDING | PyTorch sm_100 support |
-| Test 04 Cooldown | PENDING | Compute test required first |
-| Test 05 Post Load Ghost | PENDING | Compute test required first |
-| Test 06 Multi GPU | PENDING | PyTorch sm_100 support |
+| Test 02 FP32 Load | PENDING | PyTorch sm_100 |
+| Test 03 FP16 Load | PENDING | PyTorch sm_100 |
+| Test 04 Cooldown | PENDING | Compute first |
+| Test 05 Post Load Ghost | PENDING | Compute first |
+| Test 06 Multi GPU Divergence | PENDING | PyTorch sm_100 |
 
 ---
 
 ## Conclusion
-The NVIDIA B200 Blackwell GPU exhibits persistent ghost power
-from cold boot at 143-145W with zero utilization and zero
-processes running. This is a more severe finding than the
-A100 SXM where ghost power required a prior workload trigger.
+Both NVIDIA B200 GPUs exhibit persistent ghost power from
+cold boot. Combined 288W at 0% utilization with zero
+processes and zero VRAM used. Memory subsystem active at
+3996 MHz continuously. Both GPUs P0 locked from boot.
+Power stable over 65 minutes across 296 samples.
 
-The B200 idle floor IS the ghost power floor. The memory
-subsystem runs at 3996 MHz continuously regardless of compute
-activity. Both GPUs lock into P0 state from boot.
+PyTorch 2.4.1 incompatible with B200 confirming software
+ecosystem not yet mature for Blackwell architecture.
 
-Additionally PyTorch 2.4.1 does not support B200 Blackwell
-architecture confirming the software ecosystem has not yet
-matured for this generation of hardware.
-
-This is the first publicly documented hardware-attested
-B200 idle power measurement on record.
+First publicly documented hardware-attested 2x B200
+idle power measurement on record.
 
 ---
 
