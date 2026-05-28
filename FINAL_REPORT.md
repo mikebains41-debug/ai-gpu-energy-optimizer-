@@ -985,3 +985,144 @@ All raw logs, screenshots, and NVML dumps are available in the repository.
 Live test data: https://ai-gpu-brain-v3.onrender.com/results/a100
 
 Last updated: May 18, 2026 | v1.0.0 | 24 A100 tests | 11 H100 tests | 40/40 platform tests passing
+
+---
+
+## B200 BLACKWELL VALIDATION — 2026-05-28
+
+### Hardware
+2x NVIDIA B200 GPUs
+360GB total VRAM (180GB per GPU)
+Driver: 580.126.20 | CUDA: 13.0
+PyTorch: 2.11.0+cu128 required for B200 support
+Pod ID: aee29124a02b | Provider: RunPod
+
+---
+
+### Test 01 — Idle Baseline
+**GHOST POWER CONFIRMED FROM COLD BOOT**
+
+| Metric | GPU 0 | GPU 1 |
+|---|---|---|
+| Power | 143.47W | 145.24W |
+| Utilization | 0% | 0% |
+| SM Clock | 120 MHz | 120 MHz |
+| Memory Clock | 3996 MHz | 3996 MHz |
+| P-State | P0 | P0 |
+| VRAM Used | 0 MiB | 0 MiB |
+
+Duration: 65 minutes — 148 samples per GPU
+Combined idle power: 288.71W at 0% utilization
+B200 idles at 2.14x the A100 SXM idle floor of 67.1W
+Ghost power present from cold boot — no workload required
+
+---
+
+### Test 02 — FP32 Load
+**DESYNC CONFIRMED**
+
+| Metric | GPU 0 | GPU 1 |
+|---|---|---|
+| Power | 237-239W | 237-239W |
+| Utilization | 7-9% | 7-9% |
+| SM Clock | 1965 MHz | 1965 MHz |
+
+238W at 7-9% utilization — severe power/utilization mismatch
+SM clock jumped from 120 to 1965 MHz instantly on load
+PyTorch 2.11.0+cu128 confirmed working on B200
+
+---
+
+### Test 03 — FP16 Tensor Core Load
+**COMPLETE TELEMETRY BLACKOUT**
+
+| Metric | GPU 0 | GPU 1 |
+|---|---|---|
+| Power | 195-200W | 197-202W |
+| Utilization | 0% | 0% |
+| SM Clock | 1965 MHz | 1965 MHz |
+
+0% utilization reported for entire 8 minute FP16 test.
+GPU clearly computing — SM clock at 1965 MHz confirms it.
+FP16 tensor core workloads completely invisible to NVML.
+More severe than FP32 which showed 7-9% utilization.
+
+---
+
+### Test 04 — Cooldown Profile
+**NO COOLDOWN PERIOD**
+
+Power returned to 143-145W baseline immediately after load.
+No gradual decay observed.
+Periodic power spikes every 30 seconds at 0% utilization.
+GPU 0 spikes to 146-147W — GPU 1 spikes to 147-149W.
+
+---
+
+### Test 05 — Post Load Ghost Power Persistence
+**SPONTANEOUS 195W BURST CONFIRMED**
+
+At 20:30:08 UTC with zero workload running:
+- GPU 0 jumped from 144W to 195.72W
+- GPU 1 jumped from 145W to 181.95W
+- SM clock activated to 1965 MHz
+- Utilization still reported 0%
+- Returned to baseline within 10 seconds
+
+Autonomous GPU activity completely invisible to schedulers.
+Ghost power floor identical to cold boot — permanent state.
+
+---
+
+### Test 06 — Multi GPU Power Divergence
+**HARDWARE ASYMMETRY CONFIRMED**
+
+| Test | Workload | GPU 0 | GPU 1 | Diff |
+|---|---|---|---|---|
+| 01 | Idle | 143.47W | 145.24W | 1.77W |
+| 02 | FP32 | 237.50W | 238.50W | 1.00W |
+| 03 | FP16 | 197.00W | 199.00W | 2.00W |
+| 04 | Cooldown | 144.00W | 145.75W | 1.75W |
+| 05 | Post Load | 144.10W | 145.85W | 1.75W |
+
+GPU 1 always draws 1.00-2.00W more than GPU 0.
+370 samples confirm hardware asymmetry not software artifact.
+
+---
+
+### B200 Key Findings Summary
+
+1. Ghost power from cold boot — no workload required
+2. B200 idles at 143-145W — 2.14x higher than A100 SXM
+3. FP32 DESYNC — 238W at 7-9% utilization
+4. FP16 complete telemetry blackout — 0% util during active compute
+5. No cooldown period — instant return to ghost power floor
+6. Spontaneous 195W burst at 0% utilization with no workload
+7. Periodic 30 second power spikes at idle
+8. GPU 1 consistently 1-2W higher than GPU 0
+9. PyTorch 2.4.1 incompatible — requires 2.11.0+cu128
+10. Memory clock 3996 MHz active at idle
+
+### B200 Financial Impact
+| Fleet Size | Annual kWh Wasted | Annual USD |
+|---|---|---|
+| 1 pod 2x B200 | 2,527 kWh | $252.70 |
+| 100 pods | 252,700 kWh | $25,270 |
+| 1,000 pods | 2,527,000 kWh | $252,700 |
+| 10,000 pods | 25,270,000 kWh | $2,527,000 |
+
+### B200 vs A100 SXM Comparison
+| Metric | A100 SXM | B200 |
+|---|---|---|
+| Idle Floor | 67.1W | 143-145W |
+| Ghost Trigger | Post workload | Cold boot |
+| FP32 Util Reporting | Accurate | 7-9% at load |
+| FP16 Util Reporting | Accurate | 0% blackout |
+| Cooldown Period | Yes | No |
+| PyTorch Support | 2.4.1+ | 2.11.0+ only |
+
+### Researcher
+Manmohan (Mike) Bains
+mikebains41@gmail.com
+Duncan BC Canada
+2026-05-28
