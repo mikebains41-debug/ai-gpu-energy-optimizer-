@@ -1189,4 +1189,4 @@ Minimum version required: PyTorch 2.11.0+cu128
 
 ### Status
 6 tests complete. Hardware-attested. First public B200 validation.
-Remaining tests require Nelson Vicente Node Alpha hardware.
+Remaining tests require partner Node Alpha hardware.
