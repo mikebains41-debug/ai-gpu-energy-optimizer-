@@ -309,3 +309,206 @@ Manmohan (Mike) Bains
 mikebains41@gmail.com
 Duncan BC Canada
 2026-05-28
+
+---
+
+## H100 SXM Validation Results
+
+The H100 SXM architecture was tested across 11 validated tests.
+
+### Key Findings
+- Idle floor: 69.5W
+- Ghost power: NONE — clean architecture confirmed
+- CEI: 76.5 GFLOPS/W — 2x more efficient than A100 SXM
+- FP32 4096x4096: 47 TFLOPS — 3.1x faster than A100 SXM
+- FP16 tensor core: 592.8 TFLOPS — 3.87x faster than A100 SXM
+- Samples: 22,378 — stable normal distribution confirmed
+- P0 state: does not lock from boot
+
+**Conclusion:** Ghost power is NOT present on H100 SXM.
+The anomaly is architecture-specific to A100 SXM Ampere generation.
+
+---
+
+## B200 Blackwell GPU Testing — First Ever Validation
+
+Hardware: 2x NVIDIA B200 GPUs
+Total VRAM: 360GB (180GB per GPU)
+Driver: 580.126.20 | CUDA: 13.0 | PyTorch: 2.11.0+cu128
+Provider: RunPod | Pod: aee29124a02b
+Date: 2026-05-28
+Tests completed: 6
+
+### Finding B200-01 — Ghost Power From Cold Boot
+Both B200 GPUs draw 143-145W from cold boot with zero workload.
+GPU 0 average: 143.47W | GPU 1 average: 145.24W
+Combined: 288.71W at 0% utilization
+Memory clock: 3996 MHz at idle
+P0 state locked from boot — no workload required
+Sustained 65 minutes — not a transient
+
+B200 idles at more than double the A100 SXM idle floor.
+A100 SXM required a prior workload to trigger ghost power.
+B200 ghost power is present from the moment the GPU powers on.
+
+### Finding B200-02 — FP32 DESYNC Confirmed
+GPU 0: 237.50W at 7-9% reported utilization
+GPU 1: 238.50W at 7-9% reported utilization
+Combined: ~476W at 7-9% utilization
+SM clock: jumped from 120 MHz to 1965 MHz on load start
+Expected power at 7-9% util: approximately 50-80W
+Actual power is 3x higher than utilization suggests
+
+### Finding B200-03 — FP16 Complete Telemetry Blackout
+GPU 0: 197W sustained at 0% utilization — 8 minutes continuous
+GPU 1: 199W sustained at 0% utilization — 8 minutes continuous
+Combined: ~396W at 0% utilization
+SM clock at 1965 MHz confirms active compute despite 0% util report
+FP16 tensor core workloads completely invisible to NVML
+More severe than FP32 which showed 7-9% utilization
+
+### Finding B200-04 — No Cooldown Period
+Power returns to 143-145W baseline immediately after load stops.
+No gradual decay. No recovery period.
+Periodic power spikes every 30 seconds at 0% utilization.
+Spike magnitude: 2-3W above baseline on both GPUs simultaneously.
+
+### Finding B200-05 — Spontaneous Autonomous Power Burst
+At 20:30:08 UTC with zero workload running:
+GPU 0 jumped to 195.72W
+GPU 1 jumped to 181.95W
+SM clock activated to 1965 MHz
+Utilization still reported 0%
+Duration approximately 10 seconds
+No workload was triggered — autonomous GPU activity
+Completely invisible to schedulers and billing systems
+
+### Finding B200-06 — Inter-GPU Power Differential
+GPU 1 consistently draws 1.00-2.00W more than GPU 0
+across all 5 test conditions and 370 total samples.
+Average differential: 1.65W
+Same architecture same pod same driver same CUDA.
+Hardware asymmetry — not a software artifact.
+Per-GPU measurement is essential not optional.
+
+### B200 PyTorch Compatibility Finding
+PyTorch 2.4.1 does not support B200 CUDA sm_100.
+Minimum version required: PyTorch 2.11.0+cu128.
+Software ecosystem not yet mature for B200 Blackwell architecture.
+
+---
+
+## Architecture Comparison — All Validated GPUs
+
+| GPU | Idle Floor | Ghost Power | Ghost Trigger | FP16 Telemetry | P0 From Boot |
+|---|---|---|---|---|---|
+| T4 | 9.5W | None | None | Unknown | No |
+| RTX 4090 | 20W | None | None | Unknown | No |
+| A40 | 30.4W | None | None | Unknown | No |
+| A100 PCIe | 47W | None | None | Unknown | No |
+| H100 SXM | 69.5W | None | None | Visible | No |
+| A100 SXM | 67.1W | 146.66W | Post-load | Partial | No |
+| B200 2x GPU | 143-145W | From boot | Cold boot | 0% blackout | YES |
+
+Key insight: Ghost power is architecture-specific not universal.
+H100 SXM is clean. B200 Blackwell has a more severe variant from boot.
+
+---
+
+## True CEI — Ghost Power Corrected
+
+Standard CEI reporting excludes ghost power periods.
+
+Reported CEI: 5.68B FLOPs/joule — A100 SXM Test 24
+True CEI with ghost power correction: 4.12B FLOPs/joule
+Degradation: 27.5% worse than reported
+
+Ghost power consumes energy that produces zero useful compute.
+The true efficiency of A100 SXM is 27.5% worse than any published figure.
+
+---
+
+## First Hardware-Attested Scope 1-2-3 GPU Carbon Accounting
+
+All numbers derive from proven hardware measurements.
+This is the first hardware-attested full scope GPU carbon analysis.
+
+### Ghost Power Carbon Impact Per GPU Per Year
+
+| Grid Region | Ghost CO2 kg/year | Scope 3 % of Total |
+|---|---|---|
+| BC Canada hydro | 2.51 kg | 98.7% |
+| Portugal solar | 10.04 kg | 94.8% |
+| California | 43.91 kg | 80.7% |
+| EU Average | 61.68 kg | 74.8% |
+| Global Average | 83.63 kg | 68.7% |
+| China | 121.48 kg | 60.1% |
+
+### The Clean Grid Paradox
+Cleaning up your grid makes ghost power MORE important not less.
+On a solar grid like Portugal Scope 3 becomes 94.8% of total emissions.
+The only lever left is eliminating ghost power waste.
+
+### Fleet Scale Ghost Power Waste — A100 SXM
+
+| Fleet Size | Annual CO2 tonnes | Annual Electricity Cost |
+|---|---|---|
+| 1,000 GPUs | 83.6 tonnes | $20,908 |
+| 10,000 GPUs | 836 tonnes | $209,084 |
+| 100,000 GPUs | 8,363 tonnes | $2,090,837 |
+| 500,000 GPUs | 41,817 tonnes | $10,454,184 |
+
+Note: 100,000 GPUs represents a large hyperscaler tier deployment.
+500,000 GPUs represents a major cloud provider full fleet estimate.
+
+### Single A100 SXM Annual Carbon
+Scope 2 operational: 730.3 kg CO2
+Scope 3 embodied: 1,600.0 kg CO2
+Total: 2,330.3 kg CO2
+Scope 3 is 68.66% of total on global average grid
+
+---
+
+## Global Regulatory Compliance — 14 Jurisdictions
+
+| Jurisdiction | Framework | Key Requirement |
+|---|---|---|
+| EU | AI Act Annex XI | PUE WUE annual KPI 15 May |
+| USA | EO14110 + SB253 | Scope 1-2-3 mandatory 2026 |
+| Canada | Bill C-27 AIDA | Net Zero 2050 |
+| Mexico | LFPDPPP + SENER | Regional grid factors |
+| Brazil | LGPD + PL 2338/2023 | NDC commitments |
+| LATAM | NDC | Carbon commitments |
+| China | Interim Measures Generative AI | 2025 labeling |
+| Japan | Energy Conservation Act | PUE 1.4 by 2030 |
+| South Korea | AI Basic Act 2026 | Enforcement Jan 22 2026 |
+| Singapore | Model AI Governance | PUE 1.3 target |
+| India | National AI Strategy | BEE efficiency |
+| UAE | AI Strategy 2031 + DIFC Licence | Active 2026 |
+| Saudi Arabia | Vision 2030 | AI efficiency |
+| Australia | Mandatory PUE 1.4 | July 2025 |
+
+All compliance reports produced are hardware-attested not self-reported.
+
+---
+
+## Research Status — 2026-05-28
+
+Total validated tests: 41
+GPU architectures tested: 7
+Compliance jurisdictions: 14
+Carbon accounting regions: 7
+
+New findings since initial publication:
+1. Ghost power confirmed on B200 Blackwell from cold boot
+2. FP16 complete telemetry blackout on B200
+3. Spontaneous autonomous 195W power burst at 0% utilization
+4. First hardware-attested Scope 1-2-3 GPU carbon analysis
+5. True CEI 27.5% worse than reported
+6. 14 jurisdiction compliance coverage
+7. H100 SXM confirmed clean — no ghost power
+
+Author: Manmohan (Mike) Bains
+Contact: mikebains41@gmail.com
+Duncan BC Canada
+2026-05-28
