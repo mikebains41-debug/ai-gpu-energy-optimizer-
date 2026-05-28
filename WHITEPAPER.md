@@ -216,3 +216,96 @@ A simple docker-compose deployment using open-source Grafana templates for GPU f
 
 All three tools will be released as open source under v2.0 following Phase 2 validation.
 
+
+---
+
+## Part II — B200 Blackwell Architecture Findings (2026-05-28)
+
+### Executive Summary
+
+The NVIDIA B200 Blackwell GPU exhibits ghost power from cold boot
+at 143-145W with zero utilization and zero processes running.
+This is more severe than the A100 SXM finding where ghost power
+required a prior workload to trigger.
+
+### Critical New Findings
+
+**Finding 1 — Ghost Power From Cold Boot**
+B200 draws 143-145W at 0% utilization from first boot.
+No workload trigger required.
+The B200 idle floor IS the ghost power floor.
+Combined 2x B200 ghost power: 288W at 0% utilization.
+
+**Finding 2 — FP16 Complete Telemetry Blackout**
+FP16 tensor core workloads report 0% utilization throughout.
+GPU clearly computing — SM clock at 1965 MHz confirms it.
+This is a complete NVML blind spot on B200 Blackwell.
+Schedulers, billing systems, and carbon accounting tools
+are completely blind to FP16 workloads on B200.
+
+**Finding 3 — Spontaneous Power Burst**
+At 20:30:08 UTC with zero workload running GPU 0 jumped
+from 144W to 195.72W and GPU 1 from 145W to 181.95W.
+SM clock activated to 1965 MHz.
+Utilization still reported 0%.
+This autonomous GPU activity is invisible to all monitoring systems.
+
+**Finding 4 — No Cooldown Period**
+B200 returns to ghost power floor instantly after load.
+No gradual decay. No thermal recovery period.
+Ghost power is permanent regardless of workload history.
+
+**Finding 5 — Hardware Power Asymmetry**
+GPU 1 consistently draws 1.00-2.00W more than GPU 0.
+Confirmed across 370 samples and all workload types.
+Per-GPU measurement is essential — pod-level measurement is insufficient.
+
+**Finding 6 — PyTorch Ecosystem Not Ready**
+PyTorch 2.4.1 does not support B200 CUDA sm_100.
+Minimum version required: 2.11.0+cu128.
+The B200 software ecosystem was not mature at time of testing.
+
+### Architecture Comparison
+
+| GPU | Idle Floor | Ghost Trigger | FP16 Telemetry |
+|---|---|---|---|
+| T4 | 9.5W | None | Accurate |
+| A100 PCIe | 47W | None | Accurate |
+| H100 SXM | 69.5W | None | Accurate |
+| A100 SXM | 67.1W | Post workload | Accurate |
+| B200 | 143-145W | Cold boot | Complete blackout |
+
+### Implications
+
+The B200 Blackwell architecture represents a regression in
+telemetry reliability compared to H100 SXM which showed
+no ghost power and accurate utilization reporting.
+
+The FP16 telemetry blackout is particularly significant because
+B200 is marketed primarily as an inference GPU — and inference
+workloads typically use FP16 precision. The primary use case
+of the B200 is completely invisible to standard NVML monitoring.
+
+At scale:
+- 1,000 B200 pods waste $252,700/year in ghost power
+- FP16 inference workloads are completely unmetered
+- Spontaneous power bursts cannot be attributed to any workload
+- Carbon accounting for B200 fleets is systematically wrong
+
+### Conclusion
+
+The ghost power anomaly documented on A100 SXM is not fixed
+in the Blackwell generation. It is worse. B200 exhibits ghost
+power from cold boot, complete FP16 telemetry blindness, and
+spontaneous power bursts that no existing monitoring tool can
+detect or attribute.
+
+Hardware-attested cross-validation of power versus utilization
+at high frequency sampling rates remains the only reliable method
+for accurate GPU energy measurement on current NVIDIA architectures.
+
+### Researcher
+Manmohan (Mike) Bains
+mikebains41@gmail.com
+Duncan BC Canada
+2026-05-28
