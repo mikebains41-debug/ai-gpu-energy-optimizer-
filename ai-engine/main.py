@@ -592,3 +592,102 @@ def get_grafana_dashboard():
 @app.get("/grafana/dashboard/download")
 def download_grafana_dashboard():
     return {"message": "Grafana dashboard JSON coming soon"}
+
+# ============================================================
+# B200 BLACKWELL ENDPOINTS — HARDWARE ATTESTED 2026-05-28
+# ============================================================
+
+@app.get("/b200/summary")
+def b200_summary():
+    return {
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "total_vram_gb": 360,
+        "pod_id": "aee29124a02b",
+        "test_date": "2026-05-28",
+        "tests_completed": 6,
+        "key_findings": {
+            "ghost_power_from_boot": True,
+            "ghost_power_w_gpu0": 143.47,
+            "ghost_power_w_gpu1": 145.24,
+            "combined_idle_w": 288.71,
+            "fp32_power_w": 237.50,
+            "fp32_utilization_pct": 7,
+            "fp16_power_w": 197.00,
+            "fp16_utilization_pct": 0,
+            "fp16_telemetry_blackout": True,
+            "spontaneous_burst_w": 195.72,
+            "no_cooldown_period": True,
+            "inter_gpu_differential_w": 1.65,
+            "pytorch_min_version": "2.11.0+cu128",
+            "memory_clock_idle_mhz": 3996,
+            "p0_from_boot": True
+        }
+    }
+
+@app.get("/b200/tests")
+def b200_tests():
+    return {
+        "gpu": "NVIDIA B200 2x GPU",
+        "total_tests": 6,
+        "tests": [
+            {"test_id": "B200_TEST_01", "name": "Idle Baseline", "finding": "143-145W at 0% util from cold boot", "severity": "CRITICAL", "status": "COMPLETE"},
+            {"test_id": "B200_TEST_02", "name": "FP32 Load", "finding": "238W at 7-9% util — DESYNC confirmed", "severity": "CRITICAL", "status": "COMPLETE"},
+            {"test_id": "B200_TEST_03", "name": "FP16 Load", "finding": "197W at 0% util — complete telemetry blackout", "severity": "CRITICAL", "status": "COMPLETE"},
+            {"test_id": "B200_TEST_04", "name": "Cooldown Profile", "finding": "No cooldown period — instant return to ghost floor", "severity": "HIGH", "status": "COMPLETE"},
+            {"test_id": "B200_TEST_05", "name": "Post Load Ghost Power", "finding": "Spontaneous 195W burst at 0% util no workload", "severity": "CRITICAL", "status": "COMPLETE"},
+            {"test_id": "B200_TEST_06", "name": "Multi GPU Divergence", "finding": "GPU1 always 1-2W higher than GPU0", "severity": "MEDIUM", "status": "COMPLETE"}
+        ]
+    }
+
+@app.get("/b200/carbon")
+def b200_carbon():
+    return {
+        "gpu": "NVIDIA B200 2x GPU",
+        "combined_idle_w": 288.71,
+        "annual_idle_kwh": 2527.1,
+        "carbon_by_region": {
+            "BC_Canada": {"co2_kg_year": 30.3, "scope3_pct": 98.5},
+            "Portugal": {"co2_kg_year": 121.4, "scope3_pct": 94.3},
+            "California": {"co2_kg_year": 531.1, "scope3_pct": 79.0},
+            "EU_Average": {"co2_kg_year": 746.1, "scope3_pct": 72.8},
+            "Global_Average": {"co2_kg_year": 902.9, "scope3_pct": 68.9},
+            "China": {"co2_kg_year": 1469.4, "scope3_pct": 57.6},
+            "USA_Average": {"co2_kg_year": 976.2, "scope3_pct": 67.2}
+        },
+        "fleet_impact": {
+            "100_pods": {"annual_cost_usd": 25291, "co2_tonnes": 90.3},
+            "1000_pods": {"annual_cost_usd": 252910, "co2_tonnes": 902.9},
+            "10000_pods": {"annual_cost_usd": 2529100, "co2_tonnes": 9028.9},
+            "100000_pods": {"annual_cost_usd": 25290996, "co2_tonnes": 90288.9}
+        }
+    }
+
+@app.get("/b200/anomalies")
+def b200_anomalies():
+    return {
+        "gpu": "NVIDIA B200",
+        "anomalies_detected": 5,
+        "anomalies": [
+            {"type": "ghost_power_boot", "severity": "CRITICAL", "power_w": 288.71, "utilization_pct": 0, "description": "288W combined at 0% util from cold boot"},
+            {"type": "fp16_telemetry_blackout", "severity": "CRITICAL", "power_w": 396.0, "utilization_pct": 0, "description": "FP16 workload completely invisible to NVML"},
+            {"type": "spontaneous_burst", "severity": "CRITICAL", "power_w": 195.72, "utilization_pct": 0, "description": "Autonomous GPU activity — no workload triggered"},
+            {"type": "periodic_spike", "severity": "MEDIUM", "interval_seconds": 30, "description": "30 second periodic spikes at 0% util"},
+            {"type": "inter_gpu_differential", "severity": "LOW", "differential_w": 1.65, "description": "GPU1 always 1-2W higher than GPU0"}
+        ]
+    }
+
+@app.get("/results/b200")
+def results_b200():
+    return {
+        "gpu": "NVIDIA B200 2x GPU",
+        "test_date": "2026-05-28",
+        "hardware_attested": True,
+        "ghost_power_w": 288.71,
+        "fp32_power_w": 476.0,
+        "fp16_power_w": 396.0,
+        "fp16_blackout": True,
+        "spontaneous_burst_w": 195.72,
+        "pytorch_min": "2.11.0+cu128",
+        "datasets": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-/tree/main/datasets/B200_SXM"
+    }
