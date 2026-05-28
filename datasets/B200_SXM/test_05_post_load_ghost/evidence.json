@@ -1,0 +1,98 @@
+{
+  "test_id": "B200_TEST_05",
+  "test_name": "2x B200 Post Load Ghost Power Persistence",
+  "date": "2026-05-28",
+  "hardware": {
+    "gpu_model": "NVIDIA B200",
+    "gpu_count": 2,
+    "total_vram_gb": 360,
+    "driver_version": "580.126.20",
+    "cuda_version": "13.0",
+    "pod_id": "aee29124a02b",
+    "provider": "RunPod"
+  },
+  "evidence_chain": [
+    {
+      "evidence_id": "E01",
+      "type": "ghost_power_persistence",
+      "timestamp_start": "2026/05/28 20:26:37",
+      "timestamp_end": "2026/05/28 20:36:10",
+      "gpu_0_power_range_w": "143.91 to 144.39",
+      "gpu_1_power_range_w": "145.51 to 146.12",
+      "utilization_pct": 0,
+      "sm_clock_mhz": 120,
+      "significance": "Ghost power floor maintained throughout 9 minute 33 second post load observation"
+    },
+    {
+      "evidence_id": "E02",
+      "type": "spontaneous_burst",
+      "timestamp": "2026/05/28 20:30:08",
+      "gpu_0_power_w": 195.72,
+      "gpu_1_power_w": 181.95,
+      "utilization_pct": 0,
+      "sm_clock_mhz": 1965,
+      "workload_running": false,
+      "duration_seconds": 10,
+      "significance": "CRITICAL - Spontaneous 195W burst at 0% util with no workload. Autonomous GPU activity."
+    },
+    {
+      "evidence_id": "E03",
+      "type": "periodic_spikes",
+      "interval_seconds": 30,
+      "gpu_0_spike_timestamps": [
+        "2026/05/28 20:32:49",
+        "2026/05/28 20:33:19",
+        "2026/05/28 20:33:49",
+        "2026/05/28 20:34:19",
+        "2026/05/28 20:34:49",
+        "2026/05/28 20:35:19",
+        "2026/05/28 20:35:50"
+      ],
+      "gpu_0_spike_w": "146.41 to 146.85",
+      "gpu_1_spike_w": "147.99 to 148.49",
+      "significance": "Periodic 30 second spikes continue from Test 04 pattern"
+    },
+    {
+      "evidence_id": "E04",
+      "type": "baseline_comparison",
+      "cold_boot_baseline_w": 143.47,
+      "post_load_baseline_w": 144.10,
+      "difference_w": 0.63,
+      "significance": "Ghost power floor virtually identical to cold boot baseline confirming permanent state"
+    }
+  ],
+  "key_observations": {
+    "observation_1": {
+      "finding": "Spontaneous 195W burst with no workload",
+      "evidence": "E02",
+      "detail": "GPU 0 jumped to 195.72W GPU 1 to 181.95W at 20:30:08 with zero workload running. SM clock activated to 1965 MHz. Utilization still 0%. Most severe finding in all B200 tests."
+    },
+    "observation_2": {
+      "finding": "Ghost power persists indefinitely",
+      "evidence": "E01 E04",
+      "detail": "143-146W maintained throughout entire post load observation. No recovery to lower state."
+    },
+    "observation_3": {
+      "finding": "Periodic spikes continue",
+      "evidence": "E03",
+      "detail": "30 second spike pattern from Test 04 continues unchanged in Test 05"
+    },
+    "observation_4": {
+      "finding": "Ghost power is permanent baseline",
+      "evidence": "E01 E04",
+      "detail": "Post load baseline 144.10W vs cold boot baseline 143.47W — difference only 0.63W confirming ghost power is permanent architectural state"
+    }
+  },
+  "screenshot_evidence": {
+    "description": "Raw nvidia-smi terminal output captured in RunPod web terminal",
+    "screenshots": "To be added"
+  },
+  "attestation": {
+    "trust_posture": "hardware_attested",
+    "validator": "GPU Energy Optimizer v2.0",
+    "researcher": "Manmohan (Mike) Bains",
+    "contact": "mikebains41@gmail.com",
+    "location": "Duncan BC Canada",
+    "date": "2026-05-28"
+  }
+}
