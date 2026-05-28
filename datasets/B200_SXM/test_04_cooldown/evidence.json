@@ -1,0 +1,98 @@
+{
+  "test_id": "B200_TEST_04",
+  "test_name": "2x B200 Cooldown Profile",
+  "date": "2026-05-28",
+  "hardware": {
+    "gpu_model": "NVIDIA B200",
+    "gpu_count": 2,
+    "total_vram_gb": 360,
+    "driver_version": "580.126.20",
+    "cuda_version": "13.0",
+    "pod_id": "aee29124a02b",
+    "provider": "RunPod"
+  },
+  "evidence_chain": [
+    {
+      "evidence_id": "E01",
+      "type": "immediate_baseline_return",
+      "timestamp": "2026/05/28 20:05:27",
+      "gpu_0_power_w": 144.02,
+      "gpu_1_power_w": 145.78,
+      "utilization_pct": 0,
+      "sm_clock_mhz": 120,
+      "significance": "First reading after FP16 load. Already at baseline. No cooldown period."
+    },
+    {
+      "evidence_id": "E02",
+      "type": "sustained_baseline",
+      "timestamp_start": "2026/05/28 20:05:27",
+      "timestamp_end": "2026/05/28 20:14:19",
+      "gpu_0_baseline_power_w": "143.83 to 144.18",
+      "gpu_1_baseline_power_w": "145.53 to 146.05",
+      "utilization_pct": 0,
+      "sm_clock_mhz": 120,
+      "significance": "Baseline maintained for entire 8 minute 52 second observation"
+    },
+    {
+      "evidence_id": "E03",
+      "type": "periodic_spikes",
+      "spike_timestamps": [
+        "2026/05/28 20:10:18",
+        "2026/05/28 20:10:48",
+        "2026/05/28 20:11:18",
+        "2026/05/28 20:11:48",
+        "2026/05/28 20:12:18",
+        "2026/05/28 20:12:48",
+        "2026/05/28 20:13:18",
+        "2026/05/28 20:13:49",
+        "2026/05/28 20:14:19"
+      ],
+      "gpu_0_spike_w": "146.05 to 146.63",
+      "gpu_1_spike_w": "147.79 to 148.54",
+      "interval_seconds": 30,
+      "significance": "Periodic power spikes every 30 seconds at 0% utilization"
+    },
+    {
+      "evidence_id": "E04",
+      "type": "sm_clock_recovery",
+      "idle_sm_clock_mhz": 120,
+      "load_sm_clock_mhz": 1965,
+      "recovery_observed": true,
+      "significance": "SM clock returned from 1965 MHz load to 120 MHz idle immediately"
+    }
+  ],
+  "key_observations": {
+    "observation_1": {
+      "finding": "No cooldown period on B200",
+      "evidence": "E01 E02",
+      "detail": "Power returned to 143-145W baseline immediately after FP16 load stopped"
+    },
+    "observation_2": {
+      "finding": "Periodic power spikes every 30 seconds",
+      "evidence": "E03",
+      "detail": "GPU 0 spikes to 146-147W GPU 1 spikes to 147-148W every 30 seconds at 0% util"
+    },
+    "observation_3": {
+      "finding": "SM clock recovered immediately",
+      "evidence": "E04",
+      "detail": "SM clock dropped from 1965 MHz to 120 MHz immediately after load stopped"
+    },
+    "observation_4": {
+      "finding": "Ghost power floor maintained",
+      "evidence": "E01 E02",
+      "detail": "143-145W ghost power floor persists in cooldown same as cold boot baseline"
+    }
+  },
+  "screenshot_evidence": {
+    "description": "Raw nvidia-smi cooldown monitoring output",
+    "screenshots": "To be added"
+  },
+  "attestation": {
+    "trust_posture": "hardware_attested",
+    "validator": "GPU Energy Optimizer v2.0",
+    "researcher": "Manmohan (Mike) Bains",
+    "contact": "mikebains41@gmail.com",
+    "location": "Duncan BC Canada",
+    "date": "2026-05-28"
+  }
+}
