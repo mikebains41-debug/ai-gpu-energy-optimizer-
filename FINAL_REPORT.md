@@ -1126,3 +1126,67 @@ Manmohan (Mike) Bains
 mikebains41@gmail.com
 Duncan BC Canada
 2026-05-28
+
+---
+
+## B200 Blackwell GPU Testing — 2026-05-28
+
+### Hardware
+2x NVIDIA B200 GPUs
+360GB total VRAM (180GB per GPU)
+Driver: 580.126.20 | CUDA: 13.0
+Provider: RunPod | Pod: aee29124a02b
+
+### Test Results Summary
+
+| Test | Finding | Severity |
+|---|---|---|
+| Test 01 Idle Baseline | 143-145W at 0% util from cold boot | CRITICAL |
+| Test 02 FP32 Load | 238W at 7-9% util DESYNC confirmed | CRITICAL |
+| Test 03 FP16 Load | 197W at 0% util complete blackout | CRITICAL |
+| Test 04 Cooldown | No cooldown period instant return to ghost floor | HIGH |
+| Test 05 Post Load | Spontaneous 195W burst at 0% util no workload | CRITICAL |
+| Test 06 Multi GPU | GPU1 always 1-2W higher than GPU0 | MEDIUM |
+
+### Key Findings
+
+#### FINDING B200-01 — Ghost Power From Cold Boot
+B200 draws 143-145W at 0% utilization from first boot.
+No workload required. More severe than A100 SXM.
+B200 idle floor IS the ghost power floor.
+
+#### FINDING B200-02 — FP32 DESYNC Confirmed
+238W at only 7-9% reported utilization under FP32 load.
+
+#### FINDING B200-03 — FP16 Complete Telemetry Blackout
+197W sustained at 0% reported utilization during FP16 compute.
+8 minutes continuous — never registered above 0%.
+FP16 tensor core workloads completely invisible to NVML.
+
+#### FINDING B200-04 — No Cooldown Period
+Power returns to ghost floor instantly after load stops.
+Periodic power spikes every 30 seconds at 0% util.
+
+#### FINDING B200-05 — Spontaneous Power Burst
+GPU0 jumped to 195.72W GPU1 to 181.95W with zero workload.
+SM clock activated to 1965 MHz. Utilization still 0%.
+
+#### FINDING B200-06 — Inter-GPU Power Differential
+GPU1 consistently 1.00-2.00W more than GPU0 across all tests.
+Hardware asymmetry confirmed.
+
+#### FINDING B200-07 — PyTorch Incompatibility
+Minimum version required: PyTorch 2.11.0+cu128
+
+### Architecture Comparison
+| GPU | Idle Floor | Ghost Trigger | P0 From Boot |
+|---|---|---|---|
+| T4 | 9.5W | None | No |
+| A100 PCIe | 47W | None | No |
+| H100 SXM | 69.5W | None | No |
+| A100 SXM | 67.1W | Post workload | No |
+| B200 | 143-145W | Cold boot | YES |
+
+### Status
+6 tests complete. Hardware-attested. First public B200 validation.
+Remaining tests require Nelson Vicente Node Alpha hardware.
