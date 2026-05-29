@@ -2,86 +2,14 @@
   "test_id": "test-25_vram_baseline",
   "date": "2026-05-29",
   "pod": "ff9ab4afab02",
-  "platform": "RunPod container \u2014 Linux container GPU passthrough NOT bare metal",
-  "events": [
-    {
-      "id": "EVT-001",
-      "type": "ghost_power_baseline",
-      "observation": "65.84W GPU0 64.32W GPU1 at 0pct util 0MB VRAM entire session",
-      "significance": "Ghost power is not VRAM-content-driven. HBM clock active with nothing to move."
-    },
-    {
-      "id": "EVT-002",
-      "type": "coordinated_burst",
-      "time": "22:45:13",
-      "gpu0_before_w": 65.84,
-      "gpu0_burst_w": 86.31,
-      "gpu1_before_w": 64.65,
-      "gpu1_burst_w": 84.62,
-      "vram_mb": 0,
-      "util_pct": 0,
-      "significance": "Simultaneous burst both GPUs zero VRAM. HBM subsystem-level event not memory-content driven."
-    },
-    {
-      "id": "EVT-003",
-      "type": "driver_reservation",
-      "value_mb": 766,
-      "significance": "Only non-zero memory is static driver reservation. Not workload residue."
-    },
-    {
-      "id": "EVT-004",
-      "type": "root_cause",
-      "mem_clock_mhz": 1593,
-      "finding": "HBM locked 1593MHz across idle FP32 FP16 cooldown. Active 24/7 regardless of workload."
-    },
-    {
-      "id": "EVT-005",
-      "type": "architecture_pattern",
-      "clean": [
-        "A100 PCIe",
-        "T4",
-        "A40",
-        "RTX 4090"
-      ],
-      "ghost_power": [
-        "A100 SXM",
-        "H100 SXM",
-        "B200"
-      ],
-      "pattern": "SXM + HBM = ghost power. PCIe = clean."
-    }
+  "findings": [
+    "memory.used = 0 MB GPU0 entire session",
+    "memory.used = 0 MB GPU1 entire session",
+    "memory.free = 81154 MB both GPUs",
+    "memory.total = 81920 MB both GPUs",
+    "util.memory = 0 pct both GPUs",
+    "driver reservation = 766 MB static"
   ],
-  "conclusions": [
-    "Ghost power NOT VRAM-content-driven",
-    "HBM clock 1593MHz locked 24/7 is root cause",
-    "Coordinated burst is HBM subsystem event",
-    "Cannot remediate via persistence mode or power cap \u2014 container blocked",
-    "Verda bare metal pending to confirm architectural origin"
-  ],
-  "pending": [
-    {
-      "id": "test-26",
-      "goal": "FP32 workload monitor VRAM fill and power during load"
-    },
-    {
-      "id": "test-27",
-      "goal": "Poll memory.used 100Hz after process exits \u2014 does VRAM clear"
-    },
-    {
-      "id": "verda-001",
-      "platform": "console.verda.com",
-      "cost_hr": 1.79,
-      "goal": "Persistence mode ON \u2014 prove architectural not container artifact"
-    },
-    {
-      "id": "h200",
-      "cost": "18usd",
-      "goal": "H100 to B200 gap test"
-    },
-    {
-      "id": "mi300x",
-      "cost_hr": 4.89,
-      "goal": "First AMD vs NVIDIA ghost power comparison"
-    }
-  ]
+  "conclusion": "VRAM fully clear at baseline. 766 MB driver reservation only.",
+  "next": "test-26 run FP32 workload monitor VRAM fill"
 }
