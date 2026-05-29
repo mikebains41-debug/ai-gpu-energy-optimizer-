@@ -12,7 +12,6 @@
       "severity": "CRITICAL",
       "description": "HBM2e memory clock locked at 1593MHz for entire 23 minute idle period",
       "samples_confirming": 138,
-      "samples_total": 138,
       "confidence": "100%"
     },
     {
@@ -22,20 +21,17 @@
       "power_delta_w": 8.26,
       "sm_clock_delta_mhz": 510,
       "utilization_pct": 0,
-      "workload_running": false,
-      "description": "SM clock jumped from 210MHz to 720MHz autonomously with no workload"
+      "workload_running": false
     },
     {
       "type": "memory_compute_desync",
       "severity": "CRITICAL",
       "sm_clock_mhz": 210,
       "mem_clock_mhz": 1593,
-      "ratio": 7.6,
-      "description": "Memory running 7.6x faster than compute at idle"
+      "ratio": 7.6
     }
   ],
-  "correlation_finding": {
-    "description": "Memory clock magnitude directly predicts ghost power magnitude",
+  "correlation": {
     "A100_mem_clock": 1593,
     "A100_ghost_power_w": 65,
     "B200_mem_clock": 3996,
