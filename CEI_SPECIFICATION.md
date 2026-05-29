@@ -127,6 +127,14 @@ Total_Energy = (Compute_Power_W × Compute_Duration_s)
 
 ---
 
+## Carbon Impact of CEI Degradation
+Ghost power correction reduces CEI by 27.5% which directly increases CO2 per useful computation.
+A fleet paying for 5.68B FLOPs/joule is actually getting 4.12B FLOPs/joule.
+The missing 1.56B FLOPs/joule is waste that generates CO2 with zero compute output.
+See WHITEPAPER.md for full Scope 1-2-3 carbon accounting methodology.
+
+---
+
 ## License
 Specification: Creative Commons Attribution 4.0
 Code: Source Available
