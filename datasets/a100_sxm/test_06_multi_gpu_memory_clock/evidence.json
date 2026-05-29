@@ -1,0 +1,34 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_TEST_06_MULTI_GPU_MEMORY_CLOCK",
+  "test_date": "2026-05-29",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "inter_gpu_differential",
+      "severity": "MEDIUM",
+      "gpu0_power_w": 65.74,
+      "gpu1_power_w": 63.99,
+      "differential_w": 1.75,
+      "higher_gpu": "GPU0",
+      "description": "GPU0 consistently 1.75W higher than GPU1"
+    },
+    {
+      "type": "simultaneous_spontaneous_burst",
+      "severity": "CRITICAL",
+      "gpu0_power_w": 86.13,
+      "gpu1_power_w": 84.36,
+      "sm_clock_mhz": 1140,
+      "mem_clock_mhz": 1593,
+      "utilization_pct": 0,
+      "description": "Both GPUs burst simultaneously with no workload"
+    },
+    {
+      "type": "memory_clock_locked_both_gpus",
+      "severity": "CRITICAL",
+      "gpu0_mem_mhz": 1593,
+      "gpu1_mem_mhz": 1593,
+      "description": "Both GPUs memory clock locked at 1593MHz throughout"
+    }
+  ]
+}
