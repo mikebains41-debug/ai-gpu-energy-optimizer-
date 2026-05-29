@@ -1,0 +1,31 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_TEST_04_COOLDOWN_MEMORY_CLOCK",
+  "test_date": "2026-05-29",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "memory_clock_locked_during_cooldown",
+      "severity": "CRITICAL",
+      "description": "Memory clock 1593MHz unchanged during entire 15 minute cooldown period",
+      "mem_mhz_all_samples": 1593
+    },
+    {
+      "type": "sm_clock_fast_recovery",
+      "severity": "INFO",
+      "post_load_sm_mhz": 1155,
+      "recovered_sm_mhz": 210,
+      "recovery_samples": 1,
+      "description": "SM clock recovered to 210MHz within first sample"
+    },
+    {
+      "type": "ghost_power_floor_persistent",
+      "severity": "HIGH",
+      "power_w": 65,
+      "utilization_pct": 0,
+      "sm_mhz": 210,
+      "mem_mhz": 1593,
+      "description": "Ghost power floor 65W maintained indefinitely at idle"
+    }
+  ]
+}
