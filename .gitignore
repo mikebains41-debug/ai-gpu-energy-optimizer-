@@ -31,3 +31,7 @@ gpu_log.jsonl
 metrics.json
 *.db
 *.jsonl
+*.png
+*.jpg
+*.jpeg
+*.webp
