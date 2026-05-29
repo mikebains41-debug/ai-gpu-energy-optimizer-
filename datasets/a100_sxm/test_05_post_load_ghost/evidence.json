@@ -1,0 +1,30 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_TEST_05_POST_LOAD_GHOST",
+  "test_date": "2026-05-29",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "post_load_ghost_elevated",
+      "severity": "HIGH",
+      "power_w": 85,
+      "vs_baseline_w": 65,
+      "delta_w": 20,
+      "utilization_pct": 0,
+      "description": "Ghost power 20W higher post load vs cold boot baseline"
+    },
+    {
+      "type": "sm_clock_elevated_post_load",
+      "severity": "HIGH",
+      "sm_mhz": 1155,
+      "baseline_sm_mhz": 210,
+      "description": "SM clock remained at 1155MHz — did not return to 210MHz baseline"
+    },
+    {
+      "type": "memory_clock_locked",
+      "severity": "CRITICAL",
+      "mem_mhz": 1593,
+      "description": "Memory clock 1593MHz locked throughout post load period"
+    }
+  ]
+}
