@@ -1,0 +1,47 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_MEMORY_CLOCK_TEST",
+  "test_date": "2026-05-29",
+  "pod_id": "827710d5583c",
+  "driver_version": "580.159.04",
+  "cuda_version": "13.0",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "memory_clock_lockup",
+      "severity": "CRITICAL",
+      "description": "HBM2e memory clock locked at 1593MHz for entire 23 minute idle period",
+      "samples_confirming": 138,
+      "samples_total": 138,
+      "confidence": "100%"
+    },
+    {
+      "type": "spontaneous_burst",
+      "severity": "HIGH",
+      "timestamp": "2026/05/29 17:45:08",
+      "power_delta_w": 8.26,
+      "sm_clock_delta_mhz": 510,
+      "utilization_pct": 0,
+      "workload_running": false,
+      "description": "SM clock jumped from 210MHz to 720MHz autonomously with no workload"
+    },
+    {
+      "type": "memory_compute_desync",
+      "severity": "CRITICAL",
+      "sm_clock_mhz": 210,
+      "mem_clock_mhz": 1593,
+      "ratio": 7.6,
+      "description": "Memory running 7.6x faster than compute at idle"
+    }
+  ],
+  "correlation_finding": {
+    "description": "Memory clock magnitude directly predicts ghost power magnitude",
+    "A100_mem_clock": 1593,
+    "A100_ghost_power_w": 65,
+    "B200_mem_clock": 3996,
+    "B200_ghost_power_w": 143,
+    "ratio_memory": 2.51,
+    "ratio_power": 2.20,
+    "correlation": "confirmed"
+  }
+}
