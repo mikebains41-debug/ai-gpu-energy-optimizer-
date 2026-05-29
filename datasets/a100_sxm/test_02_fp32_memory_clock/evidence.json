@@ -1,0 +1,34 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_TEST_02_FP32_MEMORY_CLOCK",
+  "test_date": "2026-05-29",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "memory_clock_decoupled",
+      "severity": "CRITICAL",
+      "description": "Memory clock 1593MHz unchanged from idle through full FP32 load to cooldown",
+      "idle_mem_mhz": 1593,
+      "load_mem_mhz": 1593,
+      "cooldown_mem_mhz": 1593
+    },
+    {
+      "type": "ghost_power_elevated_post_load",
+      "severity": "HIGH",
+      "pre_load_power_w": 65,
+      "post_load_power_w": 86,
+      "delta_w": 21,
+      "utilization_pct": 0
+    },
+    {
+      "type": "sm_clock_scales_memory_does_not",
+      "severity": "CRITICAL",
+      "idle_sm_mhz": 210,
+      "load_sm_mhz": 1410,
+      "cooldown_sm_mhz": 1155,
+      "idle_mem_mhz": 1593,
+      "load_mem_mhz": 1593,
+      "cooldown_mem_mhz": 1593
+    }
+  ]
+}
