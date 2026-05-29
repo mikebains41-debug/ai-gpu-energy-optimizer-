@@ -1,0 +1,30 @@
+{
+  "gpu": "NVIDIA A100 SXM4 80GB",
+  "test_id": "A100_TEST_03_FP16_MEMORY_CLOCK",
+  "test_date": "2026-05-29",
+  "hardware_attested": true,
+  "evidence": [
+    {
+      "type": "memory_clock_locked_fp16",
+      "severity": "CRITICAL",
+      "description": "Memory clock 1593MHz unchanged during FP16 tensor core workload",
+      "samples_confirming": 23,
+      "mem_mhz_all_samples": 1593
+    },
+    {
+      "type": "fp16_sm_clock_lower_than_fp32",
+      "severity": "INFO",
+      "fp16_sm_mhz": 1200,
+      "fp32_sm_mhz": 1410,
+      "description": "FP16 uses lower SM clock but same memory clock as FP32"
+    },
+    {
+      "type": "ghost_power_post_load",
+      "severity": "HIGH",
+      "post_load_power_w": 86,
+      "utilization_pct": 0,
+      "sm_mhz": 1155,
+      "mem_mhz": 1593
+    }
+  ]
+}
