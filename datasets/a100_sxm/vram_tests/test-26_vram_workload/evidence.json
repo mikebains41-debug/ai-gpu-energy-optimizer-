@@ -1,0 +1,28 @@
+{
+  "test_id": "test-26_vram_workload",
+  "date": "2026-05-29",
+  "findings": [
+    {
+      "type": "vram_desync",
+      "severity": "HIGH",
+      "memory_used_mb": 807,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct memory utilization while 807MB loaded \u2014 same lie as compute utilization"
+    },
+    {
+      "type": "vram_clear_immediate",
+      "severity": "INFO",
+      "clear_time": "immediate",
+      "description": "VRAM drops to 0MB within one 10s sample after process exits"
+    },
+    {
+      "type": "ghost_power_vram_independent",
+      "severity": "CRITICAL",
+      "power_idle_w": 65.84,
+      "power_workload_w": 85.99,
+      "power_post_w": 65.84,
+      "description": "Ghost power not affected by VRAM state \u2014 HBM clock driven not content driven"
+    }
+  ],
+  "conclusion": "NVML memory utilization reporting is unreliable. VRAM clears cleanly. Ghost power is HBM clock driven."
+}
