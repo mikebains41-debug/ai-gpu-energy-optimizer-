@@ -8,21 +8,31 @@
       "severity": "CRITICAL",
       "memory_used_mb": 1010,
       "util_memory_pct": 0,
-      "description": "NVML reports 0pct memory util while 1010MB loaded"
+      "description": "NVML reports 0pct memory utilization while 1010MB loaded on both GPUs"
     },
     {
-      "type": "power_elevated_post_clear",
+      "type": "vram_grows_during_compute",
       "severity": "HIGH",
-      "power_loaded_w": 203,
-      "power_after_clear_w": 203,
-      "description": "B200 power stays elevated at 198-206W after VRAM cleared unlike A100 which drops to 65W"
+      "pre_compute_mb": 1010,
+      "post_compute_mb": 1862,
+      "delta_mb": 852,
+      "description": "VRAM grew 852MB during compute \u2014 CUDA allocates extra buffers for matmul"
     },
     {
-      "type": "vram_residual",
-      "severity": "CRITICAL",
-      "residual_mb": 382,
-      "description": "382MB stuck after empty_cache same as A100"
+      "type": "power_elevated_post_compute",
+      "severity": "HIGH",
+      "gpu0_w": 239.05,
+      "gpu1_w": 235.63,
+      "description": "Power stays elevated after compute with VRAM still loaded"
+    },
+    {
+      "type": "inter_gpu_differential",
+      "severity": "MEDIUM",
+      "gpu0_w": 239.05,
+      "gpu1_w": 235.63,
+      "differential_w": 3.42,
+      "description": "GPU0 consistently higher than GPU1"
     }
   ],
-  "conclusion": "NVML memory desync confirmed on B200. Power stays elevated post clear. 382MB residual identical to A100."
+  "conclusion": "NVML memory desync confirmed on B200 2x GPU. VRAM grows during compute. Power stays elevated."
 }

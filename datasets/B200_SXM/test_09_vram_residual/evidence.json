@@ -6,24 +6,32 @@
     {
       "type": "vram_residual_confirmed",
       "severity": "CRITICAL",
-      "gpu0_residual_mb": 382,
-      "gpu1_residual_mb": 382,
-      "description": "382MB identical residual on both GPUs after del and empty_cache"
+      "gpu0_mb": 716,
+      "gpu1_mb": 716,
+      "description": "716MB stuck on both GPUs after del and empty_cache \u2014 identical residual"
     },
     {
-      "type": "nvml_blind",
+      "type": "nvml_blind_to_residual",
       "severity": "CRITICAL",
       "util_memory_pct": 0,
-      "actual_mb": 628,
-      "description": "NVML reports 0pct while 628MB remains"
+      "actual_mb": 716,
+      "description": "NVML reports 0pct memory utilization while 716MB remains"
     },
     {
-      "type": "cross_architecture_pattern",
+      "type": "power_never_drops",
+      "severity": "CRITICAL",
+      "gpu0_w": 239.25,
+      "gpu1_w": 235.68,
+      "description": "Power stays at 235-239W after clear \u2014 never returns to 190W baseline"
+    },
+    {
+      "type": "cross_architecture_comparison",
       "severity": "CRITICAL",
       "a100_residual_mb": 382,
-      "b200_residual_mb": 382,
-      "description": "Identical 382MB residual on A100 and B200 confirms CUDA runtime not architecture specific"
+      "h200_residual_mb": 382,
+      "b200_residual_mb": 716,
+      "description": "B200 residual 716MB \u2014 nearly double A100 and H200 382MB"
     }
   ],
-  "conclusion": "382MB VRAM residual confirmed on B200. Identical to A100. CUDA runtime level issue not architecture specific."
+  "conclusion": "B200 VRAM residual 716MB confirmed on 2x GPU. Power never drops. NVML blind. Security risk confirmed."
 }

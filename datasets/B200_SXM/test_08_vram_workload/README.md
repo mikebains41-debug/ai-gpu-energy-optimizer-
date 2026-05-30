@@ -2,13 +2,13 @@
 **Researcher:** Mike Bains | mikebains41@gmail.com
 
 ## Key Numbers
-- VRAM loaded = 1,010 MB
-- util.memory during load = 0% (NVML lie)
-- VRAM after clear = 628 MB
-- Residual = 382 MB
-- Power after clear = 198-206W (stays elevated)
+- VRAM at baseline = 0 MB
+- VRAM after load = 1,010 MB
+- VRAM after compute = 1,862 MB
+- util.memory throughout = 0% (NVML lie)
+- GPU0 power avg = 238-239W
+- GPU1 power avg = 234-235W
+- VRAM growth during compute = 852 MB
 
-## New Finding vs A100
-A100 power drops to 65W after clear.
-B200 power stays at 198-206W after clear.
-B200 ghost power more persistent than A100.
+## Next
+- test_09: VRAM residual after clear
