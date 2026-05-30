@@ -1,0 +1,50 @@
+{
+  "test_id": "H100_VRAM_TEST_06_DETAILED",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "ghost_power_baseline",
+      "severity": "CRITICAL",
+      "gpu0_w": 78.11,
+      "gpu1_w": 75.99,
+      "memory_mb": 0,
+      "description": "H100 draws 75-78W at idle 0MB VRAM"
+    },
+    {
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_mb": 909,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct while 909MB loaded"
+    },
+    {
+      "type": "vram_grows_during_compute",
+      "severity": "HIGH",
+      "pre_mb": 909,
+      "post_mb": 1771,
+      "delta_mb": 862,
+      "description": "VRAM grew 862MB during compute"
+    },
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 625,
+      "description": "625MB stuck after empty_cache"
+    },
+    {
+      "type": "power_stays_elevated",
+      "severity": "HIGH",
+      "power_after_w": 119.06,
+      "baseline_w": 78.11,
+      "description": "Power stays at 119W after clear \u2014 never returns to baseline"
+    }
+  ],
+  "cross_architecture": {
+    "A100_residual_mb": 455,
+    "H100_residual_mb": 625,
+    "H200_residual_mb": 382,
+    "B200_residual_mb": 716
+  },
+  "conclusion": "H100 VRAM residual 625MB confirmed. Power stays elevated. NVML blind throughout."
+}
