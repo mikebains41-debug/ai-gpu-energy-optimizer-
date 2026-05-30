@@ -1,0 +1,22 @@
+{
+  "test_id": "B200_VRAM_TEST_07_BASELINE",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "vram_zero_at_baseline",
+      "severity": "INFO",
+      "memory_used_mb": 0,
+      "description": "VRAM clear at idle 727MB driver reservation only"
+    },
+    {
+      "type": "ghost_power_vram_independent",
+      "severity": "CRITICAL",
+      "gpu0_w": 146.58,
+      "gpu1_w": 147.18,
+      "memory_used_mb": 0,
+      "description": "B200 draws 146-147W at 0MB VRAM ghost power not VRAM driven"
+    }
+  ],
+  "conclusion": "B200 VRAM clear at baseline. Ghost power active with zero VRAM."
+}

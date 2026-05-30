@@ -1,0 +1,28 @@
+{
+  "test_id": "B200_VRAM_TEST_08_WORKLOAD",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_used_mb": 1010,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct memory util while 1010MB loaded"
+    },
+    {
+      "type": "power_elevated_post_clear",
+      "severity": "HIGH",
+      "power_loaded_w": 203,
+      "power_after_clear_w": 203,
+      "description": "B200 power stays elevated at 198-206W after VRAM cleared unlike A100 which drops to 65W"
+    },
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 382,
+      "description": "382MB stuck after empty_cache same as A100"
+    }
+  ],
+  "conclusion": "NVML memory desync confirmed on B200. Power stays elevated post clear. 382MB residual identical to A100."
+}
