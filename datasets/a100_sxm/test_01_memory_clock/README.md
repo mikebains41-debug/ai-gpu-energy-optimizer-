@@ -1,36 +1,30 @@
-# A100 SXM Memory Clock Test — New Finding
-## Test ID: A100_MEMORY_CLOCK_TEST
-## Date: 2026-05-29
-## Pod: 827710d5583c | Provider: RunPod
-## Researcher: Manmohan (Mike) Bains | mikebains41@gmail.com
+# A100 Test 01 — Memory Clock Idle
+**Researcher:** Manmohan (Mike) Bains | mikebains41@gmail.com
+**Provider:** RunPod | **Pod:** bbcd7cb43196
 
-## Finding
-HBM2e memory subsystem locked at 1593MHz while compute idle at 210MHz.
-Memory clock 7.6x higher than compute clock at 0% utilization.
-Ghost power is memory-driven not compute-driven.
+## Key Numbers
+- Ghost power GPU0 = 65.14W | GPU1 = 67.52W
+- GPU1 consistently 2-3W higher than GPU0
+- HBM clock locked = 1,593MHz both GPUs throughout
+- SM clock = 210MHz baseline
+- VRAM = 0 MB
+- util.gpu = 0% throughout
+- P-state = P0 locked
+- Duration = 23 minutes
+- Samples = ~276 both GPUs
 
 ## Spontaneous Burst
-- 17:45:08 — power 65W → 73W, SM 210MHz → 720MHz
-- Memory clock unchanged at 1593MHz
-- Utilization 0% throughout
-- No workload running
+- Timestamp = 2026-05-30 22:30:05
+- GPU1 power = 107.84W
+- GPU1 SM clock = 1,350MHz
+- HBM = 1,593MHz unchanged
+- GPU0 unaffected
+- util.gpu = 0% (NVML blind)
 
-## Architecture Comparison
-| GPU | MEM Clock | SM Clock | Ratio | Ghost Power |
-|---|---|---|---|---|
-| A100 SXM | 1593 MHz | 210 MHz | 7.6x | 65W |
-| B200 | 3996 MHz | 120 MHz | 33.3x | 143W |
+## Security Finding
+Autonomous GPU activity at 0pct utilization — NVML completely blind — potential undisclosed GPU microcode execution.
 
-Memory clock 2.5x higher on B200 = ghost power 2.2x higher.
-Direct correlation confirmed.
-
-## Files
-- README.md — this file
-- SUMMARY.md — test summary
-- metrics.json — structured metrics
-- evidence.json — evidence data
-- a100_memory_clock_idle.csv — raw telemetry 138 samples
-
-## Conclusion
-Ghost power is architectural. HBM memory subsystem does not
-clock down at idle. Cannot be remediated without hardware redesign.
+## Cross-Architecture Correlation
+A100 HBM 1593MHz = 65W ghost power
+B200 HBM 3996MHz = 144W ghost power
+Ratio 2.51x memory clock = 2.21x power — confirmed.

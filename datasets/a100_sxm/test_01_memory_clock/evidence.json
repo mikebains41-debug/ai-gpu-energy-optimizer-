@@ -1,43 +1,67 @@
 {
-  "gpu": "NVIDIA A100 SXM4 80GB",
-  "test_id": "A100_MEMORY_CLOCK_TEST",
-  "test_date": "2026-05-29",
-  "pod_id": "827710d5583c",
+  "test_id": "A100_TEST_01_MEMORY_CLOCK_IDLE",
+  "date": "2026-05-30",
+  "hardware_attested": true,
   "driver_version": "580.159.04",
   "cuda_version": "13.0",
-  "hardware_attested": true,
-  "evidence": [
+  "findings": [
     {
-      "type": "memory_clock_lockup",
+      "type": "ghost_power",
       "severity": "CRITICAL",
-      "description": "HBM2e memory clock locked at 1593MHz for entire 23 minute idle period",
-      "samples_confirming": 138,
-      "confidence": "100%"
+      "gpu0_w": 65.14,
+      "gpu1_w": 67.52,
+      "memory_mb": 0,
+      "util_pct": 0,
+      "description": "A100 draws 65-68W at idle 0MB VRAM 0pct util for 23 minutes"
+    },
+    {
+      "type": "hbm_clock_locked",
+      "severity": "CRITICAL",
+      "mem_mhz": 1593,
+      "sm_mhz": 210,
+      "ratio": 7.6,
+      "samples": 276,
+      "confidence": "100pct",
+      "description": "HBM clock locked at 1593MHz for entire 23 minute idle \u2014 never changes"
     },
     {
       "type": "spontaneous_burst",
       "severity": "HIGH",
-      "timestamp": "2026/05/29 17:45:08",
-      "power_delta_w": 8.26,
-      "sm_clock_delta_mhz": 510,
-      "utilization_pct": 0,
-      "workload_running": false
+      "timestamp": "2026-05-30 22:30:05",
+      "gpu": "GPU1",
+      "power_w": 107.84,
+      "sm_clock_mhz": 1350,
+      "mem_clock_mhz": 1593,
+      "util_pct": 0,
+      "workload_running": false,
+      "gpu0_unaffected": true,
+      "description": "GPU1 spontaneous SM clock burst to 1350MHz \u2014 power spike to 107W \u2014 GPU0 unaffected \u2014 HBM unchanged"
     },
     {
-      "type": "memory_compute_desync",
-      "severity": "CRITICAL",
-      "sm_clock_mhz": 210,
-      "mem_clock_mhz": 1593,
-      "ratio": 7.6
+      "type": "gpu_asymmetry",
+      "severity": "HIGH",
+      "gpu0_w": 65.14,
+      "gpu1_w": 67.52,
+      "delta_w": 2.38,
+      "higher_gpu": "GPU1",
+      "description": "GPU1 consistently 2-3W higher than GPU0 throughout entire test"
+    },
+    {
+      "type": "pstate_locked",
+      "severity": "HIGH",
+      "pstate": "P0",
+      "description": "A100 stays at P0 \u2014 never drops to P8 unlike consumer GPUs"
     }
   ],
-  "correlation": {
+  "cross_architecture_correlation": {
     "A100_mem_clock": 1593,
     "A100_ghost_power_w": 65,
     "B200_mem_clock": 3996,
-    "B200_ghost_power_w": 143,
+    "B200_ghost_power_w": 144,
     "ratio_memory": 2.51,
-    "ratio_power": 2.20,
+    "ratio_power": 2.21,
     "correlation": "confirmed"
-  }
+  },
+  "security_finding": "Spontaneous autonomous GPU activity at 0pct utilization \u2014 NVML completely blind \u2014 potential undisclosed GPU microcode execution",
+  "conclusion": "Ghost power confirmed. HBM locked. Spontaneous burst captured. GPU asymmetry confirmed. All findings reproducible."
 }
