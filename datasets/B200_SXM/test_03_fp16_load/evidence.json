@@ -1,106 +1,36 @@
 {
-  "test_id": "B200_TEST_03",
-  "test_name": "2x B200 FP16 Tensor Core Load Test",
-  "date": "2026-05-28",
-  "hardware": {
-    "gpu_model": "NVIDIA B200",
-    "gpu_count": 2,
-    "total_vram_gb": 360,
-    "driver_version": "580.126.20",
-    "cuda_version": "13.0",
-    "pytorch_version": "2.11.0+cu128",
-    "pod_id": "aee29124a02b",
-    "provider": "RunPod"
-  },
-  "evidence_chain": [
+  "test_id": "B200_TEST_03_FP16_LOAD",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
     {
-      "evidence_id": "E01",
-      "type": "fp16_load_start",
-      "timestamp": "2026/05/28 19:50:51",
-      "gpu_0_power_w": 171.29,
-      "gpu_1_power_w": 161.55,
-      "gpu_0_util_pct": 0,
-      "gpu_1_util_pct": 0,
-      "sm_clock_mhz": 1965,
-      "significance": "FP16 load started SM clock at 1965 MHz but utilization already 0%"
+      "type": "fp16_peak_power",
+      "severity": "INFO",
+      "gpu0_w": 196.72,
+      "gpu1_w": 202.27,
+      "description": "B200 FP16 peak 197W GPU0 202W GPU1"
     },
     {
-      "evidence_id": "E02",
-      "type": "sustained_fp16_load",
-      "timestamp_start": "2026/05/28 19:51:01",
-      "timestamp_end": "2026/05/28 19:59:03",
-      "gpu_0_power_range_w": "195.74 to 199.91",
-      "gpu_1_power_range_w": "197.98 to 202.34",
-      "utilization_pct": 0,
-      "sm_clock_mhz": 1965,
-      "duration_minutes": 8.2,
-      "significance": "8 minutes sustained FP16 compute at 0% utilization throughout"
+      "type": "fp32_vs_fp16",
+      "severity": "INFO",
+      "fp32_w": 549.76,
+      "fp16_w": 196.72,
+      "ratio": 2.79,
+      "description": "FP32 draws 2.79x more power than FP16"
     },
     {
-      "evidence_id": "E03",
-      "type": "telemetry_blackout",
-      "timestamp_start": "2026/05/28 19:50:51",
-      "timestamp_end": "2026/05/28 19:59:03",
-      "utilization_pct_all_samples": 0,
-      "power_range_w": "195 to 202",
-      "sm_clock_mhz": 1965,
-      "significance": "COMPLETE TELEMETRY BLACKOUT - 0% util reported for entire 8 minute FP16 test"
+      "type": "power_stays_elevated",
+      "severity": "CRITICAL",
+      "post_load_w": 197.01,
+      "baseline_w": 144.61,
+      "description": "Power stays at 197-202W after FP16 load"
     },
     {
-      "evidence_id": "E04",
-      "type": "compute_evidence",
-      "sm_clock_mhz": 1965,
-      "power_above_idle_w": 50,
-      "temperature_rise_c": 4,
-      "significance": "SM clock 1965 MHz and elevated power confirm GPU actively computing despite 0% util report"
-    },
-    {
-      "evidence_id": "E05",
-      "type": "fp16_vs_fp32_comparison",
-      "fp32_power_w": 238,
-      "fp16_power_w": 197,
-      "fp32_util_pct": 7,
-      "fp16_util_pct": 0,
-      "significance": "FP16 draws less power than FP32 but has worse telemetry - complete blackout vs partial"
+      "type": "nvml_blind",
+      "severity": "CRITICAL",
+      "util_gpu_pct": 0,
+      "description": "NVML reports 0pct util throughout FP16 load"
     }
   ],
-  "key_observations": {
-    "observation_1": {
-      "finding": "Complete FP16 telemetry blackout",
-      "evidence": "E02 E03",
-      "detail": "0% utilization reported for entire 8 minute FP16 test while GPU clearly computing"
-    },
-    "observation_2": {
-      "finding": "SM clock confirms active compute",
-      "evidence": "E04",
-      "detail": "SM clock at 1965 MHz throughout confirms tensor cores active despite 0% util report"
-    },
-    "observation_3": {
-      "finding": "FP16 worse telemetry than FP32",
-      "evidence": "E05",
-      "detail": "FP32 showed 7-9% util. FP16 shows 0% util. FP16 has complete telemetry blackout."
-    },
-    "observation_4": {
-      "finding": "Power confirms compute activity",
-      "evidence": "E02",
-      "detail": "195-202W sustained for 8 minutes confirms active compute despite 0% util reporting"
-    },
-    "observation_5": {
-      "finding": "FP16 power lower than FP32",
-      "evidence": "E05",
-      "detail": "FP16 at 197W vs FP32 at 238W. Tensor cores more efficient but completely invisible to telemetry."
-    }
-  },
-  "screenshot_evidence": {
-    "description": "Raw nvidia-smi terminal output captured in RunPod web terminal",
-    "screenshots": "To be added"
-  },
-  "attestation": {
-    "trust_posture": "hardware_attested",
-    "validator": "GPU Energy Optimizer v2.0",
-    "researcher": "Manmohan (Mike) Bains",
-    "contact": "mikebains41@gmail.com",
-    "location": "Duncan BC Canada",
-    "date": "2026-05-28"
-  }
+  "conclusion": "B200 FP16 peak 197W. FP32 draws 2.79x more. Power never returns to baseline."
 }
