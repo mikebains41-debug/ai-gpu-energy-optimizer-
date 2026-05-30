@@ -1,0 +1,37 @@
+{
+  "test_id": "H200_VRAM_TEST_02_WORKLOAD",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_mb": 2055,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct while 2055MB loaded"
+    },
+    {
+      "type": "compute_peak",
+      "severity": "INFO",
+      "gpu0_w": 700.34,
+      "gpu1_w": 699.66,
+      "util_gpu_pct": 100,
+      "util_memory_pct": 23,
+      "description": "H200 util.memory shows 23pct during compute \u2014 more honest than A100 B200"
+    },
+    {
+      "type": "vram_grows_during_compute",
+      "severity": "HIGH",
+      "pre_mb": 2055,
+      "post_mb": 5207,
+      "delta_mb": 3152,
+      "description": "VRAM grew 3152MB during compute"
+    },
+    {
+      "type": "nvml_partial_honest",
+      "severity": "INFO",
+      "description": "H200 util.memory reports 20-23pct during compute unlike A100 and B200 which report 0pct"
+    }
+  ],
+  "conclusion": "H200 VRAM workload complete. NVML partially honest during compute. 5207MB VRAM during peak compute."
+}
