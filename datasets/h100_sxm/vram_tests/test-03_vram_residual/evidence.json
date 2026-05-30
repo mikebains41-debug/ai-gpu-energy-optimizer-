@@ -1,0 +1,35 @@
+{
+  "test_id": "H100_VRAM_TEST_03_RESIDUAL",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "vram_residual_confirmed",
+      "severity": "CRITICAL",
+      "gpu0_mb": 625,
+      "gpu1_mb": 625,
+      "description": "625MB stuck on both GPUs after del and empty_cache"
+    },
+    {
+      "type": "nvml_blind",
+      "severity": "CRITICAL",
+      "util_memory_pct": 0,
+      "actual_mb": 625,
+      "description": "NVML reports 0pct while 625MB remains"
+    },
+    {
+      "type": "power_never_drops",
+      "severity": "HIGH",
+      "power_w": 115.99,
+      "baseline_w": 78.34,
+      "description": "Power stays at 114-116W after clear"
+    }
+  ],
+  "cross_architecture": {
+    "A100_residual_mb": 455,
+    "H100_residual_mb": 625,
+    "H200_residual_mb": 382,
+    "B200_residual_mb": 716
+  },
+  "conclusion": "H100 VRAM residual 625MB confirmed. NVML blind. Power stays elevated."
+}
