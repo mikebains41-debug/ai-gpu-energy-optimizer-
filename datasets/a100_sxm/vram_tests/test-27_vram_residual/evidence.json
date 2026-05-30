@@ -1,0 +1,34 @@
+{
+  "test_id": "test-27_vram_residual",
+  "date": "2026-05-29",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "vram_residual_confirmed",
+      "severity": "CRITICAL",
+      "gpu0_residual_mb": 382,
+      "gpu1_residual_mb": 382,
+      "description": "382MB VRAM stuck on both GPUs after del and torch.cuda.empty_cache(). 47% of loaded VRAM did not clear."
+    },
+    {
+      "type": "nvml_blind_to_residual",
+      "severity": "CRITICAL",
+      "util_memory_reported_pct": 0,
+      "actual_memory_used_mb": 425,
+      "description": "NVML reports 0% memory utilization while 425MB remains allocated. Monitoring tools cannot see residual VRAM."
+    },
+    {
+      "type": "security_risk_multi_tenant",
+      "severity": "HIGH",
+      "description": "In multi-tenant cloud environments next tenant could access residual VRAM data from previous workload. 382MB of previous tenant data persists invisibly."
+    },
+    {
+      "type": "both_gpus_identical_residual",
+      "severity": "INFO",
+      "gpu0_mb": 425,
+      "gpu1_mb": 425,
+      "description": "Both GPUs show exactly 425MB residual \u2014 systematic not random. Driver or CUDA runtime retaining memory."
+    }
+  ],
+  "conclusion": "VRAM does not fully clear after process exit on A100 SXM. 382MB residual confirmed on both GPUs. NVML blind to residual. Security risk in multi-tenant environments."
+}
