@@ -1,35 +1,36 @@
 {
-  "test_id": "B200_VRAM_TEST_07_BASELINE",
+  "test_id": "B200_VRAM_TEST_01_BASELINE",
   "date": "2026-05-30",
   "hardware_attested": true,
-  "samples": 12,
-  "duration_seconds": 60,
   "findings": [
     {
       "type": "ghost_power_baseline",
       "severity": "CRITICAL",
-      "gpu0_avg_w": 190.35,
-      "gpu1_avg_w": 187.96,
+      "gpu0_w": 144.39,
+      "gpu1_w": 149.49,
       "memory_mb": 0,
-      "util_pct": 0,
-      "description": "B200 draws 188-190W at 0MB VRAM from cold boot \u2014 ghost power from power on"
+      "description": "B200 draws 144-149W at idle 0MB VRAM"
     },
     {
-      "type": "inter_gpu_differential",
-      "severity": "MEDIUM",
-      "gpu0_w": 190.38,
-      "gpu1_w": 187.93,
-      "differential_w": 2.39,
-      "higher_gpu": "GPU0",
-      "description": "GPU0 consistently 2.39W higher than GPU1 \u2014 hardware asymmetry confirmed"
-    },
-    {
-      "type": "nvml_memory_accurate_at_baseline",
-      "severity": "INFO",
-      "memory_used_mb": 0,
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_mb": 1010,
       "util_memory_pct": 0,
-      "description": "NVML correctly reports 0MB and 0pct at idle \u2014 desync only occurs under load"
+      "description": "NVML reports 0pct while 1010MB loaded"
+    },
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 628,
+      "description": "628MB stuck after empty_cache"
+    },
+    {
+      "type": "power_never_drops",
+      "severity": "CRITICAL",
+      "power_after_w": 196.98,
+      "baseline_w": 144.39,
+      "description": "Power stays at 197-203W after clear"
     }
   ],
-  "conclusion": "B200 ghost power 188-190W confirmed at 0MB VRAM. Hardware asymmetry 2.39W GPU0 higher."
+  "conclusion": "B200 VRAM residual 628MB. NVML blind. Power never drops."
 }
