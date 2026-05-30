@@ -1,0 +1,36 @@
+{
+  "test_id": "H200_VRAM_TEST_01_BASELINE",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "ghost_power_baseline",
+      "severity": "CRITICAL",
+      "gpu0_w": 79.85,
+      "gpu1_w": 80.52,
+      "memory_mb": 0,
+      "description": "H200 draws 79-80W at idle 0MB VRAM"
+    },
+    {
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_mb": 911,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct while 911MB loaded"
+    },
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 529,
+      "description": "529MB stuck after empty_cache"
+    },
+    {
+      "type": "power_stays_elevated",
+      "severity": "HIGH",
+      "power_after_w": 127.0,
+      "baseline_w": 79.85,
+      "description": "Power stays at 127-132W after clear"
+    }
+  ],
+  "conclusion": "H200 VRAM residual 529MB. NVML blind. Power stays elevated."
+}
