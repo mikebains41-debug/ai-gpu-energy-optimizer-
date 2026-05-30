@@ -1,0 +1,40 @@
+{
+  "test_id": "H200_VRAM_TEST_03_RESIDUAL",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 629,
+      "description": "629MB stuck after empty_cache"
+    },
+    {
+      "type": "nvml_blind",
+      "severity": "CRITICAL",
+      "util_memory_pct": 0,
+      "actual_mb": 629,
+      "description": "NVML reports 0pct while 629MB remains"
+    },
+    {
+      "type": "power_stays_elevated",
+      "severity": "HIGH",
+      "power_w": 129.79,
+      "baseline_w": 79.51,
+      "description": "Power stays at 129-134W after clear"
+    },
+    {
+      "type": "util_memory_honest_during_compute",
+      "severity": "INFO",
+      "util_memory_pct": 23,
+      "description": "H200 util.memory shows 20-24pct during compute unlike A100 B200"
+    }
+  ],
+  "cross_architecture": {
+    "A100_residual_mb": 455,
+    "H100_residual_mb": 625,
+    "H200_residual_mb": 629,
+    "B200_residual_mb": 716
+  },
+  "conclusion": "H200 VRAM residual 629MB. NVML blind. Power stays elevated."
+}
