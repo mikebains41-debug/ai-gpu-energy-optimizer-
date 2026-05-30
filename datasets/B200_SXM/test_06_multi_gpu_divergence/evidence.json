@@ -1,92 +1,38 @@
 {
-  "test_id": "B200_TEST_06",
-  "test_name": "2x B200 Multi GPU Power Divergence Analysis",
-  "date": "2026-05-28",
-  "data_source": "Derived from Tests 01 02 03 04 05",
-  "hardware": {
-    "gpu_model": "NVIDIA B200",
-    "gpu_count": 2,
-    "total_vram_gb": 360,
-    "driver_version": "580.126.20",
-    "pod_id": "aee29124a02b",
-    "provider": "RunPod"
-  },
-  "evidence_chain": [
+  "test_id": "B200_TEST_06_MULTI_GPU_DIVERGENCE",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
     {
-      "evidence_id": "E01",
-      "source_test": "B200_TEST_01",
-      "type": "idle_baseline_divergence",
-      "gpu_0_power_w": 143.47,
-      "gpu_1_power_w": 145.24,
-      "differential_w": 1.77,
-      "samples": 148,
-      "significance": "1.77W differential confirmed at idle across 148 samples"
+      "type": "gpu0_only_peak",
+      "severity": "INFO",
+      "gpu0_w": 457.17,
+      "gpu1_w": 148.85,
+      "description": "GPU0 peaks at 457W while GPU1 stays at 149W idle"
     },
     {
-      "evidence_id": "E02",
-      "source_test": "B200_TEST_02",
-      "type": "fp32_load_divergence",
-      "gpu_0_power_w": 237.50,
-      "gpu_1_power_w": 238.50,
-      "differential_w": 1.00,
-      "significance": "1.00W differential confirmed under FP32 load"
+      "type": "gpu1_only_peak",
+      "severity": "INFO",
+      "gpu0_w": 196.76,
+      "gpu1_w": 455.33,
+      "description": "GPU1 peaks at 455W while GPU0 stays at 197W post-load"
     },
     {
-      "evidence_id": "E03",
-      "source_test": "B200_TEST_03",
-      "type": "fp16_load_divergence",
-      "gpu_0_power_w": 197.00,
-      "gpu_1_power_w": 199.00,
-      "differential_w": 2.00,
-      "significance": "2.00W differential confirmed under FP16 load"
+      "type": "both_gpu_divergence",
+      "severity": "HIGH",
+      "gpu0_w": 462.45,
+      "gpu1_w": 436.74,
+      "delta_w": 25.71,
+      "description": "Both GPUs loaded \u2014 GPU0 draws 26W more than GPU1"
     },
     {
-      "evidence_id": "E04",
-      "source_test": "B200_TEST_04",
-      "type": "cooldown_divergence",
-      "gpu_0_power_w": 144.00,
-      "gpu_1_power_w": 145.75,
-      "differential_w": 1.75,
-      "significance": "1.75W differential confirmed during cooldown"
-    },
-    {
-      "evidence_id": "E05",
-      "source_test": "B200_TEST_05",
-      "type": "post_load_divergence",
-      "gpu_0_power_w": 144.10,
-      "gpu_1_power_w": 145.85,
-      "differential_w": 1.75,
-      "significance": "1.75W differential confirmed in post load monitoring"
+      "type": "baseline_asymmetry",
+      "severity": "HIGH",
+      "gpu0_w": 144.51,
+      "gpu1_w": 149.64,
+      "delta_w": 5.13,
+      "description": "GPU1 draws 5W more than GPU0 at baseline"
     }
   ],
-  "key_observations": {
-    "observation_1": {
-      "finding": "GPU 1 always draws more power than GPU 0",
-      "evidence": "E01 E02 E03 E04 E05",
-      "detail": "Consistent across all 5 tests and all workload types"
-    },
-    "observation_2": {
-      "finding": "Differential range 1.00W to 2.00W",
-      "evidence": "E01 E02 E03 E04 E05",
-      "detail": "Smallest at FP32 load 1.00W largest at FP16 load 2.00W"
-    },
-    "observation_3": {
-      "finding": "Hardware asymmetry not workload artifact",
-      "evidence": "E01 E02 E03 E04 E05",
-      "detail": "Differential present across all workload types confirming hardware origin"
-    },
-    "observation_4": {
-      "finding": "Per GPU measurement essential",
-      "evidence": "E01 E02 E03 E04 E05",
-      "detail": "Fleet systems assuming identical GPU power will be wrong by 1-2W per pair"
-    }
-  },
-  "attestation": {
-    "trust_posture": "hardware_attested",
-    "validator": "GPU Energy Optimizer v2.0",
-    "researcher": "Manmohan (Mike) Bains",
-    "contact": "mikebains41@gmail.com",
-    "location": "Duncan BC Canada",
-    "date": "2026-05-28"
-  }
+  "conclusion": "B200 multi GPU divergence confirmed. GPU0 draws 26W more under dual load. GPU1 5W higher at baseline."
 }
