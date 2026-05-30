@@ -1,0 +1,36 @@
+{
+  "test_id": "H100_VRAM_TEST_02_WORKLOAD",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
+    {
+      "type": "nvml_memory_desync",
+      "severity": "CRITICAL",
+      "memory_mb": 909,
+      "util_memory_pct": 0,
+      "description": "NVML reports 0pct while 909MB loaded"
+    },
+    {
+      "type": "vram_grows_during_compute",
+      "severity": "HIGH",
+      "pre_mb": 909,
+      "post_mb": 1771,
+      "delta_mb": 862,
+      "description": "VRAM grew 862MB during compute"
+    },
+    {
+      "type": "vram_residual",
+      "severity": "CRITICAL",
+      "residual_mb": 625,
+      "description": "625MB stuck after empty_cache"
+    },
+    {
+      "type": "power_stays_elevated",
+      "severity": "HIGH",
+      "power_after_w": 118.73,
+      "baseline_w": 77.79,
+      "description": "Power stays at 114-118W after clear"
+    }
+  ],
+  "conclusion": "H100 VRAM workload complete. 625MB residual. NVML blind throughout."
+}
