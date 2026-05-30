@@ -1,0 +1,5 @@
+timestamp,gpu_index,power_w,util_gpu_pct,util_memory_pct,memory_used_mb,memory_free_mb,memory_total_mb,phase
+2026-05-30 16:52:22,0,144.40,0,0,0,182632,183359,baseline
+2026-05-30 16:52:22,1,149.12,0,0,0,182632,183359,baseline
+2026-05-30 17:02:12,0,144.42,0,0,0,182632,183359,baseline
+2026-05-30 17:02:12,1,148.78,0,0,0,182632,183359,baseline
