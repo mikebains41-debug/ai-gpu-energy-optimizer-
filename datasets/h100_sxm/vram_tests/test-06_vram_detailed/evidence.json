@@ -37,13 +37,13 @@
       "severity": "HIGH",
       "power_after_w": 119.06,
       "baseline_w": 78.11,
-      "description": "Power stays at 119W after clear \u2014 never returns to baseline"
+      "description": "Power stays at 119W after clear"
     }
   ],
   "cross_architecture": {
     "A100_residual_mb": 455,
     "H100_residual_mb": 625,
-    "H200_residual_mb": 382,
+    "H200_residual_mb": 629,
     "B200_residual_mb": 716
   },
   "conclusion": "H100 VRAM residual 625MB confirmed. Power stays elevated. NVML blind throughout."
