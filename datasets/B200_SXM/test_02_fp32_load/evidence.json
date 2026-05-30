@@ -1,121 +1,28 @@
 {
-  "test_id": "B200_TEST_02",
-  "test_name": "2x B200 FP32 Load Test",
-  "date": "2026-05-28",
-  "hardware": {
-    "gpu_model": "NVIDIA B200",
-    "gpu_count": 2,
-    "total_vram_gb": 360,
-    "driver_version": "580.126.20",
-    "cuda_version": "13.0",
-    "pytorch_version": "2.11.0+cu128",
-    "pod_id": "aee29124a02b",
-    "provider": "RunPod"
-  },
-  "evidence_chain": [
+  "test_id": "B200_TEST_02_FP32_LOAD",
+  "date": "2026-05-30",
+  "hardware_attested": true,
+  "findings": [
     {
-      "evidence_id": "E01",
-      "type": "pre_load_baseline",
-      "timestamp": "2026/05/28 19:24:04",
-      "gpu_0_power_w": 143.99,
-      "gpu_1_power_w": 145.72,
-      "gpu_0_util_pct": 0,
-      "gpu_1_util_pct": 0,
-      "gpu_0_sm_clock_mhz": 120,
-      "gpu_1_sm_clock_mhz": 120,
-      "pstate_both": "P0",
-      "significance": "Idle baseline captured immediately before load started"
+      "type": "fp32_peak_power",
+      "severity": "INFO",
+      "gpu0_w": 549.76,
+      "gpu1_w": 542.02,
+      "description": "B200 FP32 peak 549W GPU0 542W GPU1"
     },
     {
-      "evidence_id": "E02",
-      "type": "load_ramp_start",
-      "timestamp": "2026/05/28 19:24:06",
-      "gpu_0_power_w": 168.95,
-      "gpu_1_power_w": 161.11,
-      "gpu_0_util_pct": 3,
-      "gpu_1_util_pct": 0,
-      "sm_clock_mhz": 1965,
-      "significance": "SM clock jumped from 120 to 1965 MHz immediately on load"
+      "type": "power_stays_elevated",
+      "severity": "CRITICAL",
+      "post_load_w": 196.6,
+      "baseline_w": 144.4,
+      "description": "Power stays at 196-203W after load never returns to baseline"
     },
     {
-      "evidence_id": "E03",
-      "type": "power_ramp_progression",
-      "timestamp_start": "2026/05/28 19:24:06",
-      "timestamp_end": "2026/05/28 19:24:07",
-      "power_progression_gpu0": "168W to 175W to 182W to 190W to 209W to 220W to 238W",
-      "power_progression_gpu1": "161W to 169W to 178W to 187W to 196W to 213W to 239W",
-      "utilization_pct": "3 to 9",
-      "significance": "Full power ramp from idle to sustained load observed"
-    },
-    {
-      "evidence_id": "E04",
-      "type": "sustained_load",
-      "timestamp_start": "2026/05/28 19:24:07",
-      "timestamp_end": "2026/05/28 19:24:08",
-      "gpu_0_power_range_w": "237.20 to 238.84",
-      "gpu_1_power_range_w": "236.30 to 239.26",
-      "utilization_pct": "7 to 9",
-      "sm_clock_mhz": 1965,
-      "pstate_both": "P0",
-      "significance": "Sustained FP32 load confirmed at 237-239W"
-    },
-    {
-      "evidence_id": "E05",
-      "type": "desync_observation",
-      "timestamp": "2026/05/28 19:24:08",
-      "gpu_0_power_w": 238.84,
-      "gpu_1_power_w": 239.26,
-      "utilization_pct": 9,
-      "significance": "238-239W at only 7-9% utilization confirms DESYNC pattern on B200"
-    },
-    {
-      "evidence_id": "E06",
-      "type": "pytorch_compatibility",
-      "pytorch_version": "2.11.0+cu128",
-      "cuda_sm": "sm_100",
-      "b200_supported": true,
-      "previous_version": "2.4.1",
-      "previous_supported": false,
-      "significance": "PyTorch 2.11.0 confirmed working on B200 Blackwell sm_100"
+      "type": "nvml_blind",
+      "severity": "CRITICAL",
+      "util_gpu_pct": 0,
+      "description": "NVML reports 0pct util throughout FP32 load"
     }
   ],
-  "key_observations": {
-    "observation_1": {
-      "finding": "FP32 load confirmed on 2x B200",
-      "evidence": "E02 E03 E04",
-      "detail": "Both B200 GPUs successfully ran FP32 4096x4096 matrix multiply with PyTorch 2.11.0"
-    },
-    "observation_2": {
-      "finding": "DESYNC pattern confirmed",
-      "evidence": "E04 E05",
-      "detail": "238-239W at 7-9% utilization. Power and utilization severely misaligned."
-    },
-    "observation_3": {
-      "finding": "SM clock activation",
-      "evidence": "E02",
-      "detail": "SM clock jumped from 120 MHz idle to 1965 MHz instantly on load start"
-    },
-    "observation_4": {
-      "finding": "Power ramp observed",
-      "evidence": "E03",
-      "detail": "Full ramp from 143W idle to 239W sustained observed over approximately 2 seconds"
-    },
-    "observation_5": {
-      "finding": "PyTorch 2.11.0 B200 compatibility",
-      "evidence": "E06",
-      "detail": "PyTorch 2.11.0+cu128 successfully supports B200 CUDA sm_100. Previous 2.4.1 incompatible."
-    }
-  },
-  "screenshot_evidence": {
-    "description": "Raw nvidia-smi terminal output captured in RunPod web terminal",
-    "screenshots": "To be added"
-  },
-  "attestation": {
-    "trust_posture": "hardware_attested",
-    "validator": "GPU Energy Optimizer v2.0",
-    "researcher": "Manmohan (Mike) Bains",
-    "contact": "mikebains41@gmail.com",
-    "location": "Duncan BC Canada",
-    "date": "2026-05-28"
-  }
+  "conclusion": "B200 FP32 peak 549W. Power never returns to 144W baseline. NVML blind."
 }
