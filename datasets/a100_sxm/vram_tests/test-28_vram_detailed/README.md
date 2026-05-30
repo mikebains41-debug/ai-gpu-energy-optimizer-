@@ -1,21 +1,16 @@
-# A100 VRAM Test 28 — Detailed Full Profile
+# A100 VRAM Test 28 — Workload FP32 Load and Clear
 **Researcher:** Mike Bains | mikebains41@gmail.com
 
 ## Key Numbers
-- Baseline GPU0 = 63.54W | GPU1 = 60.49W
+- Baseline GPU0 = 63.60W | GPU1 = 60.28W
 - VRAM loaded = 807 MB
+- Compute peak GPU0 = 359.49W | GPU1 = 337.30W
 - VRAM after compute = 1,601 MB
 - VRAM residual = 455 MB
-- util.memory throughout = 0% (NVML lie)
-- Inter-GPU differential = 3.05W
+- util.memory = 0% throughout (NVML lie)
 - VRAM growth during compute = 794 MB
 
-## vs Simple Residual Test
-- Simple load + clear = 382MB residual
-- Load + compute + clear = 455MB residual
-- Difference = 73MB from compute buffers
-
-## Conclusion
-Residual scales with workload complexity.
-NVML blind throughout all phases.
-Ghost power confirmed from cold boot.
+## vs B200
+- A100 power drops after clear
+- B200 power stays elevated after clear
+- A100 residual 455MB vs B200 716MB
