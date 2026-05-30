@@ -1,21 +1,16 @@
-# A100 SXM Test 02 — FP32 Load Memory Clock
-## Date: 2026-05-29
-## Pod: 827710d5583c | Provider: RunPod
-## Researcher: Manmohan (Mike) Bains
+# A100 Test 02 — FP32 Memory Clock
+**Date:** 2026-05-30 | **GPU:** A100 SXM x2 | **Pod:** bbcd7cb43196
 
-## Key Findings
-- FP32 load power: 371-399W at 100% utilization
-- SM clock under load: 1410MHz
-- Memory clock under load: 1593MHz — UNCHANGED
-- Post load power: 85-90W at 0% util
-- Post load SM clock: 1155MHz — elevated
-- Post load memory clock: 1593MHz — UNCHANGED
+## Result: CRITICAL
 
-## Critical Finding
-Memory clock locked at 1593MHz across ALL states:
-- Idle: 1593MHz
-- FP32 load: 1593MHz  
-- Post load cooldown: 1593MHz
+| Phase | GPU0 | GPU1 | SM MHz | HBM MHz | util |
+|---|---|---|---|---|---|
+| Baseline | 65.07W | 67.19W | 210 | 1,593 | 0% |
+| FP32 Peak | 360.64W | 360.91W | 1,410 | 1,593 | 100% |
 
-Memory subsystem completely decoupled from workload.
-Ghost power is memory-driven and architectural.
+## Key Finding
+HBM clock locked at 1,593MHz throughout — never changes even at 100% FP32 load.
+Ghost power is memory-driven not compute-driven.
+
+## vs Old Test
+Old: single GPU 399W | New: 2x GPU 360W each

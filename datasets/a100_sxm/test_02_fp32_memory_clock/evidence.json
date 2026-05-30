@@ -1,34 +1,39 @@
 {
-  "gpu": "NVIDIA A100 SXM4 80GB",
   "test_id": "A100_TEST_02_FP32_MEMORY_CLOCK",
-  "test_date": "2026-05-29",
+  "date": "2026-05-30",
   "hardware_attested": true,
-  "evidence": [
+  "findings": [
     {
-      "type": "memory_clock_decoupled",
+      "type": "hbm_clock_locked_during_fp32",
       "severity": "CRITICAL",
-      "description": "Memory clock 1593MHz unchanged from idle through full FP32 load to cooldown",
-      "idle_mem_mhz": 1593,
-      "load_mem_mhz": 1593,
-      "cooldown_mem_mhz": 1593
+      "mem_mhz": 1593,
+      "sm_mhz_load": 1410,
+      "description": "HBM clock stays at 1593MHz during full FP32 load \u2014 never changes"
     },
     {
-      "type": "ghost_power_elevated_post_load",
+      "type": "fp32_peak_power",
+      "severity": "INFO",
+      "gpu0_w": 360.64,
+      "gpu1_w": 360.91,
+      "util_pct": 100,
+      "sm_mhz": 1410,
+      "description": "FP32 peak 360W both GPUs \u2014 SM jumps from 210 to 1410MHz"
+    },
+    {
+      "type": "gpu_asymmetry_baseline",
       "severity": "HIGH",
-      "pre_load_power_w": 65,
-      "post_load_power_w": 86,
-      "delta_w": 21,
-      "utilization_pct": 0
+      "gpu0_w": 65.07,
+      "gpu1_w": 67.19,
+      "delta_w": 2.12,
+      "description": "GPU1 2W higher than GPU0 at baseline"
     },
     {
-      "type": "sm_clock_scales_memory_does_not",
+      "type": "nvml_memory_desync",
       "severity": "CRITICAL",
-      "idle_sm_mhz": 210,
-      "load_sm_mhz": 1410,
-      "cooldown_sm_mhz": 1155,
-      "idle_mem_mhz": 1593,
-      "load_mem_mhz": 1593,
-      "cooldown_mem_mhz": 1593
+      "util_memory_pct": 4,
+      "actual_memory_mb": 1225,
+      "description": "NVML reports only 4pct memory util during 1225MB FP32 load"
     }
-  ]
+  ],
+  "conclusion": "HBM clock locked 1593MHz through FP32 load. Ghost power memory-driven not compute-driven."
 }
