@@ -1,7 +1,0 @@
-test_id,test_name,gpu_0_avg_power_w,gpu_1_avg_power_w,differential_w,workload_type,samples
-B200_TEST_01,Idle Baseline,143.47,145.24,1.77,idle,148
-B200_TEST_02,FP32 Load,237.50,238.50,1.00,fp32,60
-B200_TEST_03,FP16 Load,197.00,199.00,2.00,fp16,50
-B200_TEST_04,Cooldown,144.00,145.75,1.75,cooldown,54
-B200_TEST_05,Post Load Ghost,144.10,145.85,1.75,post_load,58
-AVERAGE,All Tests,172.01,173.67,1.65,mixed,370
