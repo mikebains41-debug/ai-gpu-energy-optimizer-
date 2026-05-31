@@ -285,7 +285,7 @@ app.add_middleware(
 )
 
 metrics_store = load_metrics()
-VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "test_key_123,gpu_opt_demo").split(",")
+VALID_API_KEYS = os.environ.get("VALID_API_KEYS", "").split(",")
 
 def validate_api_key(api_key: str) -> bool:
     return api_key in VALID_API_KEYS
