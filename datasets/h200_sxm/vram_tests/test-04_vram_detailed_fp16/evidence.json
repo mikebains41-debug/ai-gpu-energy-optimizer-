@@ -1,0 +1,32 @@
+{
+  "test_id": "test-20",
+  "name": "FP16 vs FP32 – 5 Iterations Each (2048×2048 matmul)",
+  "evidence_type": "raw_telemetry",
+  "collection_method": "nvidia-smi 1Hz sampling",
+  "gpu": "NVIDIA A100 SXM (RunPod)",
+  "date": "2026/05/13",
+  "total_samples": 120,
+  "fp32_samples": 60,
+  "fp16_samples": 60,
+  "key_observations": [
+    "FP32 power ramped from 76.06W to 137.28W across 60 iterations at 0% utilization",
+    "FP16 power remained stable between 76.69W and 78.72W throughout",
+    "FP32 utilization reported 0% despite active compute — ghost power confirmed",
+    "FP16 utilization peaked at 4% — near-idle reporting during active workload",
+    "Temperature rose 1C from FP32 to FP16 phase (44C to 45C)",
+    "FP16 iteration time 4.7x faster than FP32 (0.52ms vs 2.45ms average)"
+  ],
+  "ghost_power_evidence": {
+    "detected": true,
+    "max_power_at_zero_util": 137.28,
+    "precision": "FP32",
+    "note": "Power draw increasing monotonically while utilization remains at 0% — consistent with DESYNC anomaly pattern"
+  },
+  "raw_data_file": "data.csv",
+  "timestamps": {
+    "fp32_start": "2026/05/13 07:05:09.296",
+    "fp32_end": "2026/05/13 07:05:10.804",
+    "fp16_start": "2026/05/13 07:05:11.192",
+    "fp16_end": "2026/05/13 07:05:12.925"
+  }
+}
