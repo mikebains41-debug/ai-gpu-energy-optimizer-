@@ -899,3 +899,178 @@ Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
 Duncan BC Canada
 2026-05-30
+
+
+---
+
+## Part VII — Detailed VRAM Security Analysis and B200 Failure Modes (2026-05-31)
+
+### Executive Summary
+
+Extended VRAM testing completed across A100 SXM, H200 SXM, and B200 SXM on 2026-05-31 with 15 additional tests. Three critical new findings emerged: a confirmed mitigation for VRAM residual via SIGKILL, updated and more precise residual measurements across all architectures, and three previously undocumented B200 failure modes that make it the highest-risk architecture tested across all security dimensions.
+
+---
+
+### New Finding 1 — SIGKILL Clears VRAM to Zero. Graceful Exit Does Not.
+
+The most significant operational finding from this test series is the discovery that the cleanup method determines whether VRAM is cleared.
+
+When a process exits gracefully using the PyTorch standard sequence del, gc.collect(), torch.cuda.empty_cache() — hundreds of megabytes of VRAM remain uncleared and readable.
+
+When a process is hard-killed with SIGKILL — the OS kernel forces immediate GPU memory reclamation and the driver zeros all VRAM pages. Subsequent polling immediately after SIGKILL shows memory.used = 0 MB on A100 SXM.
+
+| Cleanup Method | A100 SXM Residual | VRAM Cleared |
+|---|---|---|
+| del + gc.collect() + empty_cache() | 457-465 MB | No |
+| SIGKILL | **0 MB** | Yes |
+
+This finding identifies the root cause precisely: the vulnerability is in PyTorchs CUDA memory allocator, not in the GPU driver or OS kernel. PyTorch maintains a memory cache that survives logical tensor deletion. The driver does not zero physical VRAM pages when this cache is released. The OS kernel however does zero memory on hard process kill.
+
+This provides a concrete actionable mitigation for cloud operators: enforce SIGKILL on tenant process exit rather than allowing graceful shutdown. The OS will zero VRAM on hard kill.
+
+---
+
+### Updated Cross-Architecture VRAM Residual — Full Test Suite Results
+
+Previous measurements in Part VI were based on limited test runs. The following table reflects full 6-test series per architecture.
+
+| GPU | HBM | Graceful Exit Residual | SIGKILL | Notes |
+|---|---|---|---|---|
+| A100 SXM 80GB | HBM2e | 457-465 MB | 0 MB | Varies by precision type |
+| H200 SXM 141GB | HBM3e | 529-629 MB | not tested | Higher than A100 |
+| B200 SXM 179GB | HBM3e | 628-728 MB fixed | not tested | Fixed regardless of precision |
+
+Key pattern confirmed: HBM generation predicts residual magnitude. HBM2e leaves 457-465 MB. HBM3e leaves 529-728 MB. The newer the HBM generation the more data remains after graceful cleanup.
+
+On A100, residual varies by compute precision — FP32 leaves 457 MB, FP16 leaves 463 MB, combined FP32 and FP16 leaves 465 MB. On B200 the residual is fixed at 728 MB regardless of precision type, suggesting a different memory management architecture in HBM3e.
+
+The residual does not self-clear over time. It persists indefinitely until overwritten by a subsequent workload.
+
+---
+
+### B200 Three Distinct Failure Modes
+
+B200 SXM testing on 2026-05-30 revealed three failure modes not observed in any prior architecture. Each is independent, each is significant, and together they make B200 the highest-risk architecture tested.
+
+#### Failure Mode 1 — NVML Is Completely Blind on B200
+
+The NVIDIA Management Library (NVML), which underpins every major GPU monitoring tool including DCGM, Datadog, Prometheus, and vendor dashboards, reports 0% utilization on B200 throughout active compute workloads. During active FP32 and FP16 matmul operations drawing 400-700W of real power, NVML consistently reported util.gpu = 0%.
+
+This means DCGM, Prometheus, Datadog, and every monitoring product built on NVML is completely blind to what B200 is actually doing. This is not a configuration issue. It is a fundamental incompatibility between B200 reporting architecture and the NVML API layer.
+
+As B200 deployments scale through 2025 and 2026 this represents a monitoring crisis for any data center relying on conventional tooling.
+
+#### Failure Mode 2 — Ghost Power Spike at 0% Reported Utilization After Process Exit
+
+Immediately after a FP32 process exits on B200 the following was measured:
+
+| Metric | Value |
+|---|---|
+| GPU0 power | 549.84W |
+| GPU1 power | 574.84W |
+| NVML utilization | 0% both GPUs |
+| VRAM | 728 MB residual |
+
+This is the most extreme ghost power event recorded across all 7 architectures tested. The maximum desync event on A100 SXM was 357W. B200 exceeds this by 217W while reporting zero utilization to every monitoring tool. The spike persists for multiple sampling intervals before settling to the post-load floor of 196-202W.
+
+#### Failure Mode 3 — Permanent Power State Shift With No Recovery
+
+Every architecture tested prior to B200 has at least two identifiable power states — a lower cold boot idle and an elevated post-load idle. On A100 SXM State 1 is approximately 65W and State 2 is approximately 86W.
+
+B200 does not return to its cold boot state after any workload. The baseline is 144W. After any workload the floor permanently shifts to 196-202W — an elevation of +52W — and does not recover for the life of the pod. There is no recovery state on B200.
+
+This means each subsequent tenant on a B200 pod inherits the elevated power floor from all previous tenants. The additional 52W is invisible to billing and monitoring systems.
+
+#### Additional Anomaly — Anomalous Cooldown Spike
+
+During B200 cooldown monitoring after FP32 compute: GPU0 = 684.71W and GPU1 = 700.74W at only 45-48% utilization. Normal active compute on B200 shows 100% utilization. A 684-700W draw at 45-48% utilization is inconsistent with standard compute behavior and suggests undocumented background GPU activity during the cooldown transition phase.
+
+---
+
+### B200 Three Distinct Failure Modes
+
+B200 SXM testing on 2026-05-30 revealed three failure modes not observed in any prior architecture. Each is independent, each is significant, and together they make B200 the highest-risk architecture tested.
+
+#### Failure Mode 1 — NVML Is Completely Blind on B200
+
+The NVIDIA Management Library (NVML), which underpins every major GPU monitoring tool including DCGM, Datadog, Prometheus, and vendor dashboards, reports 0% utilization on B200 throughout active compute workloads. During active FP32 and FP16 matmul operations drawing 400-700W of real power, NVML consistently reported util.gpu = 0%.
+
+This means DCGM, Prometheus, Datadog, and every monitoring product built on NVML is completely blind to what B200 is actually doing. This is not a configuration issue. It is a fundamental incompatibility between B200 reporting architecture and the NVML API layer.
+
+As B200 deployments scale through 2025 and 2026 this represents a monitoring crisis for any data center relying on conventional tooling.
+
+#### Failure Mode 2 — Ghost Power Spike at 0% Reported Utilization After Process Exit
+
+Immediately after a FP32 process exits on B200 the following was measured:
+
+| Metric | Value |
+|---|---|
+| GPU0 power | 549.84W |
+| GPU1 power | 574.84W |
+| NVML utilization | 0% both GPUs |
+| VRAM | 728 MB residual |
+
+This is the most extreme ghost power event recorded across all 7 architectures tested. The maximum desync event on A100 SXM was 357W. B200 exceeds this by 217W while reporting zero utilization to every monitoring tool. The spike persists for multiple sampling intervals before settling to the post-load floor of 196-202W.
+
+#### Failure Mode 3 — Permanent Power State Shift With No Recovery
+
+Every architecture tested prior to B200 has at least two identifiable power states — a lower cold boot idle and an elevated post-load idle. On A100 SXM State 1 is approximately 65W and State 2 is approximately 86W.
+
+B200 does not return to its cold boot state after any workload. The baseline is 144W. After any workload the floor permanently shifts to 196-202W — an elevation of +52W — and does not recover for the life of the pod. There is no recovery state on B200.
+
+This means each subsequent tenant on a B200 pod inherits the elevated power floor from all previous tenants. The additional 52W is invisible to billing and monitoring systems.
+
+#### Additional Anomaly — Anomalous Cooldown Spike
+
+During B200 cooldown monitoring after FP32 compute: GPU0 = 684.71W and GPU1 = 700.74W at only 45-48% utilization. Normal active compute on B200 shows 100% utilization. A 684-700W draw at 45-48% utilization is inconsistent with standard compute behavior and suggests undocumented background GPU activity during the cooldown transition phase.
+
+---
+
+### Full Cross-Architecture Security Matrix — All Findings to 2026-05-31
+
+| GPU | HBM | VRAM Residual | Max Ghost Power | NVML Blind | Power Recovery |
+|---|---|---|---|---|---|
+| A100 SXM | HBM2e | 457-465 MB | 357W | No | Partial |
+| H100 SXM | HBM2e | 457 MB | 86W | No | Partial |
+| H200 SXM | HBM3e | 529-629 MB | 136W | No | Partial |
+| B200 SXM | HBM3e | 628-728 MB fixed | 549-574W | YES | NONE |
+| A100 PCIe | GDDR6 | 0 MB | 0W | No | Full |
+| T4 | GDDR6 | 0 MB | 0W | No | Full |
+| RTX 4090 | GDDR6X | 0 MB | 0W | No | Full |
+
+### Three Confirmed Patterns
+
+Pattern 1 — SXM plus HBM equals ghost power and VRAM residual. Every SXM GPU with HBM exhibits both. Every PCIe GPU with GDDR is clean on both counts. Physical design not a bug.
+
+Pattern 2 — HBM generation predicts residual magnitude. HBM2e leaves 457-465 MB. HBM3e leaves 529-728 MB. Newer HBM generation retains more data.
+
+Pattern 3 — B200 breaks the monitoring layer entirely. All prior architectures are measurable with NVML even if anomalous. B200 renders NVML-based monitoring useless and introduces ghost power spikes exceeding anything previously documented.
+
+### Implications for Data Center Operators
+
+Data centers running SXM GPU fleets face three simultaneous risks:
+
+1. Energy cost — hundreds of watts per GPU drawing at idle, invisible to monitoring, uncontrollable by software.
+2. Tenant data security — previous tenant model weights readable by subsequent tenants on the same physical GPU.
+3. Monitoring gap — B200 deployments are invisible to every conventional monitoring tool built on NVML.
+
+The combination of hardware attestation at the physical layer and high-frequency cross-validation monitoring at the software layer is the only complete solution to all three risks simultaneously.
+
+### Research Status — 2026-05-31
+
+Total validated tests: 72+
+GPU architectures tested: 7
+VRAM tests completed: 15 across A100 H200 B200
+New findings since 2026-05-30:
+1. SIGKILL clears VRAM to 0 MB — graceful exit does not
+2. VRAM residual confirmed across full 6-test series per architecture
+3. B200 NVML blindness confirmed across all test types
+4. B200 549-574W ghost spike after process exit — highest ever recorded
+5. B200 permanent power state shift confirmed — no recovery state
+6. B200 anomalous cooldown spike 684-700W at 45-48 pct util
+7. HBM generation directly predicts residual magnitude
+
+Author: Manmohan (Mike) Bains
+Contact: mikebains41@gmail.com
+Duncan BC Canada
+2026-05-31
