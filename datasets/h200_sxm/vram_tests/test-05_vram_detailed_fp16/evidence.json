@@ -1,0 +1,39 @@
+{
+  "test_id": "H200_VRAM_TEST_05_DETAILED_FP16",
+  "date": "2026-05-31",
+  "findings": [
+    "Baseline 75.21W GPU0 72.22W GPU1 at 0 util",
+    "Spontaneous burst 79.77W on tensor allocation",
+    "FP16 peak 157.82W GPU0 - GPU1 idle 72.22W throughout",
+    "VRAM during compute 6006MB",
+    "After cleanup 628MB VRAM residual remains",
+    "util.memory 0pct every phase - NVML blind",
+    "Memory clock 3201MHz locked never changes",
+    "SM clock 1980MHz post-clear vs 345MHz baseline",
+    "Power 75W to 119W post-clear 44W ghost"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence",
+      "detail": "628MB FP16 data persists after del+empty_cache. Readable by next tenant.",
+      "residual_mb": 628
+    },
+    {
+      "severity": "HIGH",
+      "type": "NVML blind",
+      "detail": "util.memory 0pct throughout including 6006MB active and 628MB residual."
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "Ghost power side-channel",
+      "detail": "119W post-clear vs 75W baseline. 44W elevation."
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "SM clock side-channel",
+      "detail": "1980MHz post-clear vs 345MHz cold."
+    }
+  ],
+  "conclusion": "H200 FP16 leaves 628MB VRAM residual invisible to NVML. Standard cleanup insufficient."
+}

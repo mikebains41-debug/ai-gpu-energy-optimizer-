@@ -1,48 +1,20 @@
-# Test 20 – FP16 vs FP32 – 5 Iterations Each (2048×2048 matmul)
+# H200 VRAM Test 04 - Detailed FP16
+**Researcher:** Mike Bains | mikebains41@gmail.com
+**Date:** 2026-05-31
+**GPU:** NVIDIA H200 SXM 141GB x2 | **Provider:** RunPod
 
-## Protocol
-- GPU: NVIDIA A100 SXM (RunPod)
-- Date: 2026/05/13
-- Matrix size: 2048×2048
-- FP32 iterations: 60
-- FP16 iterations: 60
-- Sampling: nvidia-smi 1Hz
-- Workload: torch.matmul
-
-## Results
-
-### FP32
-| Metric | Value |
-|--------|-------|
-| Avg time per iteration | 2.45ms |
-| Avg power | 98.73W |
-| Power range | 76.06W → 137.28W |
-| Avg utilization | 0% |
-| Temperature | 44°C |
-| Ghost power detected | ✅ Yes |
-
-### FP16
-| Metric | Value |
-|--------|-------|
-| Avg time per iteration | 0.52ms |
-| Avg power | 77.61W |
-| Power range | 76.69W → 78.72W |
-| Avg utilization | 0–4% |
-| Temperature | 45°C |
-| Ghost power detected | ❌ No |
-
-## Key Findings
-
-- FP16 is **4.7x faster** than FP32 at this matrix size
-- FP32 draws **21% more power** on average
-- FP32 shows clear **DESYNC ghost power** — power ramping from 76W to 137W at 0% reported utilization
-- FP16 telemetry is stable — power flat, no ghost power behavior
-- Both precisions show utilization underreporting — A100 SXM telemetry lag confirmed
-
-## Ghost Power Evidence
-
-FP32 power increased monotonically from 76.06W to 137.28W across 60 iterations while utilization remained at 0% throughout. This is consistent with the DESYNC anomaly pattern documented across all A100 SXM tests in this series.
+## Key Numbers
+- Baseline GPU0 = 73.92W | GPU1 = 76.38W
+- VRAM loaded = 1,040 MB
+- VRAM after compute = 2,166 MB
+- VRAM residual = 630 MB
+- util.memory = 0% throughout (NVML lie)
+- VRAM growth during compute = 1,126 MB
+- FP16 peak power = 694W both GPUs
+- Power after clear = 120W stays elevated
+- Memory clock = 3,201 MHz locked all phases
 
 ## Conclusion
-
-For 2048×2048 matrix workloads, FP16 is the clear choice — faster, lower power, and stable telemetry. FP32 at this scale exhibits ghost power behavior that inflates cost and obscures true GPU utilization.
+H200 FP16 residual 630MB confirmed.
+Power never returns to baseline after clear (74W to 120W).
+NVML blind throughout all phases.

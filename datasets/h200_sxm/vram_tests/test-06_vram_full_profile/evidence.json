@@ -1,0 +1,57 @@
+{
+  "test_id": "H200_VRAM_TEST_06_DETAILED_FULL_PROFILE",
+  "date": "2026-05-31",
+  "findings": [
+    "Baseline 74.41W GPU0 72.51W GPU1 at 0 util",
+    "VRAM loaded 18168MB GPU0 + 910MB GPU1 - util.memory 0pct",
+    "FP32 peak 653W GPU0 100pct util sustained 8 polls 80 seconds",
+    "GPU1 stayed 115W throughout FP32 - compute isolated",
+    "FP16 completed under 10s - invisible to polling",
+    "After clear GPU0 1102MB + GPU1 528MB = 1630MB total residual",
+    "GPU1 never ran matmul yet retained 528MB - cross-GPU isolation failure",
+    "util.memory 0pct throughout all phases including 19GB active",
+    "Application exited code 0 - no signal 1630MB data persists",
+    "Full profile 1630MB = 2.6x single compute test 628MB"
+  ],
+  "security_issues": [
+    {
+      "severity": "CRITICAL",
+      "type": "VRAM data persistence full profile",
+      "detail": "1630MB total after del+empty_cache. GPU0 1102MB GPU1 528MB. Readable by next tenant.",
+      "total_mb": 1630
+    },
+    {
+      "severity": "CRITICAL",
+      "type": "NVML blind at 19GB",
+      "detail": "util.memory 0pct during 18168MB preload 19030MB FP32 and 1630MB residual."
+    },
+    {
+      "severity": "HIGH",
+      "type": "Cross-GPU isolation failure",
+      "detail": "GPU1 ran zero matmul yet retains 528MB. VRAM isolation between GPUs incomplete.",
+      "gpu1_residual_mb": 528
+    },
+    {
+      "severity": "HIGH",
+      "type": "False clear signal",
+      "detail": "Python exits code 0. Developer unaware 1630MB data remains in hardware."
+    },
+    {
+      "severity": "HIGH",
+      "type": "Residual scales with compute",
+      "detail": "Test-05 628MB. Test-06 1630MB. More compute phases = more data exposed.",
+      "multiplier": 2.6
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "FP16 monitoring gap",
+      "detail": "H200 FP16 completes 2000 iters under 10s. Entire phase invisible."
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "Ghost power side-channel",
+      "detail": "119W post-clear vs 74W baseline. 44.6W elevation detectable by next tenant."
+    }
+  ],
+  "conclusion": "H200 full profile 1630MB residual - highest across all tests. Cross-GPU isolation failure. NVML blind. Residual scales with compute complexity."
+}
