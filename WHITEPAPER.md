@@ -987,45 +987,6 @@ During B200 cooldown monitoring after FP32 compute: GPU0 = 684.71W and GPU1 = 70
 
 ---
 
-### B200 Three Distinct Failure Modes
-
-B200 SXM testing on 2026-05-30 revealed three failure modes not observed in any prior architecture. Each is independent, each is significant, and together they make B200 the highest-risk architecture tested.
-
-#### Failure Mode 1 — NVML Is Completely Blind on B200
-
-The NVIDIA Management Library (NVML), which underpins every major GPU monitoring tool including DCGM, Datadog, Prometheus, and vendor dashboards, reports 0% utilization on B200 throughout active compute workloads. During active FP32 and FP16 matmul operations drawing 400-700W of real power, NVML consistently reported util.gpu = 0%.
-
-This means DCGM, Prometheus, Datadog, and every monitoring product built on NVML is completely blind to what B200 is actually doing. This is not a configuration issue. It is a fundamental incompatibility between B200 reporting architecture and the NVML API layer.
-
-As B200 deployments scale through 2025 and 2026 this represents a monitoring crisis for any data center relying on conventional tooling.
-
-#### Failure Mode 2 — Ghost Power Spike at 0% Reported Utilization After Process Exit
-
-Immediately after a FP32 process exits on B200 the following was measured:
-
-| Metric | Value |
-|---|---|
-| GPU0 power | 549.84W |
-| GPU1 power | 574.84W |
-| NVML utilization | 0% both GPUs |
-| VRAM | 728 MB residual |
-
-This is the most extreme ghost power event recorded across all 7 architectures tested. The maximum desync event on A100 SXM was 357W. B200 exceeds this by 217W while reporting zero utilization to every monitoring tool. The spike persists for multiple sampling intervals before settling to the post-load floor of 196-202W.
-
-#### Failure Mode 3 — Permanent Power State Shift With No Recovery
-
-Every architecture tested prior to B200 has at least two identifiable power states — a lower cold boot idle and an elevated post-load idle. On A100 SXM State 1 is approximately 65W and State 2 is approximately 86W.
-
-B200 does not return to its cold boot state after any workload. The baseline is 144W. After any workload the floor permanently shifts to 196-202W — an elevation of +52W — and does not recover for the life of the pod. There is no recovery state on B200.
-
-This means each subsequent tenant on a B200 pod inherits the elevated power floor from all previous tenants. The additional 52W is invisible to billing and monitoring systems.
-
-#### Additional Anomaly — Anomalous Cooldown Spike
-
-During B200 cooldown monitoring after FP32 compute: GPU0 = 684.71W and GPU1 = 700.74W at only 45-48% utilization. Normal active compute on B200 shows 100% utilization. A 684-700W draw at 45-48% utilization is inconsistent with standard compute behavior and suggests undocumented background GPU activity during the cooldown transition phase.
-
----
-
 ### Full Cross-Architecture Security Matrix — All Findings to 2026-05-31
 
 | GPU | HBM | VRAM Residual | Max Ghost Power | NVML Blind | Power Recovery |
