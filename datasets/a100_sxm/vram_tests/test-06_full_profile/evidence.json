@@ -1,0 +1,28 @@
+{
+  "test_id": "A100_VRAM_TEST_06_DETAILED_FULL_PROFILE",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "FP32 peak = 19939 MB GPU0 356.39W 100pct util \u2014 GPU1 only 7.48W asymmetric",
+    "FP16 peak = 19947 MB GPU0 112.21W",
+    "After clear = 465 MB \u2014 highest residual across all tests",
+    "More compute = more residual confirmed"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence full profile",
+      "description": "465 MB mixed FP32 and FP16 data remains after graceful cleanup. Highest residual observed. More compute = more residual confirmed.",
+      "residual_mb": 465
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "Asymmetric GPU load",
+      "description": "FP32 compute ran entirely on GPU0 at 356W 100pct util. GPU1 at 7.48W \u2014 not participating. Workload not distributed across both GPUs.",
+      "gpu0_fp32_w": 356.39,
+      "gpu1_fp32_w": 7.48
+    }
+  ],
+  "conclusion": "Full profile leaves 465 MB. Highest residual. Asymmetric load confirmed on FP32 phase."
+}

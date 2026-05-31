@@ -1,29 +1,35 @@
-# A100 SXM Dataset — NVIDIA Ampere
+# A100 SXM 80GB — Complete Test Reports
+**Date:** 2026-05-29 to 2026-05-31 | **Pod:** bbcd7cb43196
+**Researcher:** Manmohan (Mike) Bains | mikebains41@gmail.com
 
-## Status
-24 validated hardware tests
-Provider: RunPod | Pod: env@4a081da99c4d
+## VRAM Tests
+| Test | Result | Residual | Security |
+|---|---|---|---|
+| test-01 baseline | PASS | 0 MB | None |
+| test-02 workload | RESIDUAL | **457 MB** | HIGH |
+| test-03 SIGKILL | PASS | **0 MB** | None |
+| test-04 FP32 | RESIDUAL | **457 MB** | HIGH |
+| test-05 FP16 | RESIDUAL | **463 MB** | HIGH |
+| test-06 full profile | RESIDUAL + ASYMMETRIC | **465 MB** | HIGH |
 
-## Key Findings
-| Metric | Value |
-|---|---|
-| Ghost power | 146.66W at 0% utilization |
-| Idle floor | 67.1W |
-| CEI reported | 5.68B FLOPs/joule |
-| CEI true | 4.12B FLOPs/joule |
-| CEI degradation | 27.5% worse than reported |
-| FP16 average | 482.7W |
-| FP32 average | 302W |
-| Severe desync | 357W event documented |
-| P0 lock | Confirmed post-load |
-| Hypervisor | Blocks remediation |
+## Memory Clock Tests
+| Test | Key Finding | Security |
+|---|---|---|
+| test-01 idle | MEM=1593MHz locked at 0MB VRAM | None |
+| test-02 FP32 | SM 210→1410MHz MEM=1593 always | HIGH |
+| test-03 FP16 | SM 210→1155MHz MEM=1593 always | HIGH |
+| test-04 cooldown | SM stuck at 1155MHz post-load | HIGH |
+| test-05 ghost | 416W peak ghost state 2 for 300s | HIGH |
 
-## Note
-A100 SXM tests pending restructure into 5-file format.
-B200 SXM tests are the reference format.
-See datasets/B200_SXM for complete 5-file structure.
+## Security Findings
+1. HIGH: VRAM data persists 457-465 MB after graceful PyTorch exit
+2. HIGH: SIGKILL = only safe cleanup — 0 MB residual
+3. HIGH: SM clock stuck at 1155MHz post-load indefinitely
+4. HIGH: HBM MEM clock locked 1593MHz 24/7
+5. MEDIUM: Asymmetric GPU load in test-06
 
-## Researcher
-Manmohan (Mike) Bains
-mikebains41@gmail.com
-2026-05-28
+## Ghost Power States
+| State | SM Clock | MEM Clock | Power |
+|---|---|---|---|
+| Cold boot | 210 MHz | 1593 MHz | 65W |
+| Post-load | 1155 MHz | 1593 MHz | 86W |

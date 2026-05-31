@@ -1,0 +1,22 @@
+{
+  "test_id": "A100_MEMORY_CLOCK_TEST_03_FP16",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "MEM clock = 1593 MHz all phases",
+    "SM clock 210 MHz idle \u2192 1155 MHz FP16",
+    "FP16 SM clock lower than FP32 1410 MHz",
+    "FP16 VRAM = 1039 MB",
+    "After clear = 463 MB \u2014 6 MB more than FP32",
+    "MEM clock stays 1593 MHz after clear"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM persistence after FP16",
+      "description": "463 MB FP16 half-precision data left. 6 MB more than FP32.",
+      "residual_mb": 463
+    }
+  ],
+  "conclusion": "FP16 SM clock 1155 vs FP32 1410. MEM identical. Residual 6 MB higher."
+}

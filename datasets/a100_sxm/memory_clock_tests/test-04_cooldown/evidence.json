@@ -1,0 +1,24 @@
+{
+  "test_id": "A100_MEMORY_CLOCK_TEST_04_COOLDOWN",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "SM clock idle = 210 MHz",
+    "SM clock FP16 = 1155 MHz",
+    "SM clock after clear = 1155 MHz \u2014 DID NOT RETURN TO 210 MHz",
+    "SM stuck at 1155 MHz entire cooldown period",
+    "Ghost power state 2 confirmed",
+    "MEM clock = 1593 MHz throughout \u2014 never changes",
+    "VRAM residual = 463 MB persists through cooldown"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM persistence through cooldown",
+      "description": "463 MB persists through entire cooldown monitoring period.",
+      "residual_mb": 463
+    }
+  ],
+  "ghost_power_finding": "SM stuck at 1155 MHz post-load = Ghost Power State 2. Power 86W at 0pct util indefinitely.",
+  "conclusion": "SM clock does not recover after FP16 load. Ghost power state 2 confirmed persistent."
+}

@@ -1,0 +1,23 @@
+{
+  "test_id": "A100_VRAM_TEST_04_DETAILED_FP32",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After load = 809 MB",
+    "FP32 matmul added 412 MB intermediate tensors \u2014 total 1221 MB",
+    "FP32 peak GPU0 = 113.41W GPU1 = 117.28W",
+    "After clear = 457 MB residual",
+    "Matches test-02 exactly \u2014 fixed CUDA runtime allocation"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence after FP32 compute",
+      "description": "457 MB FP32 tensor data remains after graceful cleanup. Consistent with test-02 \u2014 CUDA runtime fixed allocation regardless of workload size.",
+      "residual_mb": 457,
+      "data_at_risk": "FP32 matrix weights and intermediate matmul tensors"
+    }
+  ],
+  "conclusion": "FP32 compute residual = 457 MB. Same as workload test. CUDA runtime holds fixed allocation."
+}

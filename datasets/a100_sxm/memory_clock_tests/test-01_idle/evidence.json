@@ -1,0 +1,15 @@
+{
+  "test_id": "A100_MEMORY_CLOCK_TEST_01_IDLE",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "SM clock = 210 MHz at idle",
+    "MEM clock = 1593 MHz at idle \u2014 LOCKED at full speed",
+    "pstate = P0 \u2014 highest performance state",
+    "VRAM = 0 MB \u2014 nothing in memory",
+    "Power = 65.73W with 0 MB VRAM \u2014 anomalous",
+    "HBM subsystem active with nothing to move"
+  ],
+  "security_issues": [],
+  "conclusion": "HBM memory clock locked at 1593 MHz 24/7. Root cause of ghost power."
+}

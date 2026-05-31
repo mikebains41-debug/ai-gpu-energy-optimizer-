@@ -1,0 +1,23 @@
+{
+  "test_id": "A100_VRAM_TEST_05_DETAILED_FP16",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After load = 809 MB",
+    "FP16 compute VRAM = 1229 MB",
+    "After clear = 463 MB residual",
+    "FP16 leaves 6 MB MORE than FP32 \u2014 residual tracks with precision type",
+    "FP16 half-precision model weights readable by next tenant"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence after FP16 compute",
+      "description": "463 MB FP16 half-precision tensor data remains after graceful cleanup. 6 MB more than FP32 \u2014 dtype-dependent residual confirmed.",
+      "residual_mb": 463,
+      "data_at_risk": "FP16 half-precision model weights"
+    }
+  ],
+  "conclusion": "FP16 residual = 463 MB. Dtype-dependent \u2014 not a fixed allocation."
+}

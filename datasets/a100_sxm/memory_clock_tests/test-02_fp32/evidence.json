@@ -1,0 +1,22 @@
+{
+  "test_id": "A100_MEMORY_CLOCK_TEST_02_FP32",
+  "date": "2026-05-30",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "MEM clock = 1593 MHz across ALL phases \u2014 idle load compute cooldown",
+    "SM clock changes: 210 idle \u2192 1410 compute \u2192 1155 post-load",
+    "MEM clock NEVER changes regardless of workload",
+    "FP32 peak = 367.89W at 100pct util",
+    "Post-load SM stuck at 1155 MHz \u2014 ghost power state 2",
+    "457 MB VRAM residual"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence after FP32",
+      "description": "457 MB FP32 tensor data readable by next tenant.",
+      "residual_mb": 457
+    }
+  ],
+  "conclusion": "MEM clock locked 1593 MHz all phases. SM clock varies. MEM never does. 457 MB residual."
+}

@@ -1,0 +1,26 @@
+{
+  "test_id": "A100_MEMORY_CLOCK_TEST_05_POST_LOAD_GHOST",
+  "date": "2026-05-31",
+  "pod": "bbcd7cb43196",
+  "findings": [
+    "Heavy FP16: 16384x16384 tensors 100 iterations",
+    "Peak power = 416.19W at 100pct util \u2014 highest FP16 on A100",
+    "Peak SM clock during heavy load = 1185 MHz",
+    "Peak VRAM = 1999 MB",
+    "After compute power drops to 87.39W with 1999 MB loaded and 0pct util",
+    "After clear VRAM = 463 MB",
+    "Post-clear SM clock = 1155 MHz \u2014 never returns to 210 MHz",
+    "300 second ghost monitoring confirms SM stuck at 1155 MHz",
+    "MEM clock = 1593 MHz throughout"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM persistence after heavy FP16",
+      "description": "463 MB of 16384x16384 FP16 tensor data remains. 300 second monitoring confirms permanent until pod restart.",
+      "residual_mb": 463,
+      "monitoring_duration_s": 300
+    }
+  ],
+  "conclusion": "416W peak highest FP16 power on A100. Ghost state 2 persistent 300s. 463 MB permanent until pod restart."
+}
