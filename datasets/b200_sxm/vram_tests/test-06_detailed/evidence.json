@@ -1,0 +1,36 @@
+{
+  "test_id": "B200_VRAM_TEST_06_DETAILED_FULL_PROFILE",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After load = 1010 MB",
+    "Post compute = 1874 MB",
+    "After clear = 728 MB residual",
+    "Power never drops below 196W \u2014 baseline was 144W",
+    "NVML utility blind throughout test \u2014 reports 0 pct even during active compute",
+    "728 MB residual does not vary with compute type on B200 \u2014 fixed at 728 MB"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM residual 728 MB",
+      "description": "728 MB remains after full FP32+FP16 profile. Fixed at 728 MB regardless of compute type \u2014 B200 has a fixed residual unlike A100 which varies 457-465 MB by dtype.",
+      "residual_mb": 728
+    },
+    {
+      "severity": "HIGH",
+      "type": "Power never returns to baseline",
+      "description": "Post-clear power 196-202W vs 144W baseline. +52W permanent elevation. No recovery state observed across any B200 test.",
+      "baseline_w": 144.76,
+      "stuck_w": 196.5,
+      "elevation_w": 51.7
+    },
+    {
+      "severity": "HIGH",
+      "type": "NVML blind throughout full profile",
+      "description": "NVML utility.gpu reports 0 pct for entire test duration. Cannot monitor B200 compute activity with standard tools. This renders DCGM, Datadog, and Prometheus ineffective for B200 real-time monitoring."
+    }
+  ],
+  "conclusion": "B200 full profile confirms: 728 MB fixed residual, no power recovery, NVML completely blind. Most severe monitoring gap of all tested architectures."
+}

@@ -1,0 +1,31 @@
+{
+  "test_id": "B200_VRAM_TEST_02_FP32_LOAD",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After FP32 load = 1874 MB",
+    "FP32 cooldown spike: GPU0 684.71W GPU1 700.74W at 45-48 pct util",
+    "After cooldown = 728 MB residual",
+    "Power does not return to 144W baseline \u2014 stays 196-202W",
+    "728 MB more than A100 457 MB \u2014 B200 FP32 leaves 271 MB more",
+    "Cooldown phase shows anomalous 684-700W at 45-48 pct util \u2014 not 100 pct"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM persistence after FP32",
+      "description": "728 MB FP32 tensor data remains after cleanup. 271 MB more than A100. Highest FP32 residual across all architectures.",
+      "residual_mb": 728
+    },
+    {
+      "severity": "HIGH",
+      "type": "Anomalous cooldown power spike",
+      "description": "Cooldown phase shows 684.71W GPU0 and 700.74W GPU1 at only 45-48 pct utilization. Normal compute would show 100 pct util. This suggests undocumented background GPU activity during cooldown.",
+      "cooldown_gpu0_w": 684.71,
+      "cooldown_gpu1_w": 700.74,
+      "cooldown_util_pct": 48
+    }
+  ],
+  "conclusion": "B200 FP32 residual = 728 MB. Anomalous 684-700W cooldown spike at sub-100 pct util. Power never recovers."
+}

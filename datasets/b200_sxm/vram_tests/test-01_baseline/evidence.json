@@ -1,0 +1,33 @@
+{
+  "test_id": "B200_VRAM_TEST_01_BASELINE",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "Baseline VRAM = 0 MB both GPUs",
+    "After load = 1010 MB both GPUs",
+    "After del + empty_cache() = 628 MB residual",
+    "Power did NOT return to baseline after clear \u2014 stays 196-202W vs 144W baseline",
+    "B200 power elevation post-load = +52W permanently",
+    "628 MB vs A100 457 MB \u2014 B200 leaves 171 MB more"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence",
+      "description": "628 MB tensor data remains after graceful cleanup. 171 MB more than A100. B200 power never returns to baseline after workload.",
+      "residual_mb": 628,
+      "a100_comparison_mb": 457,
+      "h200_comparison_mb": 529,
+      "difference_from_a100_mb": 171
+    },
+    {
+      "severity": "HIGH",
+      "type": "Power never returns to baseline",
+      "description": "Post-clear power = 196-202W vs baseline 144W. Elevation of 52W permanent. Indicates B200 maintains elevated HBM subsystem state indefinitely after workload.",
+      "baseline_w": 144.5,
+      "post_clear_w": 197.0,
+      "elevation_w": 52.5
+    }
+  ],
+  "conclusion": "B200 VRAM residual 628 MB. Power elevation permanent. HBM state does not recover."
+}

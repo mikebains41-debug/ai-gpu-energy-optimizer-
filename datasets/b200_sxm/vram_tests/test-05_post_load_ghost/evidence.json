@@ -1,0 +1,38 @@
+{
+  "test_id": "B200_VRAM_TEST_05_POST_LOAD_GHOST",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After FP32 delete + empty_cache: GPU0 549.84W GPU1 574.84W at 0 pct util",
+    "549-574W at 0 pct util \u2014 most extreme ghost power spike observed across all architectures",
+    "Sustained ghost monitoring 600s: GPU0 196-203W GPU1 202-203W at 0 pct util and 728 MB",
+    "728 MB VRAM residual throughout 600 second monitoring",
+    "NVML utility shows 0 pct throughout \u2014 NVML is blind to actual B200 compute activity",
+    "Power never returns to 144W baseline \u2014 permanently 196-202W"
+  ],
+  "security_issues": [
+    {
+      "severity": "CRITICAL",
+      "type": "Extreme ghost power spike \u2014 549-574W at 0 pct util",
+      "description": "Immediately after FP32 process exits: GPU0 = 549.84W, GPU1 = 574.84W at 0 pct reported utilization. Most extreme ghost power event recorded across all 7 architectures. NVML completely blind to this activity.",
+      "gpu0_ghost_w": 549.84,
+      "gpu1_ghost_w": 574.84,
+      "util_pct": 0,
+      "comparison": "A100 max desync 357W \u2014 B200 exceeds by 217W"
+    },
+    {
+      "severity": "HIGH",
+      "type": "NVML blind throughout",
+      "description": "NVML utility.gpu reports 0 pct during what appears to be active compute on B200. Cannot trust NVML for B200 monitoring. Makes conventional monitoring tools useless for B200."
+    },
+    {
+      "severity": "HIGH",
+      "type": "VRAM residual 728 MB permanent",
+      "description": "728 MB persists through 600 second ghost monitoring. Does not self-clear.",
+      "residual_mb": 728,
+      "monitoring_duration_s": 600
+    }
+  ],
+  "conclusion": "B200 most dangerous architecture tested. 549-574W ghost spike at 0 pct NVML util. NVML completely blind. 728 MB permanent residual. No recovery state."
+}

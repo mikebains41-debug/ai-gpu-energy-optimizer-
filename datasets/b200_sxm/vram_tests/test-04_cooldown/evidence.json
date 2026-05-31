@@ -1,0 +1,30 @@
+{
+  "test_id": "B200_VRAM_TEST_04_COOLDOWN",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "After FP32 cooldown: 728 MB VRAM permanent",
+    "Power stays 196-202W \u2014 never returns to 144W baseline",
+    "Cooldown spike: 684-700W at 45-48 pct util \u2014 anomalous",
+    "Monitoring period: power flat at 196-202W throughout",
+    "B200 has no recovery state \u2014 permanently elevated post-load",
+    "Unlike A100 which has SM clock recovery this B200 shows no recovery path"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "Permanent power elevation post-load",
+      "description": "B200 power permanently stuck at 196-202W after any workload. Baseline is 144W. +52W elevation never recovers. GPU remains in elevated HBM state indefinitely.",
+      "baseline_w": 144.38,
+      "stuck_w": 196.0,
+      "elevation_w": 52.0
+    },
+    {
+      "severity": "HIGH",
+      "type": "VRAM residual permanent through cooldown",
+      "description": "728 MB residual persists through entire cooldown monitoring period. Does not self-clear.",
+      "residual_mb": 728
+    }
+  ],
+  "conclusion": "B200 post-load state is permanent. No recovery to 144W baseline observed. 728 MB VRAM stuck indefinitely."
+}

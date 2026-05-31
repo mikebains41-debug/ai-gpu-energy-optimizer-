@@ -1,0 +1,23 @@
+{
+  "test_id": "B200_VRAM_TEST_03_FP16_LOAD",
+  "date": "2026-05-30",
+  "pod": "f8982abf565d",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After FP16 load = 1302 MB",
+    "After cooldown + clear = 726 MB residual",
+    "Power stays 196-202W vs 144W baseline",
+    "FP16 residual 726 MB vs FP32 728 MB \u2014 nearly identical",
+    "B200 FP16 residual = 269 MB more than A100 FP16 463 MB"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM persistence after FP16",
+      "description": "726 MB FP16 half-precision data remains after cleanup. 269 MB more than A100 FP16 residual of 457 MB. Highest FP16 residual across all architectures.",
+      "residual_mb": 726,
+      "a100_fp16_residual_mb": 463
+    }
+  ],
+  "conclusion": "B200 FP16 residual = 726 MB. Nearly identical to FP32 728 MB. Residual not precision-dependent on B200 unlike A100."
+}
