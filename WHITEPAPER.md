@@ -1074,3 +1074,61 @@ Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
 Duncan BC Canada
 2026-05-31
+
+
+---
+
+## Part VIII — Cross-GPU Isolation Failure (H200 SXM) (2026-05-31)
+
+### Executive Summary
+
+H200 SXM full profile testing revealed a previously undocumented cross-GPU isolation failure. VRAM data from GPU0 computation appeared in GPU1 memory despite GPU1 running no compute workload. This extends the attack surface beyond same-GPU sequential tenant leakage to cross-GPU data exposure within multi-GPU pods.
+
+---
+
+### Critical Finding — Cross-GPU Data Leakage
+
+During full profile testing on H200 SXM x2:
+
+| Phase | GPU0 | GPU1 | VRAM GPU0 | VRAM GPU1 |
+|---|---|---|---|---|
+| Baseline | 74.41W | 72.51W | 1 MB | 1 MB |
+| VRAM Loaded | 118.38W | 115.21W | 18,168 MB | 910 MB |
+| FP32 Compute | 653W | 115W | 19,030 MB | 910 MB |
+| Post FP32 | 120W | 115W | 19,030 MB | 910 MB |
+| After Clear | 119W | 115W | **1,102 MB** | **528 MB** |
+
+GPU1 ran no FP32 compute. GPU1 had 910 MB loaded and sat idle throughout. After graceful cleanup GPU1 retained 528 MB of data that originated from GPU0 computation activity. This is cross-GPU data leakage — GPU0 compute data appearing in GPU1 memory without any GPU1 compute activity.
+
+### Critical Finding — False Clear Signal
+
+The cleanup process exits with code 0 indicating success. 1,630 MB of previous computation data remains in VRAM across both GPUs. Applications have no mechanism to detect incomplete VRAM clearing. Every developer trusts exit code 0 as confirmation of successful cleanup. That trust is misplaced.
+
+### Critical Finding — NVML Blind at 19 GB on H200
+
+With 19,030 MB of VRAM loaded on GPU0, NVML reports util.memory = 0%. NVML blindness is not exclusive to B200. H200 also fails to report accurate memory utilization at high VRAM loads. This means monitoring tools cannot detect when H200 GPUs are carrying large VRAM workloads.
+
+### Finding — Residual Scales With Compute
+
+Full profile testing produces 1,630 MB total residual versus 629 MB from single workload tests. The full profile is 2.6x higher residual than single tests. More compute phases equal more residual. This means the most intensive workloads — the ones containing the most sensitive data — leave the most data exposed.
+
+### Updated Security Matrix — H200
+
+| Issue | Severity | Details |
+|---|---|---|
+| Total VRAM residual | CRITICAL | 1,630 MB after full profile |
+| NVML blind at 19 GB | CRITICAL | util.memory = 0% |
+| Cross-GPU isolation failure | CRITICAL | GPU1 528 MB from GPU0 compute |
+| False clear signal | HIGH | Exit code 0 with 1.6 GB exposed |
+| Residual scales with compute | HIGH | 2.6x higher on full profile |
+| FP16 invisible | MEDIUM | Completes under 10s poll |
+| Ghost power | MEDIUM | 119W vs 74W baseline |
+
+### Implications
+
+The cross-GPU isolation failure means the attack surface is significantly larger than previously documented. It is not only sequential tenants on the same GPU who are at risk. In multi-GPU pods data from one GPU leaks into another GPU within the same allocation. In a cloud environment where multi-GPU pods are common this creates data exposure pathways that no existing security model accounts for.
+
+Author: Manmohan (Mike) Bains
+Contact: mikebains41@gmail.com
+Duncan BC Canada
+2026-05-31
