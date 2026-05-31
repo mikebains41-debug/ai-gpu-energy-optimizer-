@@ -1,0 +1,31 @@
+{
+  "test_id": "H200_VRAM_TEST_03_RESIDUAL",
+  "date": "2026-05-30",
+  "pod": "6e7fb4e76def",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "Compute peak = 696W at 100 pct util \u2014 5207 MB",
+    "After compute power drops to 136W with 5207 MB still loaded \u2014 0 pct util",
+    "Ghost power state 2 confirmed \u2014 elevated idle with VRAM still loaded",
+    "After clear = 629 MB residual",
+    "Power stays at 130-134W after clear \u2014 does not return to 79W baseline",
+    "H200 post-load idle power elevated vs baseline by 50W"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence",
+      "description": "629 MB remains after graceful cleanup. 5207 MB was accessible post-compute at 0 pct util \u2014 entire model weights readable before clear. After clear 629 MB still exposed.",
+      "residual_mb": 629
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "Ghost power state 2 on H200",
+      "description": "Post-compute idle power = 136W vs baseline 79.51W \u2014 56W elevation. Power does not return to baseline after workload. Consistent with A100 ghost power state 2 pattern.",
+      "baseline_w": 79.51,
+      "post_load_w": 136.0,
+      "elevation_w": 56.0
+    }
+  ],
+  "conclusion": "H200 shows same ghost power state 2 pattern as A100. 629 MB residual. Power elevated 56W above baseline post-load."
+}

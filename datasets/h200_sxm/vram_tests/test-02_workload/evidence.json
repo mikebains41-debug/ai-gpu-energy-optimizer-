@@ -1,0 +1,26 @@
+{
+  "test_id": "H200_VRAM_TEST_02_WORKLOAD",
+  "date": "2026-05-30",
+  "pod": "6e7fb4e76def",
+  "findings": [
+    "Baseline VRAM = 0 MB",
+    "After 20000x20000 load = 2055 MB",
+    "Compute peak = 698W at 100 pct util \u2014 5207 MB VRAM",
+    "util.memory = 20-23 pct during compute",
+    "After del + empty_cache() = 629 MB residual",
+    "629 MB vs A100 457 MB \u2014 H200 leaves 172 MB more",
+    "Highest VRAM residual observed across all architectures"
+  ],
+  "security_issues": [
+    {
+      "severity": "HIGH",
+      "type": "VRAM data persistence after compute",
+      "description": "629 MB of 20000x20000 FP32 tensor and matmul data remains in VRAM after graceful cleanup. Highest residual across all tested architectures. H200 HBM3e leaves significantly more uncleared data than A100 HBM2e.",
+      "residual_mb": 629,
+      "a100_comparison_mb": 457,
+      "difference_mb": 172,
+      "compute_peak_w": 698
+    }
+  ],
+  "conclusion": "H200 VRAM residual after compute = 629 MB. 172 MB more than A100. HBM3e architecture retains more data post-cleanup."
+}
