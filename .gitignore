@@ -35,3 +35,12 @@ metrics.json
 *.jpg
 *.jpeg
 *.webp
+scripts/
+*.py
+*.env
+*.key
+*.pem
+*.secret
+config.yaml
+CLAUDE.md
+node_modules/
