@@ -36,7 +36,7 @@ metrics.json
 *.jpeg
 *.webp
 scripts/
-*.py
+# *.py — removed, too broad
 *.env
 *.key
 *.pem
