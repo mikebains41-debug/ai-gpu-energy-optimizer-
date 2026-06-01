@@ -667,7 +667,7 @@ New findings since 2026-05-28:
 4. Two ghost power states identified on A100 SXM
 5. FP16 vs FP32 memory clock behavior documented
 6. Coordinated simultaneous multi-GPU burst confirmed
-7. Serial Alice competitive landscape documented
+
 
 Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
