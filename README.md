@@ -318,3 +318,9 @@ For commercial licensing: mikebains41@gmail.com
 - CEI benchmark calculation and persistence
 
 **Full test suite: 40/40 passing.**
+
+
+## 📊 Security Findings Charts
+
+Interactive charts for all key findings:
+[View Charts](charts/gpu_security_charts.jsx)
