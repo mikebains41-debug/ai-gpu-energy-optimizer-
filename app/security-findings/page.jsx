@@ -31,7 +31,7 @@ export default function SecurityFindings() {
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-          {[1,2,3,4,5,6,7].map(n => (
+          {[1,2,3,4,5,6].map(n => (
             <button key={n} onClick={() => setActive(n)} style={{
               background: active === n ? "#ff2244" : "#1a1a2e",
               color: active === n ? "#fff" : "#888",
@@ -208,7 +208,7 @@ export default function SecurityFindings() {
           </div>
         )}
 
-        {active === 7 && (
+        {false && (
           <div>
             <div style={{ fontSize: 16, fontWeight: "bold", color: "#fff", marginBottom: 4 }}>Valuation Model</div>
             <div style={{ fontSize: 12, color: "#888", marginBottom: 20 }}>AI GPU Energy Optimizer — revenue paths and acquisition value</div>
