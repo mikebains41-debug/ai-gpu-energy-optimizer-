@@ -1,3 +1,13 @@
+## 🔒 Security Findings
+
+**CVE Request 2048350** — VRAM residual data leakage confirmed across A100, H100, H200, and B200 SXM.
+
+👉 [View Interactive Security Findings Charts](https://ai-gpu-energy-optimizer.vercel.app/security-findings)
+
+📄 [Read Full Whitepaper](https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-/blob/main/WHITEPAPER.md)
+
+---
+
 # AI GPU Energy Optimizer
 
 
