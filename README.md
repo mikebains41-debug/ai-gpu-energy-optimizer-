@@ -129,15 +129,30 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 
 ## 📊 Validated Findings
 
-- H100 SXM idle baseline observed around 69–76W
-- H100 sustained load peaks observed near 412W (burst kernel up to 591W recorded separately)
-- A100 SXM cooldown stabilization observed near 66–78W
+**CVE Request 2048350 — VRAM Residual Data Leakage**
+- A100 SXM: 457-465MB residual after graceful PyTorch exit — SIGKILL clears to 0MB
+- H100 SXM: 527MB residual after graceful PyTorch exit
+- H200 SXM: 529-629MB residual single workload, 1630MB full profile
+- B200 SXM: 628-728MB fixed residual regardless of compute precision
+- Cross-GPU isolation failure on H200 — GPU1 retained 528MB from GPU0 despite GPU1 idle
+- NVML reports 0% throughout — invisible to DCGM, Prometheus, Datadog
+- False clear signal — process exits code 0 while 1630MB remains exposed
+
+**Ghost Power**
+- A100 SXM: 146.66W at 0% utilization — architectural confirmed
+- B200 SXM: 144W cold boot, 549-574W ghost spike after process exit at 0% NVML
+- H200 SXM: 79-136W post-load elevation confirmed
+- H100 SXM: Clean — Hopper HBM2e confirmed no ghost power
+- HBM memory clock locked 24/7 — A100 1593MHz, B200 3996MHz — root cause confirmed
+
+**Performance Findings**
+- H100 SXM idle baseline 69-76W
+- H100 sustained load peaks near 412W, burst kernel up to 591W
+- A100 SXM cooldown stabilization near 66-78W
 - RTX 4090 cooldown returned near 20W idle after sustained load
-- Tesla T4 idle baseline observed near 9.6W
-- Ghost power observed up to ~146W at 0% utilization on A100 SXM hardware
-- FP16 tensor workloads showed higher sustained power draw than expected during full tensor utilization
+- Tesla T4 idle baseline near 9.6W
+- FP16 tensor workloads showed higher sustained power draw than FP32
 - CEI benchmarking validated across A100 SXM and H100 SXM GPUs
-- Telemetry synchronization confirmed across repeated sustained-load test runs
 
 ---
 
