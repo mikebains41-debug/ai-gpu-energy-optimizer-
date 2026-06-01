@@ -151,7 +151,7 @@ export default function GPUSecurityCharts() {
             {[
               ["Bug Bounties Now","$50K–$500K","#888"],
               ["SaaS Launch 6-12mo","$10M–$100M","#00ccff"],
-              
+              ["Nelson Partnership","$5M–$50M revenue share","#00ccff"],
               ["Compliance Vertical","$50M–$300M","#ff8800"],
               ["Acquisition","$100M–$1B+","#ff2244"],
             ].map(([path,value,color]) => (
