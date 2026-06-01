@@ -1093,3 +1093,51 @@ Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
 Duncan BC Canada
 2026-05-31
+
+
+---
+
+## Part IX — Prior Art Comparison and Pattern Refinement (2026-05-31)
+
+### LeftoverLocals CVE-2023-4969 — Prior Art
+
+Trail of Bits documented GPU local memory leakage within single GPU kernel invocations in 2023 (CVE-2023-4969). That finding demonstrated that GPU local memory — registers and shared memory — could leak between kernel invocations on the same GPU within a single session.
+
+This research extends the attack surface significantly. The AI GPU Energy Optimizer findings document VRAM persistence across complete process boundaries and tenant allocations — not just kernel invocations. The residual data 457-728MB persists after full process exit, graceful PyTorch cleanup, and empty_cache() calls. This is a substantially larger attack surface affecting every cloud tenant sequentially allocated to the same GPU hardware.
+
+Where LeftoverLocals affected single-session memory within one tenant, the VRAM residual finding affects cross-tenant data exposure at the infrastructure level. The attack surface is orders of magnitude larger.
+
+| Finding | CVE-2023-4969 LeftoverLocals | This Research |
+|---|---|---|
+| Scope | Single GPU session | Cross-tenant boundary |
+| Memory type | Local registers and shared memory | Full VRAM 457-728MB |
+| Persistence | Within kernel invocation | After full process exit |
+| Architectures | Multiple | A100 H100 H200 B200 confirmed |
+| Monitoring blind | Partial | Complete NVML reports 0% |
+| Mitigation | Kernel-level | SIGKILL forces OS reclamation |
+
+---
+
+### Ghost Power Pattern Refinement
+
+Earlier parts of this whitepaper stated that SXM form factor plus HBM memory equals ghost power across all architectures. H100 SXM testing with 11 validated tests disproves the universal pattern. The correct refined pattern is:
+
+| GPU | Generation | HBM | Ghost Power | Notes |
+|---|---|---|---|---|
+| A100 SXM | Ampere | HBM2e | YES 65-146W | Post-load trigger |
+| H100 SXM | Hopper | HBM2e | NO | Clean architecture |
+| H200 SXM | Hopper | HBM3e | YES 79-136W | Elevated post-load |
+| B200 SXM | Blackwell | HBM3e | YES 144-574W | Cold boot trigger worst case |
+
+The ghost power phenomenon is not simply SXM plus HBM. H100 Hopper with HBM2e is clean. The pattern correlates with Ampere and Blackwell generations specifically. H200 Hopper with HBM3e shows ghost power suggesting HBM3e memory architecture may reintroduce the phenomenon that Hopper HBM2e resolved.
+
+This refined pattern is more precise and more defensible. It demonstrates that the finding is architecture and generation specific rather than a universal SXM property.
+
+### Hypothesis
+
+HBM3e memory architecture introduced in H200 and B200 may have reintroduced memory clock locking behavior that H100 HBM2e resolved. The memory clock data confirms HBM3e runs at higher frequencies. H100 HBM2e shows clean idle consistent with a functional low-power memory state. This hypothesis warrants direct investigation by NVIDIA and HBM memory vendors including SK Hynix and Samsung who produce HBM3e.
+
+Author: Manmohan (Mike) Bains
+Contact: mikebains41@gmail.com
+Duncan BC Canada
+2026-05-31
