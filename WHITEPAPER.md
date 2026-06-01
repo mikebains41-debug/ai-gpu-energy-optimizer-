@@ -652,32 +652,6 @@ on all affected NVIDIA GPU architectures.
 
 ---
 
-### Competitive Landscape — Serial Alice
-
-Serial Alice (serialalice.pt) is a Portuguese company building
-blockchain-anchored GPU energy certificates. Their certificate
-sa-cbbd4353511a471e84611aaf35f7c773 shows:
-
-- Source type: simulation — not real hardware
-- Trust score: 0.1 out of 1.0
-- Assurance level: estimated
-- Hardware attestation: none
-- Cross-checks performed: false
-- Agent attested: false
-- Boot verified: false
-
-Their blockchain infrastructure is real and working — Polygon
-mainnet anchor confirmed. The certificate format is solid.
-But the data feeding that infrastructure is simulated.
-
-This GPU Energy Optimizer produces hardware-attested measurements
-that would raise Serial Alice trust scores from 0.1 toward 1.0.
-The combination of hardware-attested measurement plus blockchain
-certificate infrastructure is the complete solution for EU AI Act
-Annex XI compliance.
-
----
-
 ### Research Status — 2026-05-29
 
 Total validated tests: 57
