@@ -780,8 +780,6 @@ memory.used against utilization.memory at high frequency.
 This makes it the only tool capable of detecting VRAM desync,
 VRAM residual, and the associated security risks.
 
-Verda bare metal testing pending to confirm findings are
-architectural and not container artifacts.
 
 Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
@@ -811,7 +809,6 @@ tools that depend on it.
 | B200 | Blackwell | 716 MB | Stays elevated |
 
 All measurements hardware-attested on RunPod containerized environment.
-Verda bare metal testing pending to confirm architectural origin.
 
 ---
 
