@@ -428,10 +428,10 @@ The true efficiency of A100 SXM is 27.5% worse than any published figure.
 
 ---
 
-## First Hardware-Attested Scope 1-2-3 GPU Carbon Accounting
+## First Hardware-Measured Scope 1-2-3 GPU Carbon Accounting
 
 All numbers derive from proven hardware measurements.
-This is the first hardware-attested full scope GPU carbon analysis.
+This is the first hardware-measured full scope GPU carbon analysis.
 
 ### Ghost Power Carbon Impact Per GPU Per Year
 
@@ -488,7 +488,7 @@ Scope 3 is 68.66% of total on global average grid
 | Saudi Arabia | Vision 2030 | AI efficiency |
 | Australia | Mandatory PUE 1.4 | July 2025 |
 
-All compliance reports produced are hardware-attested not self-reported.
+All compliance reports produced are based on hardware-measured telemetry.
 
 ---
 
@@ -503,7 +503,7 @@ New findings since initial publication:
 1. Ghost power confirmed on B200 Blackwell from cold boot
 2. FP16 complete telemetry blackout on B200
 3. Spontaneous autonomous 195W power burst at 0% utilization
-4. First hardware-attested Scope 1-2-3 GPU carbon analysis
+4. First hardware-measured Scope 1-2-3 GPU carbon analysis
 5. True CEI 27.5% worse than reported
 6. 14 jurisdiction compliance coverage
 7. H100 SXM confirmed clean — no ghost power
@@ -808,7 +808,8 @@ tools that depend on it.
 | H200 SXM | Hopper | 382 MB | Stays elevated |
 | B200 | Blackwell | 716 MB | Stays elevated |
 
-All measurements hardware-attested on RunPod containerized environment.
+All measurements hardware-measured on RunPod containerized environment.
+Verda bare metal testing pending to confirm architectural origin.
 
 ---
 
@@ -1112,3 +1113,64 @@ Author: Manmohan (Mike) Bains
 Contact: mikebains41@gmail.com
 Duncan BC Canada
 2026-05-31
+
+
+---
+
+## Part XI — Hardware-Attested Validation: Intel TDX Enclave + On-Chain Anchoring (2026-06-12)
+
+### Executive Summary
+
+The ghost-power finding was independently reproduced inside a verified Intel TDX confidential-computing enclave on an NVIDIA H200, in collaboration with Serial Alice (Sirius GreenTech). Measurement sample hashes were cryptographically bound into the hardware TDX quote, and the resulting certificates anchored on the Polygon blockchain. This is the first reproduction of the finding inside a cryptographically verified hardware environment with a tamper-evident, publicly verifiable on-chain record — a step beyond the software-only self-reported telemetry used in all prior parts.
+
+This section is deliberately precise about the boundary of what is and is not attested.
+
+### What Was Attested — The Execution Environment
+
+| Property | Status | Evidence |
+|---|---|---|
+| Intel TDX enclave genuine | Verified | TD quote verified, MRTD allowed |
+| TCB status | UpToDate | Intel-PCS collateral |
+| Measurement bound to quote | Yes | Sample hash in REPORT_DATA, tee_quote_bound = true |
+| Certificate integrity | Signed | Ed25519 |
+| Public verifiability | Anchored | Polygon (blocks 88401586, 88402187) |
+
+The samples cannot be reordered, trimmed, or altered after the fact without breaking the binding to the hardware quote. The record is tamper-evident.
+
+### Attested H200 Results
+
+| Measurement | Value | Environment |
+|---|---|---|
+| Idle baseline | 80.3 W | H200, verified TDX enclave |
+| Full load | 592.84 W | H200, verified TDX enclave |
+| Ghost fraction | 13.6% | idle / load |
+
+Certificates are verifiable on Polygon.
+
+### What Is NOT Yet Attested — The Honest Boundary
+
+The trust score reached 0.8 (the hardware_attested tier) entirely from TEE evidence — TD quote verification and MRTD allowance. The energy measurement *source* is not yet independently attested:
+
+| Evidence category | Status |
+|---|---|
+| TEE attested (quote verified) | PASS |
+| TEE MRTD allowed | PASS |
+| Signed exporter | FAIL — "no exporter evidence" |
+| Dual source | Absent |
+| Machine fingerprint match | Absent |
+
+The power readings are NVML passthrough captured inside the enclave. Therefore:
+
+- **Supported:** these measurements were executed inside a genuine, verified Intel TDX enclave on H200, tamper-evident and anchored on-chain.
+- **Not yet supported:** "hardware-attested energy measurements." The measurement *environment* is hardware-attested; the measurement *source* (a signed energy exporter) is the next milestone.
+
+### Significance and Next Step
+
+This establishes a verifiable hardware-rooted execution environment for the ghost-power finding — distinct from, and stronger than, the hardware-measured software telemetry in all prior parts. Closing the signed-exporter gap is the milestone that extends attestation from the environment to the energy data itself.
+
+Collaboration: Serial Alice / Sirius GreenTech (Nelson Vicente). Research initiated by Mike Bains; Serial Alice provided the TDX attestation and on-chain anchoring layer.
+
+Author: Manmohan (Mike) Bains
+Contact: mikebains41@gmail.com
+Duncan BC Canada
+2026-06-12
