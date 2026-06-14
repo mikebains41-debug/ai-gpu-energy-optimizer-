@@ -809,7 +809,6 @@ tools that depend on it.
 | B200 | Blackwell | 716 MB | Stays elevated |
 
 All measurements hardware-measured on RunPod containerized environment.
-Verda bare metal testing pending to confirm architectural origin.
 
 ---
 
