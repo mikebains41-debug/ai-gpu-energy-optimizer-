@@ -111,7 +111,7 @@ This localizes the root cause to PyTorch's CUDA memory allocator: PyTorch mainta
 |---|---|---|---|
 | A100 SXM | HBM2e | 457–465 MB | 0 MB |
 | H100 SXM | HBM2e | 457 MB | not tested |
-| H200 SXM | HBM3e | 529–629 MB (single workload); 1,630 MB (full multi-phase profile) | not tested |
+| H200 SXM | HBM3e | 527–629 MB (single workload); 1,630 MB (full multi-phase profile) | not tested |
 | B200 SXM | HBM3e | 628–728 MB (fixed regardless of precision) | not tested |
 | A100 PCIe | GDDR6 | 0 MB | — |
 | T4 | GDDR6 | 0 MB | — |
@@ -196,6 +196,12 @@ A subset of the ghost power finding (H200 idle and full-load power measurements)
 
 This attestation work applies to the energy/power finding only. It has no bearing on the VRAM residual finding, and should not be read as extending hardware attestation to that result.
 
+### Additional Finding: Detecting Covert Workloads via Power Fingerprint
+
+A follow-up test using the same TDX-attested H200 setup examined a different question: can an unauthorized background process hide inside an otherwise legitimate, certified workload? A baseline workload was measured at 657.4W ("clean"). The same workload was then re-run with a covert background process injected, consuming approximately 15% of GPU capacity — representative of an unauthorized workload such as cryptocurrency mining running alongside a tenant's legitimate job. Power draw rose to 663.2W ("with covert process"), a difference of 5.8W, captured and certified by two separate attestation certificates anchored at the same Polygon block.
+
+This is a single test on one workload pair and should be read as preliminary, not as a general detection threshold — we do not yet know how this signal scales with covert workload size, varies across GPU architectures, or holds up against a process specifically designed to mask its power signature. It is included here because it is hardware-attested and represents a distinct, additional security application of power telemetry beyond the ghost power and VRAM residual findings described elsewhere in this document: where ghost power and VRAM residual concern data leakage and energy accounting, this finding concerns detecting unauthorized compute activity hidden within an apparently normal, certified workload.
+
 ---
 
 ## 7. Limitations and Priority Next Steps
@@ -213,6 +219,8 @@ This research is hardware-measured and reproducible, but several gaps remain ope
 5. **Fleet-level cost projections (Section 4) assume a 24/7, fleet-wide duty cycle** that has not been validated against real production fleet telemetry. These figures should be treated as a theoretical ceiling, not an expected value, until real-world sampling data exists.
 
 6. **The cross-GPU isolation finding (Section 3.3) is based on a single test profile** on one 2x H200 pod and has not yet been replicated across other multi-GPU configurations or architectures.
+
+7. **The covert-process detection finding (Section 6) is based on a single test** with one covert workload size (~15% GPU) on one architecture (H200). It is not yet known how the detectable power delta scales with smaller covert workloads, varies across GPU architectures, or holds up against processes deliberately designed to minimize their power footprint.
 
 ---
 
@@ -282,7 +290,7 @@ All testing to date has been conducted independently and at personal expense.
 |---|---|---|---|---|---|
 | A100 SXM | HBM2e | 457–465 MB | 357W | No | Partial |
 | H100 SXM | HBM2e | 457 MB | 86W | No | Partial |
-| H200 SXM | HBM3e | 529–1,630 MB | 136W | No | Partial |
+| H200 SXM | HBM3e | 527–1,630 MB | 136W | No | Partial |
 | B200 SXM | HBM3e | 628–728 MB | 549–574W | Yes (FP16 complete blackout) | None |
 | A100 PCIe | GDDR6 | 0 MB | 0W | No | Full |
 | T4 | GDDR6 | 0 MB | 0W | No | Full |
