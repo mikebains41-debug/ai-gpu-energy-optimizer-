@@ -1,1175 +1,295 @@
-# White Paper: The Ghost Power Anomaly – Exposing Hidden GPU Energy Waste and the Case for a New Observability Standard
+# The Ghost Power Anomaly and VRAM Residual Vulnerability: Hardware-Measured Evidence of GPU Telemetry Failure Across Seven NVIDIA Architectures
 
-**Author:** Mike Bains  
-**Date:** May 19, 2026  
-**Project:** AI GPU Energy Optimizer  
-**Contact:** mikebains41@gmail.com  
-**Repository:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-  
-**Live API:** https://ai-gpu-brain-v3.onrender.com/docs  
+**Author:** Manmohan (Mike) Bains
+**Original research period:** May 19 – June 12, 2026
+**Document revision:** v2 — restructured June 2026
+**Contact:** mikebains41@gmail.com
+**Repository:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+**Live API:** https://ai-gpu-brain-v3.onrender.com/docs
+**Related:** CVE Request 2048350 (filed with MITRE, 2026-05-31)
+
+> **Revision note:** This document consolidates and supersedes the original multi-part research log (Parts I–IX, XI), which was published incrementally between May 19 and June 12, 2026. The underlying findings are unchanged; this revision removes redundant executive summaries, tightens claims that the original log stated more strongly than the evidence supports, and adds an explicit limitations section. Anyone citing specific figures should treat this version as authoritative over the original dated parts.
 
 ---
 
 ## Executive Summary
 
-Standard GPU telemetry – `nvidia-smi`, Prometheus NVML exporter, and cloud dashboards – assumes that low reported utilization equals low power draw and no useful work. This assumption is **false**. In controlled hardware tests on NVIDIA A100 SXM GPUs, we measured a GPU drawing **146.66 watts** while reporting **0% utilization** for extended periods (11+ minutes). We call this a **GHOST anomaly** – sustained elevated power during reported idle/cooldown windows, leading to over‑provisioned clusters, wasted energy, and incorrect scaling decisions.
+Standard GPU telemetry — `nvidia-smi`, the NVML library underlying nearly every monitoring tool (DCGM, Prometheus exporters, Datadog, cloud billing dashboards), and the cloud dashboards built on top of it — assumes that reported utilization is a reliable proxy for GPU activity and that VRAM is fully reclaimed when a process exits. Across 72+ hardware tests on seven NVIDIA GPU architectures, both assumptions were found to be false in measurable, reproducible ways.
 
-Furthermore, NVIDIA’s own documentation confirms that **profiling shared GPU resources (MIG partitions) is not supported**, creating a blind spot in multi‑tenant cloud environments where telemetry desynchronisation (DESYNC) can hide silently.
+Two distinct findings emerged, one concerning energy observability and one concerning security:
 
-To address this, we have developed an open‑source GPU Energy Optimizer that detects GHOST and DESYNC anomalies in real time, and we propose the **Compute Energy Intensity (CEI)** benchmark – a standardised measure of FLOPs per joule – to enable transparent, cross‑provider energy efficiency comparisons.
+**Ghost power:** GPUs in the SXM form factor draw substantial, sustained power while NVML reports 0% utilization. This ranges from 65–146W on A100 SXM (Ampere) to as high as 549–574W on B200 (Blackwell) immediately after a workload exits. The magnitude of this effect correlates with HBM memory clock frequency, which does not scale down at idle on affected architectures. Critically, H100 SXM (Hopper, HBM2e) shows no ghost power at all, while H200 SXM (also Hopper, but HBM3e) does — indicating the effect is tied to specific HBM generations rather than being a universal property of the SXM form factor.
 
-This white paper presents the complete methodology, statistical validation, and business case for deploying the GPU Energy Optimizer at scale, and calls for partnerships to validate across 500–1,000 GPUs.
+**VRAM residual (the security-relevant finding):** After a process exits using the standard PyTorch cleanup sequence (`del`, `gc.collect()`, `torch.cuda.empty_cache()`), 382–728MB of VRAM remains allocated and unreadable as "in use" by NVML, which reports 0% memory utilization throughout. This residual is confirmed across A100, H100, H200, and B200 SXM architectures, and is absent on every PCIe architecture tested (A100 PCIe, T4, RTX 4090). A hard `SIGKILL` forces the OS to zero the memory; a graceful exit does not. On H200, a related cross-GPU effect was also observed: compute activity on one GPU left 528MB of residual data on a second GPU in the same pod that ran no compute workload at all.
 
----
+In a multi-tenant cloud environment, where physical GPU hardware is reassigned between customers sequentially, this residual is — in principle — readable by the next tenant assigned to the same hardware, using standard memory inspection. **This document does not yet include a proof-of-concept demonstrating actual data recovery from another tenant's residual memory; that is identified as the highest-priority next step in the Limitations section below.** Absent that, this finding should be read as a confirmed, hardware-measured observability and memory-management defect with a plausible but not yet directly demonstrated data-exposure pathway.
 
-## 1. The Problem: GPU Telemetry Lies
+Both findings are invisible to every monitoring tool built on NVML, including DCGM, Prometheus, Datadog, and cloud provider billing/security dashboards.
 
-Production monitoring tools report **utilization percentage** as a proxy for activity. However, we discovered that an NVIDIA A100 SXM can draw **146.66W** while reporting **0% utilization** across all sampling rates (1s, 100ms, 10ms). This “GHOST anomaly” means:
-
-- **Hidden energy waste** – you pay for compute you cannot see or schedule.
-- **Incorrect autoscaling** – the orchestrator believes the GPU is idle and adds more pods, wasting capacity.
-- **Faulty benchmarking** – any energy efficiency calculation (e.g., FLOPs per watt) that relies on reported utilization is wrong.
-
-The root cause is a combination of:
-- GPU locked in **P0 performance state** after a workload.
-- **Memory clock fixed at 1593 MHz** (full speed) even during idle.
-- Hypervisor restrictions that block `nvidia-smi -pm` (persistence mode disable) and `nvidia-smi -pl` (power capping).
-- **NVML reports 0% utilization** while hardware remains active, causing telemetry desynchronisation.
+A subset of the ghost power finding (H200, idle and full-load power draw) was independently reproduced inside a verified Intel TDX confidential-computing enclave in collaboration with Serial Alice (Sirius GreenTech), with measurement hashes cryptographically bound to the hardware attestation quote and anchored on the Polygon blockchain. This is described in full, with an explicit statement of what is and is not attested, in Section 6.
 
 ---
 
-## 2. Methodology: 35 Validated Hardware Tests
+## 1. Methodology
 
-All tests were conducted on **RunPod** (NVIDIA A100 SXM 40GB and H100 SXM) at personal expense, with no sponsorship. The test harness used `pynvml`, NVML, and custom Python agents. We executed **24 A100 tests** and **11 H100 tests**, covering:
+All tests were conducted independently, at personal expense, with no sponsorship, primarily on RunPod containerized GPU infrastructure (NVIDIA A100, H100, H200, and B200 SXM; A100 PCIe, T4, and RTX 4090 for PCIe comparison). One result set (Section 6) was additionally validated inside a Phala Network TDX confidential VM in collaboration with Serial Alice/Sirius GreenTech.
 
-- Idle baselines (10–15 minutes)
-- Ghost power detection (102W, then 146.66W peak)
-- Sampling rate sensitivity (1s, 100ms, 10ms – blind spot persists)
-- Load ramps (0–100% matrix multiplication)
-- CEI compute and efficiency (FP32/FP16, 2048–8192 matrix sizes)
-- Normality tests (Shapiro‑Wilk, p=0.000000)
-- Log‑log scaling (peak at 4096×4096)
-- Extended ghost power cooldown (10+10 minutes, never returned to true idle)
-- Remediation attempts (blocked by hypervisor)
-- P‑state and memory clock retention (P0 + 1593 MHz locked post‑load)
+The test harness used NVML (via `nvidia-smi` subprocess calls; `pynvml` was used only inside the TDX environment, per its provider's stack), custom Python workload generators (PyTorch matrix operations at varying precision and size), and continuous power/utilization/memory polling at sampling intervals from 10ms to 1s.
 
-All raw logs, JSON summaries, and screenshots are available in the private repository (access on request). Public test results are queryable via the live API.
+As of June 12, 2026: **72+ validated tests across 7 architectures**, covering idle baselines, load ramps, sampling-rate sensitivity, sustained ghost-power windows, VRAM allocation/residual tests with both graceful and forced (`SIGKILL`) process termination, cross-GPU isolation tests, and one TDX-attested reproduction. All raw logs, JSON summaries, and screenshots are maintained in a private repository (available on request); a public subset is queryable via the live API.
+
+**A note on the testing environment:** all results in Sections 2–5 were collected on containerized cloud infrastructure (RunPod), not bare physical hardware with no hypervisor layer. The findings are hardware-measured (the power and memory figures come directly from NVML/the GPU, not from a simulation), but independent confirmation on true bare-metal hardware — with no virtualization layer between the test process and the silicon — has not yet been completed and is identified as a priority in Section 7.
 
 ---
 
-## 3. Key Findings
+## 2. The Ghost Power Anomaly
 
-### 3.1 GHOST Power: 146.66W at 0% Utilization
+### 2.1 Definition and Initial Discovery
 
-| Test | Duration | Peak Power | Reported Util | Status |
-|------|----------|------------|---------------|--------|
-| Test 02 | 66 samples | 102.14W | 0% | GHOST confirmed |
-| Test 13 | 660 seconds | 146.66W | 0% | GHOST confirmed |
-| Test 14 | 1200 seconds | 146.66W | 0% | Never dropped to true idle |
+The anomaly: a GPU reporting 0% utilization while drawing power substantially above its true idle floor, for sustained periods (confirmed up to 20 minutes continuous in early A100 testing, and indefinitely / without recovery on B200 — see 2.4).
 
-**Idle floor (true)** = 66–68W. Ghost power above idle = **+79.66W unexplained**.
+On A100 SXM, the true idle floor (confirmed across multiple independent idle-baseline tests) is 65–69W. After a heavy workload (FP16 or FP32 matrix operations) completes, power was repeatedly measured at 146.66W while NVML continued to report 0% utilization — a persistent +79.66W gap with no corresponding utilization signal, lasting in one test 20 continuous minutes without returning to the true idle floor.
 
-**Cost impact:** At a fleet of 500 GPUs, this hidden waste amounts to approximately **$150/day** in electricity and cooling alone (assuming $0.10/kWh and 24/7 operation). Scheduling inefficiencies add significantly more.
+### 2.2 Cross-Architecture Comparison
 
-### 3.2 MIG Observability Gap – Confirmed by NVIDIA
+| GPU | Generation | HBM | Idle Floor | Ghost Power | Trigger | NVML Behavior |
+|---|---|---|---|---|---|---|
+| T4 | Turing | GDDR6 | 9.5W | None | — | Accurate |
+| RTX 4090 | Ada | GDDR6X | 20W | None | — | Accurate |
+| A40 | Ampere | GDDR6 | 30.4W | None | — | Accurate |
+| A100 PCIe | Ampere | HBM2e | 47W | None | — | Accurate |
+| A100 SXM | Ampere | HBM2e | 65–69W | 79.66W excess (→146.66W) | Post-load | Reports 0% util throughout |
+| H100 SXM | Hopper | HBM2e | 69.5W | **None** | — | Accurate |
+| H200 SXM | Hopper | HBM3e | ~74W | 79–136W excess | Post-load | Reports 0% util throughout |
+| B200 SXM | Blackwell | HBM3e | 143–145W | Up to 574W spike on exit | **Cold boot** (no workload needed) | Reports 0% util; FP16 workloads completely invisible |
 
-NVIDIA’s official MIG user guide states:
+The clean result on H100 SXM is the most important data point in this table: it rules out "SXM form factor" or "presence of HBM" as the explanation on its own, since H100 SXM has both and shows no ghost power. The pattern that best fits the data is HBM-generation-specific: HBM2e on H100 is clean; HBM2e on A100 (an earlier, lower-clocked implementation) is not; HBM3e on both H200 and B200 is not.
 
-> *“Profiling of shared GPU resources is not supported. This is an existing limitation.”*
+### 2.3 Root Cause: Memory Clock Behavior
 
-In multi‑tenant cloud environments (Google Cloud, RunPod, etc.) where MIG partitions are common, telemetry from individual partitions can be desynchronised or incomplete. Our DESYNC detection (high power, near‑zero utilization) and GHOST detection directly address this blind spot.
+Detailed clock telemetry on A100 SXM (138 samples across idle, load, and post-load states) shows that while SM (streaming multiprocessor) clock scales normally with workload — dropping to ~210MHz at idle, rising to 1100–1400MHz under load — memory clock remained fixed at 1593MHz in every single sampled state, including full idle.
 
-### 3.3 CEI Benchmark: A Standard for Compute Energy Intensity
-
-We define **Compute Energy Intensity (CEI)** as:
-
-
-**Reference value (sustained FP32, A100 SXM):** 5.68 B FLOPs/J (Test 24, 900 seconds, 90,000 iterations).
-
-| Tier | CEI (FLOPs/J) |
-|------|----------------|
-| Excellent | > 10 B |
-| Good | 5–10 B |
-| Moderate | 1–5 B |
-| Poor | < 1 B |
-
-A100 SXM baseline = **Good** tier. H100 efficiency is 45% higher (76.5 vs 52.6 GFLOPS/W).
-
-### 3.4 Statistical Confidence
-
-- Test 05: relative error **0.15%**, 95% CI ±1.153e+11
-- Test 09: Shapiro‑Wilk p = **0.000000** (non‑normal distribution, as expected)
-- 24 A100 tests: **22 passed, 1 blocked (hypervisor), 1 inconclusive (hypervisor ignored command)**
-
-## 3.5 Firmware / Hypervisor Bug: The True Root Cause
-
-After 40+ tests, we isolated the root cause of the GHOST anomaly to a **firmware-level bug in the A100 architecture**, exacerbated by cloud hypervisors that block tenant remediation.
-
-| Component | Description |
-|-----------|-------------|
-| **The Glitch** | After heavy FP16 matrix operations, the GPU locks into P0 state (1593 MHz) even when utilization drops to 0%. |
-| **The Bleed** | True idle baseline is 67.1W. Stuck GPU draws 146.66W — a **79.5W ghost penalty** per GPU. |
-| **The Block** | Standard fixes (`nvidia-smi -pm 0`, P-state reset) are blocked by hypervisors. Tenants cannot remediate without specialized tools. |
-
-**H100 proves it's fixable:** identical test suite on H100 showed clean idle (no ghost power). This is **not physics** — it is firmware debt.
-
-**Impact:** 1,000 A100s → $21k/year wasted. 100k A100s → $2.1M/year. This is fixable.
-
----
-
-## 4. The GPU Energy Optimizer Solution
-
-### 4.1 Practical Application: Reducing Idle Waste in Alternating GPU/CPU Pipelines
-
-Many AI inference and simulation pipelines alternate between GPU compute and CPU post‑processing (e.g., inference → business logic → next batch). During CPU phases, standard telemetry reports 0% GPU utilization, creating a blind spot. However, our measurements show that GPUs often remain in a high‑power state (P0, memory clock locked), drawing 70–146 W even when “idle”. This hidden waste increases energy costs and reduces effective cluster throughput.
-
-The GPU Energy Optimizer directly addresses this by:
-- **Quantifying true idle power** during CPU phases, using physics‑based DESYNC/GHOST detection.
-- **Enabling overlap strategies** such as CUDA streams (non‑blocking kernel launches), double‑buffering (overlap H2D/D2H copies with compute), and pinned memory for asynchronous transfers.
-- **Measuring CEI (FLOPs/J)** before and after optimization to validate gains.
-
-In a representative pipeline (GPU inference → CPU processing), applying stream overlap and double‑buffering reduced measured idle energy consumption by ~40% and improved overall CEI by 25% (observed in pilot). These techniques are particularly valuable in MIG‑partitioned environments, where NVIDIA’s own profiling tools cannot monitor shared resources – yet our optimizer fills the gap, enabling continuous efficiency tuning.
-
-Thus, the optimizer is not merely a diagnostic tool; it provides actionable insights to reduce idle waste, lower carbon footprint, and increase ROI for any fleet running mixed GPU/CPU workloads.
-
-
-The open‑source **AI GPU Energy Optimizer** (v1.0.0) provides:
-
-- **Real‑time GHOST and DESYNC detection** (rules‑based, physics‑validated)
-- **CEI benchmarking** across 17+ cloud providers (AWS, GCP, Azure, RunPod, CoreWeave, etc.)
-- **Kubernetes / Run:ai integration** for automatic workload eviction on anomaly
-- **Grafana + Prometheus** observability stack
-- **Lightweight deployment** via `docker-compose up`
-
-All 40 platform validation tests pass. Live API: [ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs)
-
----
-
-## 5. Business Case & Call to Action
-
-**Immediate opportunity:** Cloud providers (Google Cloud, AWS, etc.) and large GPU fleets are losing money every day to ghost power and telemetry desync. Our open‑source tool already detects these anomalies; what we need is **sponsored compute** (100–500 GPUs) to validate the system at scale and prove the ROI.
-
-**We are seeking:**
-
-- **GPU cloud partnerships** – sponsored compute on A100/H100 (including MIG partitions) to run extended validation.
-- **Research collaborations** – with academic or industry labs focusing on GPU telemetry, energy efficiency, or scheduling.
-- **Observability experts** – to harden Prometheus exporters and Grafana dashboards for enterprise deployment.
-
-All tests to date were conducted independently at personal expense. We are ready to scale.
-
-**Contact:** mikebains41@gmail.com  
-**GitHub:** [mikebains41-debug/ai-gpu-energy-optimizer-](https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-)  
-**Live API:** [https://ai-gpu-brain-v3.onrender.com/docs](https://ai-gpu-brain-v3.onrender.com/docs)
-
----
-
-## Appendix: Complete Test Summary (24 A100 Tests)
-
-| Test | Name | Key Finding |
-|------|------|--------------|
-| 01 | Idle Baseline | 62.7W @ 0% util |
-| 02 | Ghost Power | 102.14W @ 0% util – CONFIRMED |
-| 03 | Sampling Rate | Blind spot at 1s, 100ms, 10ms |
-| 04 | Load Ramp | 357.7W severe lag at 0% util |
-| 05 | CEI Compute 2048 | 14.35 TFLOPS, 0.15% error |
-| 06 | CEI Efficiency 2048 | 52.6 GFLOPS/W |
-| 07 | CEI Compute 4096 | 15.3 TFLOPS |
-| 08 | FP16 Tensor Core | 231.08 TFLOPS – 15 min sustained |
-| 09 | Normality Test | p=0.000000, skew=-47.15 |
-| 10 | Log-Log Scaling | Peak at 4096 (17.79 TFLOPS) |
-| 11 | Observability Validation | 3,044 samples, burst 396-406W |
-| 12 | 8192 Load Test | 305-342W @ 100% util |
-| 13 | Load + Cooldown 5+6 min | **146.66W peak @ 0% util** |
-| 14 | Ghost Power 10+10 min | **146.66W peak, never true idle** |
-| 15 | Idle Baseline 15 min | 67.1W floor, 27C |
-| 16 | Remediation Attempt | BLOCKED (hypervisor) |
-| 17 | P-State Retention | P0 + 1593 MHz locked post‑load |
-| 18 | Power vs Matrix Size | Peak 339.1W at 6144x6144 |
-| 19 | FP16 10 min Continuous | 482.7W avg, 1.03e+15 FLOPs |
-| 20 | FP16 vs FP32 Quick | FP16 4.7x faster, FP32 ghost 137W |
-| 21 | FP16 vs FP32 Full | FP16 3.0x faster, mismatch persists |
-| 22 | Persistence Disable | INCONCLUSIVE (hypervisor ignored) |
-| 23 | Idle Baseline Confirm | 67.1W confirmed |
-| 24 | CEI Validation 15 min | **5.68B FLOPs/J – CEI reference** |
-
-**22 complete / 1 blocked / 1 inconclusive = 24 A100 tests**  
-**11 H100 tests** also completed (idle ~69.5W, peak ~412W, no ghost power detected).
-
----
-
-**End of White Paper – May 19, 2026**
-
----
-
-## 6. Companion Tools (Open Source — v2.0 Roadmap)
-
-### 6.1 CLI Ghost Power Detector
-A standalone Python script any GPU engineer can run with one command. No API, no database, no setup required.
-
-```bash
-pip install pynvml && python ghost_detect.py
-
-### 6.2 Energy Cost Calculator for AI Inference
-Input a model name, GPU type, and workload size and get dollar per million tokens including hidden ghost power waste. The only calculator that accounts for telemetry desynchronization and idle-state power bleed. Supports A100, H100, and 17+ cloud providers.
-
-### 6.3 Lightweight Prometheus + Grafana Dashboard
-A simple docker-compose deployment using open-source Grafana templates for GPU fleet monitoring. Full ghost power and DESYNC observability in one command. Pre-built dashboards for power timeline, CEI heatmap, and anomaly alerts. No complex API required.
-
-All three tools will be released as open source under v2.0 following Phase 2 validation.
-
-
----
-
-## Part II — B200 Blackwell Architecture Findings (2026-05-28)
-
-### Executive Summary
-
-The NVIDIA B200 Blackwell GPU exhibits ghost power from cold boot
-at 143-145W with zero utilization and zero processes running.
-This is more severe than the A100 SXM finding where ghost power
-required a prior workload to trigger.
-
-### Critical New Findings
-
-**Finding 1 — Ghost Power From Cold Boot**
-B200 draws 143-145W at 0% utilization from first boot.
-No workload trigger required.
-The B200 idle floor IS the ghost power floor.
-Combined 2x B200 ghost power: 288W at 0% utilization.
-
-**Finding 2 — FP16 Complete Telemetry Blackout**
-FP16 tensor core workloads report 0% utilization throughout.
-GPU clearly computing — SM clock at 1965 MHz confirms it.
-This is a complete NVML blind spot on B200 Blackwell.
-Schedulers, billing systems, and carbon accounting tools
-are completely blind to FP16 workloads on B200.
-
-**Finding 3 — Spontaneous Power Burst**
-At 20:30:08 UTC with zero workload running GPU 0 jumped
-from 144W to 195.72W and GPU 1 from 145W to 181.95W.
-SM clock activated to 1965 MHz.
-Utilization still reported 0%.
-This autonomous GPU activity is invisible to all monitoring systems.
-
-**Finding 4 — No Cooldown Period**
-B200 returns to ghost power floor instantly after load.
-No gradual decay. No thermal recovery period.
-Ghost power is permanent regardless of workload history.
-
-**Finding 5 — Hardware Power Asymmetry**
-GPU 1 consistently draws 1.00-2.00W more than GPU 0.
-Confirmed across 370 samples and all workload types.
-Per-GPU measurement is essential — pod-level measurement is insufficient.
-
-**Finding 6 — PyTorch Ecosystem Not Ready**
-PyTorch 2.4.1 does not support B200 CUDA sm_100.
-Minimum version required: 2.11.0+cu128.
-The B200 software ecosystem was not mature at time of testing.
-
-### Architecture Comparison
-
-| GPU | Idle Floor | Ghost Trigger | FP16 Telemetry |
+| GPU | Memory Clock | SM Clock (idle) | Ghost Power |
 |---|---|---|---|
-| T4 | 9.5W | None | Accurate |
-| A100 PCIe | 47W | None | Accurate |
-| H100 SXM | 69.5W | None | Accurate |
-| A100 SXM | 67.1W | Post workload | Accurate |
-| B200 | 143-145W | Cold boot | Complete blackout |
+| A100 SXM | 1593 MHz (constant) | 210 MHz | 65–146W |
+| B200 | 3996 MHz (constant) | 120 MHz | 143–574W |
 
-### Implications
+B200's memory clock is roughly 2.5x A100's, and its ghost power is roughly 2–4x higher depending on which B200 measurement is used for comparison. This is suggestive of a relationship between memory clock frequency and ghost power magnitude, but it is **based on two architectures and should not be read as a confirmed general law.** A controlled test directly varying memory clock on a single architecture (if exposed by the vendor) or additional architecture data points would be needed to establish this more rigorously. We flag this explicitly because the original research log described this as "a direct causal relationship confirmed across two architectures," which overstates what two data points can establish.
 
-The B200 Blackwell architecture represents a regression in
-telemetry reliability compared to H100 SXM which showed
-no ghost power and accurate utilization reporting.
+A separate single-data-point observation supports the "memory clock, not data content" framing: ghost power magnitude was unchanged whether 807MB of VRAM was actively loaded or the GPU held 0MB — i.e., the effect does not appear to depend on what is stored in memory, only on the memory subsystem's clock state. This too is one comparison, not an exhaustive test, and should be read as preliminary.
 
-The FP16 telemetry blackout is particularly significant because
-B200 is marketed primarily as an inference GPU — and inference
-workloads typically use FP16 precision. The primary use case
-of the B200 is completely invisible to standard NVML monitoring.
+### 2.4 B200: A More Severe and Qualitatively Different Pattern
 
-At scale:
-- 1,000 B200 pods waste $252,700/year in ghost power
-- FP16 inference workloads are completely unmetered
-- Spontaneous power bursts cannot be attributed to any workload
-- Carbon accounting for B200 fleets is systematically wrong
+B200 (Blackwell) departs from every other architecture tested in three ways:
 
-### Conclusion
+1. **Ghost power from cold boot**, with no prior workload required — 143–145W per GPU (288W combined for 2x B200) measured from first power-on.
+2. **No recovery state.** Every other architecture showed at least a partial return toward idle after a workload. B200's floor permanently shifts upward after any workload — from ~144W to 196–202W — and does not recover for the life of the pod. This means each subsequent tenant or workload on a B200 instance inherits an elevated power floor caused by whatever ran before it, with no mechanism to detect or attribute this.
+3. **A spike of 549–574W at 0% reported utilization** measured immediately after a process exit — the largest ghost power event recorded across all seven architectures, more than 200W above the largest comparable event on A100 SXM.
 
-The ghost power anomaly documented on A100 SXM is not fixed
-in the Blackwell generation. It is worse. B200 exhibits ghost
-power from cold boot, complete FP16 telemetry blindness, and
-spontaneous power bursts that no existing monitoring tool can
-detect or attribute.
-
-Hardware-attested cross-validation of power versus utilization
-at high frequency sampling rates remains the only reliable method
-for accurate GPU energy measurement on current NVIDIA architectures.
-
-### Researcher
-Manmohan (Mike) Bains
-mikebains41@gmail.com
-Duncan BC Canada
-2026-05-28
+A separate, related finding: FP16 tensor-core workloads on B200 report 0% utilization for the *entire* duration of active compute, while SM clock (1965MHz) confirms the GPU is actively computing. Since B200 is marketed primarily for inference, and inference commonly uses FP16, this means a large share of B200's primary intended use case may be invisible to NVML-based monitoring. This was observed on driver version 580.126.20 with CUDA 13.0 and PyTorch 2.11.0+cu128 — an early-release software stack for a newly launched architecture. It is possible some of this behavior is a driver/firmware immaturity issue rather than a permanent hardware characteristic; this is called out explicitly as an open question in Section 7, and we recommend NVIDIA confirm which category it falls into.
 
 ---
 
-## H100 SXM Validation Results
+## 3. VRAM Residual: The Security-Relevant Finding
 
-The H100 SXM architecture was tested across 11 validated tests.
+### 3.1 Discovery and the SIGKILL Mitigation
 
-### Key Findings
-- Idle floor: 69.5W
-- Ghost power: NONE — clean architecture confirmed
-- CEI: 76.5 GFLOPS/W — 2x more efficient than A100 SXM
-- FP32 4096x4096: 47 TFLOPS — 3.1x faster than A100 SXM
-- FP16 tensor core: 592.8 TFLOPS — 3.87x faster than A100 SXM
-- Samples: 22,378 — stable normal distribution confirmed
-- P0 state: does not lock from boot
+Initial VRAM testing on A100 SXM found that after a workload allocating 807MB of VRAM exits using the standard PyTorch cleanup sequence (`del`, `gc.collect()`, `torch.cuda.empty_cache()`), 382MB remains allocated — NVML reporting 0% memory utilization throughout, including during active allocation.
 
-**Conclusion:** Ghost power is NOT present on H100 SXM.
-The anomaly is architecture-specific to A100 SXM Ampere generation.
+Follow-up testing isolated the determining factor precisely: **the residual depends on how the process is terminated, not on the workload itself.**
 
----
-
-## B200 Blackwell GPU Testing — First Ever Validation
-
-Hardware: 2x NVIDIA B200 GPUs
-Total VRAM: 360GB (180GB per GPU)
-Driver: 580.126.20 | CUDA: 13.0 | PyTorch: 2.11.0+cu128
-Provider: RunPod | Pod: aee29124a02b
-Date: 2026-05-28
-Tests completed: 6
-
-### Finding B200-01 — Ghost Power From Cold Boot
-Both B200 GPUs draw 143-145W from cold boot with zero workload.
-GPU 0 average: 143.47W | GPU 1 average: 145.24W
-Combined: 288.71W at 0% utilization
-Memory clock: 3996 MHz at idle
-P0 state locked from boot — no workload required
-Sustained 65 minutes — not a transient
-
-B200 idles at more than double the A100 SXM idle floor.
-A100 SXM required a prior workload to trigger ghost power.
-B200 ghost power is present from the moment the GPU powers on.
-
-### Finding B200-02 — FP32 DESYNC Confirmed
-GPU 0: 237.50W at 7-9% reported utilization
-GPU 1: 238.50W at 7-9% reported utilization
-Combined: ~476W at 7-9% utilization
-SM clock: jumped from 120 MHz to 1965 MHz on load start
-Expected power at 7-9% util: approximately 50-80W
-Actual power is 3x higher than utilization suggests
-
-### Finding B200-03 — FP16 Complete Telemetry Blackout
-GPU 0: 197W sustained at 0% utilization — 8 minutes continuous
-GPU 1: 199W sustained at 0% utilization — 8 minutes continuous
-Combined: ~396W at 0% utilization
-SM clock at 1965 MHz confirms active compute despite 0% util report
-FP16 tensor core workloads completely invisible to NVML
-More severe than FP32 which showed 7-9% utilization
-
-### Finding B200-04 — No Cooldown Period
-Power returns to 143-145W baseline immediately after load stops.
-No gradual decay. No recovery period.
-Periodic power spikes every 30 seconds at 0% utilization.
-Spike magnitude: 2-3W above baseline on both GPUs simultaneously.
-
-### Finding B200-05 — Spontaneous Autonomous Power Burst
-At 20:30:08 UTC with zero workload running:
-GPU 0 jumped to 195.72W
-GPU 1 jumped to 181.95W
-SM clock activated to 1965 MHz
-Utilization still reported 0%
-Duration approximately 10 seconds
-No workload was triggered — autonomous GPU activity
-Completely invisible to schedulers and billing systems
-
-### Finding B200-06 — Inter-GPU Power Differential
-GPU 1 consistently draws 1.00-2.00W more than GPU 0
-across all 5 test conditions and 370 total samples.
-Average differential: 1.65W
-Same architecture same pod same driver same CUDA.
-Hardware asymmetry — not a software artifact.
-Per-GPU measurement is essential not optional.
-
-### B200 PyTorch Compatibility Finding
-PyTorch 2.4.1 does not support B200 CUDA sm_100.
-Minimum version required: PyTorch 2.11.0+cu128.
-Software ecosystem not yet mature for B200 Blackwell architecture.
-
----
-
-## Architecture Comparison — All Validated GPUs
-
-| GPU | Idle Floor | Ghost Power | Ghost Trigger | FP16 Telemetry | P0 From Boot |
-|---|---|---|---|---|---|
-| T4 | 9.5W | None | None | Unknown | No |
-| RTX 4090 | 20W | None | None | Unknown | No |
-| A40 | 30.4W | None | None | Unknown | No |
-| A100 PCIe | 47W | None | None | Unknown | No |
-| H100 SXM | 69.5W | None | None | Visible | No |
-| A100 SXM | 67.1W | 146.66W | Post-load | Partial | No |
-| B200 2x GPU | 143-145W | From boot | Cold boot | 0% blackout | YES |
-
-Key insight: Ghost power is architecture-specific not universal.
-H100 SXM is clean. B200 Blackwell has a more severe variant from boot.
-
----
-
-## True CEI — Ghost Power Corrected
-
-Standard CEI reporting excludes ghost power periods.
-
-Reported CEI: 5.68B FLOPs/joule — A100 SXM Test 24
-True CEI with ghost power correction: 4.12B FLOPs/joule
-Degradation: 27.5% worse than reported
-
-Ghost power consumes energy that produces zero useful compute.
-The true efficiency of A100 SXM is 27.5% worse than any published figure.
-
----
-
-## First Hardware-Measured Scope 1-2-3 GPU Carbon Accounting
-
-All numbers derive from proven hardware measurements.
-This is the first hardware-measured full scope GPU carbon analysis.
-
-### Ghost Power Carbon Impact Per GPU Per Year
-
-| Grid Region | Ghost CO2 kg/year | Scope 3 % of Total |
+| Cleanup Method | A100 SXM Residual | VRAM Cleared? |
 |---|---|---|
-| BC Canada hydro | 2.51 kg | 98.7% |
-| Portugal solar | 10.04 kg | 94.8% |
-| California | 43.91 kg | 80.7% |
-| EU Average | 61.68 kg | 74.8% |
-| Global Average | 83.63 kg | 68.7% |
-| China | 121.48 kg | 60.1% |
+| `del` + `gc.collect()` + `empty_cache()` (graceful) | 457–465 MB | No |
+| `SIGKILL` (hard kill) | 0 MB | **Yes** |
 
-### The Clean Grid Paradox
-Cleaning up your grid makes ghost power MORE important not less.
-On a solar grid like Portugal Scope 3 becomes 94.8% of total emissions.
-The only lever left is eliminating ghost power waste.
+This localizes the root cause to PyTorch's CUDA memory allocator: PyTorch maintains an internal memory cache that survives logical tensor deletion, and the driver does not zero physical VRAM pages when that cache is released through the normal API. A hard kill bypasses this entirely — the OS kernel forces immediate GPU memory reclamation on process termination, and the driver zeros the pages. This gives cloud operators an immediate, concrete mitigation available today: enforce SIGKILL (rather than allowing graceful shutdown) on tenant process exit.
 
-### Fleet Scale Ghost Power Waste — A100 SXM
+### 3.2 Cross-Architecture Residual
 
-| Fleet Size | Annual CO2 tonnes | Annual Electricity Cost |
-|---|---|---|
-| 1,000 GPUs | 83.6 tonnes | $20,908 |
-| 10,000 GPUs | 836 tonnes | $209,084 |
-| 100,000 GPUs | 8,363 tonnes | $2,090,837 |
-| 500,000 GPUs | 41,817 tonnes | $10,454,184 |
-
-Note: 100,000 GPUs represents a large hyperscaler tier deployment.
-500,000 GPUs represents a major cloud provider full fleet estimate.
-
-### Single A100 SXM Annual Carbon
-Scope 2 operational: 730.3 kg CO2
-Scope 3 embodied: 1,600.0 kg CO2
-Total: 2,330.3 kg CO2
-Scope 3 is 68.66% of total on global average grid
-
----
-
-## Global Regulatory Compliance — 14 Jurisdictions
-
-| Jurisdiction | Framework | Key Requirement |
-|---|---|---|
-| EU | AI Act Annex XI | PUE WUE annual KPI 15 May |
-| USA | EO14110 + SB253 | Scope 1-2-3 mandatory 2026 |
-| Canada | Bill C-27 AIDA | Net Zero 2050 |
-| Mexico | LFPDPPP + SENER | Regional grid factors |
-| Brazil | LGPD + PL 2338/2023 | NDC commitments |
-| LATAM | NDC | Carbon commitments |
-| China | Interim Measures Generative AI | 2025 labeling |
-| Japan | Energy Conservation Act | PUE 1.4 by 2030 |
-| South Korea | AI Basic Act 2026 | Enforcement Jan 22 2026 |
-| Singapore | Model AI Governance | PUE 1.3 target |
-| India | National AI Strategy | BEE efficiency |
-| UAE | AI Strategy 2031 + DIFC Licence | Active 2026 |
-| Saudi Arabia | Vision 2030 | AI efficiency |
-| Australia | Mandatory PUE 1.4 | July 2025 |
-
-All compliance reports produced are based on hardware-measured telemetry.
-
----
-
-## Research Status — 2026-05-28
-
-Total validated tests: 41
-GPU architectures tested: 7
-Compliance jurisdictions: 14
-Carbon accounting regions: 7
-
-New findings since initial publication:
-1. Ghost power confirmed on B200 Blackwell from cold boot
-2. FP16 complete telemetry blackout on B200
-3. Spontaneous autonomous 195W power burst at 0% utilization
-4. First hardware-measured Scope 1-2-3 GPU carbon analysis
-5. True CEI 27.5% worse than reported
-6. 14 jurisdiction compliance coverage
-7. H100 SXM confirmed clean — no ghost power
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-28
-
----
-
-## Part III — Memory-Driven Ghost Power Root Cause (2026-05-29)
-
-### Executive Summary
-
-Today's testing identified the root cause of ghost power across
-all affected architectures. The HBM memory subsystem does not
-clock down at idle. Memory clock is architecturally locked at
-full speed regardless of workload state, thermal state, or time
-since last workload. Ghost power magnitude correlates directly
-with memory clock frequency.
-
----
-
-### New Finding: Memory Clock Is The Root Cause
-
-Previous hypothesis: ghost power caused by P0 state lock.
-Corrected finding: ghost power caused by HBM memory subsystem
-running at full speed 24/7 regardless of compute activity.
-
-SM clock scales normally — up under load, down at idle.
-Memory clock never moves.
-
-**A100 SXM Memory Clock Data — 138 samples, 23 minutes:**
-
-| State | Power | SM Clock | MEM Clock | Util |
-|---|---|---|---|---|
-| Idle | 65W | 210 MHz | 1593 MHz | 0% |
-| FP32 load | 399W | 1410 MHz | 1593 MHz | 100% |
-| FP16 load | 405W | 1200 MHz | 1593 MHz | 100% |
-| Cooldown | 65W | 210 MHz | 1593 MHz | 0% |
-| Post load | 85W | 1155 MHz | 1593 MHz | 0% |
-
-Memory clock: 1593 MHz across every single state. Never moved once.
-
----
-
-### Architecture Memory Clock Comparison
-
-| GPU | MEM Clock | SM Clock Idle | Ratio | Ghost Power |
-|---|---|---|---|---|
-| A100 SXM | 1593 MHz | 210 MHz | 7.6x | 65W |
-| B200 | 3996 MHz | 120 MHz | 33.3x | 143W |
-
-B200 memory clock is 2.5x higher than A100.
-B200 ghost power is 2.2x higher than A100.
-Memory clock magnitude directly predicts ghost power magnitude.
-This is a direct causal relationship confirmed across two architectures.
-
----
-
-### New Finding: Two Ghost Power States
-
-Two distinct ghost power states identified on A100 SXM:
-
-**State 1 — Cold Boot Idle:**
-Power: 65W | SM: 210 MHz | MEM: 1593 MHz
-
-**State 2 — Post Load Ghost:**
-Power: 85W | SM: 1155 MHz | MEM: 1593 MHz
-
-State 2 is 30% higher than State 1.
-SM clock remains elevated after workload ends.
-Memory clock locked in both states.
-State 2 can persist indefinitely — does not decay to State 1.
-
----
-
-### New Finding: Spontaneous Burst With Memory Clock Data
-
-At 2026/05/29 17:45:08 with zero workload running:
-- Power jumped from 65W to 73.07W
-- SM clock jumped from 210 MHz to 720 MHz
-- Memory clock: 1593 MHz — unchanged
-- Utilization: 0% throughout
-
-SM clock activated autonomously.
-Memory clock unaffected — already at maximum.
-Burst lasted approximately 10 seconds.
-Completely invisible to schedulers and billing systems.
-
----
-
-### New Finding: FP16 vs FP32 Memory Clock Behavior
-
-| Precision | SM Clock | Power | MEM Clock |
+| GPU | HBM | Graceful-Exit Residual | SIGKILL Residual |
 |---|---|---|---|
-| FP32 | 1410 MHz | 399W | 1593 MHz |
-| FP16 | 1200 MHz | 405W | 1593 MHz |
+| A100 SXM | HBM2e | 457–465 MB | 0 MB |
+| H100 SXM | HBM2e | 457 MB | not tested |
+| H200 SXM | HBM3e | 529–629 MB (single workload); 1,630 MB (full multi-phase profile) | not tested |
+| B200 SXM | HBM3e | 628–728 MB (fixed regardless of precision) | not tested |
+| A100 PCIe | GDDR6 | 0 MB | — |
+| T4 | GDDR6 | 0 MB | — |
+| RTX 4090 | GDDR6X | 0 MB | — |
 
-FP16 runs at lower SM clock than FP32.
-FP16 draws slightly more power than FP32 on A100.
-Memory clock identical for both precisions.
-Ghost power is memory-driven not precision-dependent.
+The pattern is consistent: every tested SXM architecture with HBM shows residual; every tested PCIe architecture with GDDR-family memory shows none. HBM generation also predicts magnitude — HBM2e leaves 457–465MB, HBM3e leaves 529–1,630MB depending on workload complexity — though, as with the ghost power memory-clock hypothesis, this is based on four data points and should be treated as a strong pattern rather than an exhaustively proven law.
 
----
+The residual does not self-clear over time; it persists until overwritten by a subsequent workload.
 
-### New Finding: Coordinated Multi-GPU Burst
+### 3.3 Cross-GPU Isolation Failure (H200)
 
-On 2x A100 SXM pod c6432c0108d6:
+A full multi-phase test profile on a 2x H200 SXM pod produced a result not seen in single-GPU testing: GPU1, which ran no compute workload at all during the test, retained 528MB of residual VRAM that originated from compute activity on GPU0.
 
-**Inter-GPU differential at idle:**
-- GPU0: 65.74W | GPU1: 63.99W | Differential: 1.75W
-- GPU0 consistently higher on A100 (opposite of B200 where GPU1 higher)
-- Both GPUs memory clock locked at 1593 MHz
-
-**Simultaneous spontaneous burst:**
-- GPU0: 86.13W | SM: 1140 MHz | MEM: 1593 MHz | Util: 0%
-- GPU1: 84.36W | SM: 1140 MHz | MEM: 1593 MHz | Util: 0%
-- Both GPUs burst simultaneously — coordinated not random
-- Memory clock unchanged on both GPUs during burst
-
-| Architecture | Higher GPU | Differential | Burst Type |
-|---|---|---|---|
-| A100 SXM | GPU0 | 1.75W | Coordinated |
-| B200 | GPU1 | 1.65W | Coordinated |
-
-Direction differs between architectures but pattern is identical.
-Hardware asymmetry is architectural not random.
-
----
-
-### Conclusion: Ghost Power Is Architectural
-
-The HBM memory subsystem does not have a low-power idle mode.
-It runs at full rated speed from boot until shutdown.
-No workload state, thermal state, or software command changes this.
-Persistence mode and power cap cannot address memory clock lockup.
-This is an architectural design decision — not firmware debt.
-
-The only solution is hardware redesign of the HBM power management
-subsystem to include a genuine low-power idle state.
-
-Until that happens ghost power is permanent and unremediable
-on all affected NVIDIA GPU architectures.
-
----
-
-### Research Status — 2026-05-29
-
-Total validated tests: 57
-GPU architectures tested: 7
-New memory clock tests added: 6 A100 SXM tests
-Compliance jurisdictions: 14
-Carbon accounting regions: 7
-
-New findings since 2026-05-28:
-1. Memory clock identified as root cause of ghost power
-2. HBM memory subsystem locked at full speed — architectural
-3. Memory clock magnitude predicts ghost power magnitude
-4. Two ghost power states identified on A100 SXM
-5. FP16 vs FP32 memory clock behavior documented
-6. Coordinated simultaneous multi-GPU burst confirmed
-
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-29
-
----
-
-## Part IV — VRAM Security & Telemetry Findings (2026-05-29)
-
-### Executive Summary
-
-Three new VRAM validation tests on 2x A100 SXM4 80GB revealed
-critical security and telemetry gaps invisible to all existing
-monitoring tools including NVML, DCGM, Prometheus, and Datadog.
-
----
-
-### Finding 1 — VRAM Memory Utilization Desync
-
-NVML reports 0% memory utilization while 807MB VRAM is loaded.
-This is the same lie as compute utilization vs power draw.
-Schedulers making decisions based on util.memory are working
-with false data.
-
-| Phase | memory.used | util.memory | Power |
-|---|---|---|---|
-| Idle | 0 MB | 0% | 65.84W |
-| Workload active | 807 MB | 0% | 85.99W |
-| Post exit | 0 MB | 0% | 65.84W |
-
----
-
-### Finding 2 — VRAM Residual After Process Exit (CRITICAL)
-
-382MB of VRAM persists on both GPUs after process exits
-and torch.cuda.empty_cache() is called.
-NVML reports 0% memory utilization throughout.
-No existing monitoring tool can detect this residual.
-
-| State | GPU0 | GPU1 |
+| Phase | GPU0 (active) | GPU1 (idle throughout) |
 |---|---|---|
-| Loaded | 807 MB | 807 MB |
-| After empty_cache | 425 MB | 425 MB |
-| Residual | 382 MB | 382 MB |
-| Residual % | 47.3% | 47.3% |
+| Baseline | 1 MB | 1 MB |
+| After GPU0 compute, before cleanup | 19,030 MB | 910 MB |
+| After graceful cleanup | 1,102 MB | **528 MB** |
 
----
+This is a meaningfully different and broader exposure pathway than same-GPU sequential residual: it suggests that in multi-GPU pod allocations, data can cross between GPUs within the same allocation boundary, not only between sequential tenants on one GPU. We have one test profile demonstrating this; it has not yet been characterized across other architectures or repeated to establish how reliably it reproduces, and that replication is listed in Section 7.
 
-### Security Implication — Multi-Tenant Data Leakage
+### 3.4 NVML Blindness Compounds the Risk
 
-In multi-tenant cloud environments GPU hardware is shared
-between customers sequentially. When one tenant's job finishes
-and the next tenant's job starts on the same GPU, 382MB of
-the previous tenant's VRAM data remains accessible.
+Across every layer tested, NVML's reporting failed to reflect reality:
 
-This residual may contain:
-- Model weights and proprietary architecture details
-- Training data including confidential or regulated data
-- Inference outputs — user queries and model responses
-- API keys or authentication tokens loaded into GPU memory
-- Patient data in medical AI workloads
-- Financial data in trading or risk model workloads
-
-Every cloud provider's security dashboard shows clean because
-every dashboard relies on NVML which reports 0%.
-The vulnerability is completely invisible to standard tooling.
-
----
-
-### Finding 3 — Ghost Power Is Not VRAM Driven
-
-Ghost power baseline 65.84W persists with 0MB VRAM loaded.
-Spontaneous burst to 86W occurred with 0MB VRAM.
-Ghost power magnitude unchanged when 807MB loaded vs idle.
-Ghost power is purely HBM memory clock driven — not content driven.
-
----
-
-### NVML Lies Confirmed — Three Layers
-
-| Layer | NVML Reports | Reality |
+| Layer | NVML Reports | Measured Reality |
 |---|---|---|
-| Power vs utilization | 0% util | 65-146W draw |
-| Memory utilization | 0% util.memory | 807MB loaded |
-| VRAM residual | 0% util.memory | 382MB stuck |
+| Power vs. compute utilization | 0% util | 65–574W draw |
+| Memory utilization during active allocation | 0% util.memory | Up to 19,030 MB loaded |
+| VRAM residual after exit | 0% util.memory | 382–1,630 MB resident |
+| Cleanup process exit code | 0 (success) | Up to 1,630 MB still resident |
 
-All three layers confirmed on A100 SXM4 80GB.
-All three invisible to DCGM, Prometheus, Datadog, CloudWatch.
+Every cloud provider security or billing dashboard built on NVML — which is to say, nearly every one in production use — will show a clean, idle GPU at the exact moment hundreds of megabytes to over a gigabyte of a previous workload's data remains physically resident.
 
----
+### 3.5 Comparison to Prior Art: LeftoverLocals (CVE-2023-4969)
 
-### Test Summary
+Trail of Bits' 2023 disclosure (CVE-2023-4969, "LeftoverLocals") demonstrated that GPU local memory — registers and shared memory used within a single kernel invocation — could leak between kernel invocations on the same GPU, within a single session.
 
-| Test | ID | Finding |
-|---|---|---|
-| VRAM Baseline | test-25 | 0MB idle, ghost power active, burst at 0MB |
-| VRAM Workload | test-26 | 807MB loaded, 0% util.memory reported |
-| VRAM Residual | test-27 | 382MB stuck after exit, NVML blind |
+This research describes a different and substantially larger attack surface, for three concrete reasons:
 
-Total validated tests: 60
-GPU architectures tested: 7
+1. **Scope of memory affected.** LeftoverLocals concerned local registers and shared memory, typically kilobytes to low megabytes in scale. This research concerns full VRAM allocations, measured in hundreds of megabytes to over a gigabyte.
+2. **Persistence boundary.** LeftoverLocals leakage occurred within a single user's session, between kernel calls they controlled. The VRAM residual finding persists *across a full process exit*, after the allocating process has terminated entirely and a completely different tenant's process may be scheduled onto the same physical GPU.
+3. **Detectability.** LeftoverLocals was at least partially observable through existing GPU profiling approaches. The VRAM residual finding is invisible to every NVML-based monitoring tool, including the ones cloud providers use for their own security dashboards — there is currently no existing tool, to our knowledge, that would alert an operator to this state.
 
----
-
-### Conclusion
-
-The GPU Energy Optimizer is the only tool that cross-validates
-memory.used against utilization.memory at high frequency.
-This makes it the only tool capable of detecting VRAM desync,
-VRAM residual, and the associated security risks.
-
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-29
+In short: where LeftoverLocals showed that a workload could leak into itself, this finding shows that a workload can leak into a different tenant entirely, at a much larger scale, with no existing detection mechanism.
 
 ---
 
-## Part VI — Cross-Architecture VRAM Security Analysis (2026-05-30)
+## 4. Carbon and Regulatory Implications
 
-### Executive Summary
+Ghost power has a second-order consequence beyond direct electricity cost: it inflates Scope 2 (operational energy) emissions in a way that is not visible to standard carbon accounting, which typically derives energy estimates from reported utilization.
 
-VRAM residual data leakage confirmed across all four tested NVIDIA SXM
-architectures. Every architecture tested shows persistent VRAM after
-process exit that is completely invisible to NVML and all monitoring
-tools that depend on it.
+A single A100 SXM's estimated annual carbon footprint, combining Scope 2 (operational, ~730 kg CO2) and Scope 3 (embodied/manufacturing, ~1,600 kg CO2), is approximately 2,330 kg CO2/year on a global-average grid, with Scope 3 representing roughly two-thirds of the total. On cleaner grids (e.g., BC Canada hydro, Portuguese solar), Scope 3 becomes a much larger share of total emissions — over 90% in both cases by our estimate — meaning ghost power elimination becomes proportionally *more* impactful on cleaner grids, not less, since it is one of the few remaining operational levers once the grid itself is decarbonized.
 
----
-
-### Confirmed Cross-Architecture VRAM Residual
-
-| GPU | Architecture | VRAM Residual | Power After Clear |
-|---|---|---|---|
-| A100 SXM | Ampere | 455 MB | Returns to baseline |
-| H100 SXM | Hopper | 625 MB | Stays elevated |
-| H200 SXM | Hopper | 382 MB | Stays elevated |
-| B200 | Blackwell | 716 MB | Stays elevated |
-
-All measurements hardware-measured on RunPod containerized environment.
+**On the fleet-scale cost projections:** the original research log estimated annual electricity cost from ghost power at various fleet sizes (e.g., ~$2.1M/year for a 100,000-GPU A100 fleet), calculated by applying the measured excess wattage continuously, 24/7, across every GPU in the fleet. This is a useful upper-bound / theoretical-maximum figure, but it assumes every GPU in the fleet has run a workload that triggers the post-load ghost state and is never rebooted — an assumption we have not validated against real fleet telemetry. We do not have sampling data on what fraction of GPUs in a representative production fleet are actually in the ghost-power state at any given time, and we are not presenting one here. Until that duty-cycle data exists, fleet-level dollar figures should be read as a ceiling, not an expected value, and any party relying on this for a business case should treat it as directional rather than load it into a precise ROI calculation.
 
 ---
 
-### Security Risk — Multi-Tenant Data Leakage
+## 5. Regulatory Landscape
 
-In multi-tenant cloud environments GPU hardware is shared between
-customers sequentially. When one tenant's workload finishes and the
-next tenant's workload starts on the same physical GPU, hundreds of
-megabytes of the previous tenant's VRAM data remain accessible.
-
-This residual may contain:
-- Proprietary model weights and architecture details
-- Training data including confidential or regulated information
-- Inference outputs — user queries and model responses
-- API keys or authentication tokens loaded into GPU memory
-- Patient data in medical AI workloads
-- Financial data in trading or risk model workloads
-
-Every cloud provider's security dashboard shows clean because every
-dashboard relies on NVML which reports 0% memory utilization throughout.
-The vulnerability is completely invisible to standard tooling.
+The following frameworks across 14 jurisdictions create reporting obligations for GPU energy consumption and emissions where hardware-measured (rather than utilization-estimated) telemetry would materially improve compliance accuracy: EU AI Act Annex XI (PUE/WUE KPIs), US EO14110 and SB253 (Scope 1-2-3 mandatory disclosure), Canada's Bill C-27 (AIDA, net-zero 2050 alignment), Japan's Energy Conservation Act (PUE 1.4 target by 2030), South Korea's AI Basic Act (enforcement from January 2026), Singapore's Model AI Governance Framework (PUE 1.3 target), Australia's mandatory PUE 1.4 requirement (effective July 2025), and equivalent frameworks in Mexico, Brazil, China, India, the UAE, and Saudi Arabia. This list is included to establish relevance, not as a claim of legal analysis; we are not lawyers, and any organization evaluating compliance exposure should consult its own counsel.
 
 ---
 
-### NVML Blind To All Residual States
+## 6. Hardware-Attested Validation: Intel TDX Enclave and On-Chain Anchoring
 
-| Layer | NVML Reports | Reality |
-|---|---|---|
-| Power vs utilization | 0% util | 65-190W draw |
-| Memory utilization | 0% util.memory | 382-1862MB loaded |
-| VRAM residual | 0% util.memory | 382-716MB stuck |
+A subset of the ghost power finding (H200 idle and full-load power measurements) was independently reproduced inside a verified Intel TDX confidential-computing enclave, in collaboration with Serial Alice (Sirius GreenTech). Measurement sample hashes were cryptographically bound into the hardware TDX attestation quote, and the resulting certificates anchored on the Polygon blockchain — providing a tamper-evident, publicly verifiable record, in contrast to the self-reported software telemetry used elsewhere in this document.
 
----
-
-### Industry Comparison
-
-Structurally similar to Spectre/Meltdown CPU cache vulnerabilities
-discovered in 2018. Those also leaked data between processes that
-should not be able to see each other and were taken extremely seriously
-by Intel, AMD, and every cloud provider.
-
----
-
-### Responsible Disclosure
-
-This finding warrants responsible disclosure to NVIDIA, AWS, GCP,
-Azure, RunPod, CoreWeave, and Lambda Labs.
-
----
-
-### Only Tool Capable of Detection
-
-The GPU Energy Optimizer cross-validates memory.used against
-utilization.memory at 100Hz — 100x faster than industry standard.
-This makes it the only tool currently capable of detecting VRAM
-residual and the associated security risk.
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-30
-
-
----
-
-## Part VII — Detailed VRAM Security Analysis and B200 Failure Modes (2026-05-31)
-
-### Executive Summary
-
-Extended VRAM testing completed across A100 SXM, H200 SXM, and B200 SXM on 2026-05-31 with 15 additional tests. Three critical new findings emerged: a confirmed mitigation for VRAM residual via SIGKILL, updated and more precise residual measurements across all architectures, and three previously undocumented B200 failure modes that make it the highest-risk architecture tested across all security dimensions.
-
----
-
-### New Finding 1 — SIGKILL Clears VRAM to Zero. Graceful Exit Does Not.
-
-The most significant operational finding from this test series is the discovery that the cleanup method determines whether VRAM is cleared.
-
-When a process exits gracefully using the PyTorch standard sequence del, gc.collect(), torch.cuda.empty_cache() — hundreds of megabytes of VRAM remain uncleared and readable.
-
-When a process is hard-killed with SIGKILL — the OS kernel forces immediate GPU memory reclamation and the driver zeros all VRAM pages. Subsequent polling immediately after SIGKILL shows memory.used = 0 MB on A100 SXM.
-
-| Cleanup Method | A100 SXM Residual | VRAM Cleared |
-|---|---|---|
-| del + gc.collect() + empty_cache() | 457-465 MB | No |
-| SIGKILL | **0 MB** | Yes |
-
-This finding identifies the root cause precisely: the vulnerability is in PyTorchs CUDA memory allocator, not in the GPU driver or OS kernel. PyTorch maintains a memory cache that survives logical tensor deletion. The driver does not zero physical VRAM pages when this cache is released. The OS kernel however does zero memory on hard process kill.
-
-This provides a concrete actionable mitigation for cloud operators: enforce SIGKILL on tenant process exit rather than allowing graceful shutdown. The OS will zero VRAM on hard kill.
-
----
-
-### Updated Cross-Architecture VRAM Residual — Full Test Suite Results
-
-Previous measurements in Part VI were based on limited test runs. The following table reflects full 6-test series per architecture.
-
-| GPU | HBM | Graceful Exit Residual | SIGKILL | Notes |
-|---|---|---|---|---|
-| A100 SXM 80GB | HBM2e | 457-465 MB | 0 MB | Varies by precision type |
-| H200 SXM 141GB | HBM3e | 529-629 MB | not tested | Higher than A100 |
-| B200 SXM 179GB | HBM3e | 628-728 MB fixed | not tested | Fixed regardless of precision |
-
-Key pattern confirmed: HBM generation predicts residual magnitude. HBM2e leaves 457-465 MB. HBM3e leaves 529-728 MB. The newer the HBM generation the more data remains after graceful cleanup.
-
-On A100, residual varies by compute precision — FP32 leaves 457 MB, FP16 leaves 463 MB, combined FP32 and FP16 leaves 465 MB. On B200 the residual is fixed at 728 MB regardless of precision type, suggesting a different memory management architecture in HBM3e.
-
-The residual does not self-clear over time. It persists indefinitely until overwritten by a subsequent workload.
-
----
-
-### B200 Three Distinct Failure Modes
-
-B200 SXM testing on 2026-05-30 revealed three failure modes not observed in any prior architecture. Each is independent, each is significant, and together they make B200 the highest-risk architecture tested.
-
-#### Failure Mode 1 — NVML Is Completely Blind on B200
-
-The NVIDIA Management Library (NVML), which underpins every major GPU monitoring tool including DCGM, Datadog, Prometheus, and vendor dashboards, reports 0% utilization on B200 throughout active compute workloads. During active FP32 and FP16 matmul operations drawing 400-700W of real power, NVML consistently reported util.gpu = 0%.
-
-This means DCGM, Prometheus, Datadog, and every monitoring product built on NVML is completely blind to what B200 is actually doing. This is not a configuration issue. It is a fundamental incompatibility between B200 reporting architecture and the NVML API layer.
-
-As B200 deployments scale through 2025 and 2026 this represents a monitoring crisis for any data center relying on conventional tooling.
-
-#### Failure Mode 2 — Ghost Power Spike at 0% Reported Utilization After Process Exit
-
-Immediately after a FP32 process exits on B200 the following was measured:
-
-| Metric | Value |
-|---|---|
-| GPU0 power | 549.84W |
-| GPU1 power | 574.84W |
-| NVML utilization | 0% both GPUs |
-| VRAM | 728 MB residual |
-
-This is the most extreme ghost power event recorded across all 7 architectures tested. The maximum desync event on A100 SXM was 357W. B200 exceeds this by 217W while reporting zero utilization to every monitoring tool. The spike persists for multiple sampling intervals before settling to the post-load floor of 196-202W.
-
-#### Failure Mode 3 — Permanent Power State Shift With No Recovery
-
-Every architecture tested prior to B200 has at least two identifiable power states — a lower cold boot idle and an elevated post-load idle. On A100 SXM State 1 is approximately 65W and State 2 is approximately 86W.
-
-B200 does not return to its cold boot state after any workload. The baseline is 144W. After any workload the floor permanently shifts to 196-202W — an elevation of +52W — and does not recover for the life of the pod. There is no recovery state on B200.
-
-This means each subsequent tenant on a B200 pod inherits the elevated power floor from all previous tenants. The additional 52W is invisible to billing and monitoring systems.
-
-#### Additional Anomaly — Anomalous Cooldown Spike
-
-During B200 cooldown monitoring after FP32 compute: GPU0 = 684.71W and GPU1 = 700.74W at only 45-48% utilization. Normal active compute on B200 shows 100% utilization. A 684-700W draw at 45-48% utilization is inconsistent with standard compute behavior and suggests undocumented background GPU activity during the cooldown transition phase.
-
----
-
-### Full Cross-Architecture Security Matrix — All Findings to 2026-05-31
-
-| GPU | HBM | VRAM Residual | Max Ghost Power | NVML Blind | Power Recovery |
-|---|---|---|---|---|---|
-| A100 SXM | HBM2e | 457-465 MB | 357W | No | Partial |
-| H100 SXM | HBM2e | 457 MB | 86W | No | Partial |
-| H200 SXM | HBM3e | 529-629 MB | 136W | No | Partial |
-| B200 SXM | HBM3e | 628-728 MB fixed | 549-574W | YES | NONE |
-| A100 PCIe | GDDR6 | 0 MB | 0W | No | Full |
-| T4 | GDDR6 | 0 MB | 0W | No | Full |
-| RTX 4090 | GDDR6X | 0 MB | 0W | No | Full |
-
-### Three Confirmed Patterns
-
-Pattern 1 — SXM plus HBM equals ghost power and VRAM residual. Every SXM GPU with HBM exhibits both. Every PCIe GPU with GDDR is clean on both counts. Physical design not a bug.
-
-Pattern 2 — HBM generation predicts residual magnitude. HBM2e leaves 457-465 MB. HBM3e leaves 529-728 MB. Newer HBM generation retains more data.
-
-Pattern 3 — B200 breaks the monitoring layer entirely. All prior architectures are measurable with NVML even if anomalous. B200 renders NVML-based monitoring useless and introduces ghost power spikes exceeding anything previously documented.
-
-### Implications for Data Center Operators
-
-Data centers running SXM GPU fleets face three simultaneous risks:
-
-1. Energy cost — hundreds of watts per GPU drawing at idle, invisible to monitoring, uncontrollable by software.
-2. Tenant data security — previous tenant model weights readable by subsequent tenants on the same physical GPU.
-3. Monitoring gap — B200 deployments are invisible to every conventional monitoring tool built on NVML.
-
-The combination of hardware attestation at the physical layer and high-frequency cross-validation monitoring at the software layer is the only complete solution to all three risks simultaneously.
-
-### Research Status — 2026-05-31
-
-Total validated tests: 72+
-GPU architectures tested: 7
-VRAM tests completed: 15 across A100 H200 B200
-New findings since 2026-05-30:
-1. SIGKILL clears VRAM to 0 MB — graceful exit does not
-2. VRAM residual confirmed across full 6-test series per architecture
-3. B200 NVML blindness confirmed across all test types
-4. B200 549-574W ghost spike after process exit — highest ever recorded
-5. B200 permanent power state shift confirmed — no recovery state
-6. B200 anomalous cooldown spike 684-700W at 45-48 pct util
-7. HBM generation directly predicts residual magnitude
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-31
-
-
----
-
-## Part VIII — Cross-GPU Isolation Failure (H200 SXM) (2026-05-31)
-
-### Executive Summary
-
-H200 SXM full profile testing revealed a previously undocumented cross-GPU isolation failure. VRAM data from GPU0 computation appeared in GPU1 memory despite GPU1 running no compute workload. This extends the attack surface beyond same-GPU sequential tenant leakage to cross-GPU data exposure within multi-GPU pods.
-
----
-
-### Critical Finding — Cross-GPU Data Leakage
-
-During full profile testing on H200 SXM x2:
-
-| Phase | GPU0 | GPU1 | VRAM GPU0 | VRAM GPU1 |
-|---|---|---|---|---|
-| Baseline | 74.41W | 72.51W | 1 MB | 1 MB |
-| VRAM Loaded | 118.38W | 115.21W | 18,168 MB | 910 MB |
-| FP32 Compute | 653W | 115W | 19,030 MB | 910 MB |
-| Post FP32 | 120W | 115W | 19,030 MB | 910 MB |
-| After Clear | 119W | 115W | **1,102 MB** | **528 MB** |
-
-GPU1 ran no FP32 compute. GPU1 had 910 MB loaded and sat idle throughout. After graceful cleanup GPU1 retained 528 MB of data that originated from GPU0 computation activity. This is cross-GPU data leakage — GPU0 compute data appearing in GPU1 memory without any GPU1 compute activity.
-
-### Critical Finding — False Clear Signal
-
-The cleanup process exits with code 0 indicating success. 1,630 MB of previous computation data remains in VRAM across both GPUs. Applications have no mechanism to detect incomplete VRAM clearing. Every developer trusts exit code 0 as confirmation of successful cleanup. That trust is misplaced.
-
-### Critical Finding — NVML Blind at 19 GB on H200
-
-With 19,030 MB of VRAM loaded on GPU0, NVML reports util.memory = 0%. NVML blindness is not exclusive to B200. H200 also fails to report accurate memory utilization at high VRAM loads. This means monitoring tools cannot detect when H200 GPUs are carrying large VRAM workloads.
-
-### Finding — Residual Scales With Compute
-
-Full profile testing produces 1,630 MB total residual versus 629 MB from single workload tests. The full profile is 2.6x higher residual than single tests. More compute phases equal more residual. This means the most intensive workloads — the ones containing the most sensitive data — leave the most data exposed.
-
-### Updated Security Matrix — H200
-
-| Issue | Severity | Details |
-|---|---|---|
-| Total VRAM residual | CRITICAL | 1,630 MB after full profile |
-| NVML blind at 19 GB | CRITICAL | util.memory = 0% |
-| Cross-GPU isolation failure | CRITICAL | GPU1 528 MB from GPU0 compute |
-| False clear signal | HIGH | Exit code 0 with 1.6 GB exposed |
-| Residual scales with compute | HIGH | 2.6x higher on full profile |
-| FP16 invisible | MEDIUM | Completes under 10s poll |
-| Ghost power | MEDIUM | 119W vs 74W baseline |
-
-### Implications
-
-The cross-GPU isolation failure means the attack surface is significantly larger than previously documented. It is not only sequential tenants on the same GPU who are at risk. In multi-GPU pods data from one GPU leaks into another GPU within the same allocation. In a cloud environment where multi-GPU pods are common this creates data exposure pathways that no existing security model accounts for.
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-31
-
-
----
-
-## Part IX — Prior Art Comparison and Pattern Refinement (2026-05-31)
-
-### LeftoverLocals CVE-2023-4969 — Prior Art
-
-Trail of Bits documented GPU local memory leakage within single GPU kernel invocations in 2023 (CVE-2023-4969). That finding demonstrated that GPU local memory — registers and shared memory — could leak between kernel invocations on the same GPU within a single session.
-
-This research extends the attack surface significantly. The AI GPU Energy Optimizer findings document VRAM persistence across complete process boundaries and tenant allocations — not just kernel invocations. The residual data 457-728MB persists after full process exit, graceful PyTorch cleanup, and empty_cache() calls. This is a substantially larger attack surface affecting every cloud tenant sequentially allocated to the same GPU hardware.
-
-Where LeftoverLocals affected single-session memory within one tenant, the VRAM residual finding affects cross-tenant data exposure at the infrastructure level. The attack surface is orders of magnitude larger.
-
-| Finding | CVE-2023-4969 LeftoverLocals | This Research |
-|---|---|---|
-| Scope | Single GPU session | Cross-tenant boundary |
-| Memory type | Local registers and shared memory | Full VRAM 457-728MB |
-| Persistence | Within kernel invocation | After full process exit |
-| Architectures | Multiple | A100 H100 H200 B200 confirmed |
-| Monitoring blind | Partial | Complete NVML reports 0% |
-| Mitigation | Kernel-level | SIGKILL forces OS reclamation |
-
----
-
-### Ghost Power Pattern Refinement
-
-Earlier parts of this whitepaper stated that SXM form factor plus HBM memory equals ghost power across all architectures. H100 SXM testing with 11 validated tests disproves the universal pattern. The correct refined pattern is:
-
-| GPU | Generation | HBM | Ghost Power | Notes |
-|---|---|---|---|---|
-| A100 SXM | Ampere | HBM2e | YES 65-146W | Post-load trigger |
-| H100 SXM | Hopper | HBM2e | NO | Clean architecture |
-| H200 SXM | Hopper | HBM3e | YES 79-136W | Elevated post-load |
-| B200 SXM | Blackwell | HBM3e | YES 144-574W | Cold boot trigger worst case |
-
-The ghost power phenomenon is not simply SXM plus HBM. H100 Hopper with HBM2e is clean. The pattern correlates with Ampere and Blackwell generations specifically. H200 Hopper with HBM3e shows ghost power suggesting HBM3e memory architecture may reintroduce the phenomenon that Hopper HBM2e resolved.
-
-This refined pattern is more precise and more defensible. It demonstrates that the finding is architecture and generation specific rather than a universal SXM property.
-
-### Hypothesis
-
-HBM3e memory architecture introduced in H200 and B200 may have reintroduced memory clock locking behavior that H100 HBM2e resolved. The memory clock data confirms HBM3e runs at higher frequencies. H100 HBM2e shows clean idle consistent with a functional low-power memory state. This hypothesis warrants direct investigation by NVIDIA and HBM memory vendors including SK Hynix and Samsung who produce HBM3e.
-
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-05-31
-
-
----
-
-## Part XI — Hardware-Attested Validation: Intel TDX Enclave + On-Chain Anchoring (2026-06-12)
-
-### Executive Summary
-
-The ghost-power finding was independently reproduced inside a verified Intel TDX confidential-computing enclave on an NVIDIA H200, in collaboration with Serial Alice (Sirius GreenTech). Measurement sample hashes were cryptographically bound into the hardware TDX quote, and the resulting certificates anchored on the Polygon blockchain. This is the first reproduction of the finding inside a cryptographically verified hardware environment with a tamper-evident, publicly verifiable on-chain record — a step beyond the software-only self-reported telemetry used in all prior parts.
-
-This section is deliberately precise about the boundary of what is and is not attested.
-
-### What Was Attested — The Execution Environment
+**What this attests:**
 
 | Property | Status | Evidence |
 |---|---|---|
 | Intel TDX enclave genuine | Verified | TD quote verified, MRTD allowed |
-| TCB status | UpToDate | Intel-PCS collateral |
-| Measurement bound to quote | Yes | Sample hash in REPORT_DATA, tee_quote_bound = true |
-| Certificate integrity | Signed | Ed25519 |
-| Public verifiability | Anchored | Polygon (blocks 88401586, 88402187) |
+| TCB status | Up to date | Intel-PCS collateral |
+| Measurement bound to quote | Yes | Sample hash in REPORT_DATA; `tee_quote_bound = true` |
+| Certificate integrity | Signed (Ed25519) | — |
+| Public verifiability | Anchored on Polygon | Blocks 88401586, 88402187 |
 
-The samples cannot be reordered, trimmed, or altered after the fact without breaking the binding to the hardware quote. The record is tamper-evident.
+**Attested H200 results:** idle baseline 80.3W; full load 592.84W; ghost fraction (idle/load) 13.6% — measured inside the verified enclave.
 
-### Attested H200 Results
+**What this does not yet attest, stated plainly:** the trust score reached for this measurement (0.8, the "hardware_attested" tier in Serial Alice's scoring model) reflects verification of the *execution environment* — that the TDX enclave is genuine and the sample hash is bound to it. It does not yet reflect independent attestation of the *energy measurement source itself*: the power readings are NVML values captured from inside the enclave, and a signed energy exporter (which would attest the measurement pipeline, not just the environment) was not present in this submission. The accurate framing is: these measurements were executed inside a genuine, verified, tamper-evident hardware environment — not that the energy values themselves carry independent hardware attestation. Closing the signed-exporter gap is the explicit next milestone for this collaboration.
 
-| Measurement | Value | Environment |
-|---|---|---|
-| Idle baseline | 80.3 W | H200, verified TDX enclave |
-| Full load | 592.84 W | H200, verified TDX enclave |
-| Ghost fraction | 13.6% | idle / load |
+This attestation work applies to the energy/power finding only. It has no bearing on the VRAM residual finding, and should not be read as extending hardware attestation to that result.
 
-Certificates are verifiable on Polygon.
+---
 
-### What Is NOT Yet Attested — The Honest Boundary
+## 7. Limitations and Priority Next Steps
 
-The trust score reached 0.8 (the hardware_attested tier) entirely from TEE evidence — TD quote verification and MRTD allowance. The energy measurement *source* is not yet independently attested:
+This research is hardware-measured and reproducible, but several gaps remain open. They are listed here explicitly rather than implied away, in descending order of priority:
 
-| Evidence category | Status |
-|---|---|
-| TEE attested (quote verified) | PASS |
-| TEE MRTD allowed | PASS |
-| Signed exporter | FAIL — "no exporter evidence" |
-| Dual source | Absent |
-| Machine fingerprint match | Absent |
+1. **No attack proof-of-concept yet exists.** Section 3 describes what *could* plausibly be present in residual VRAM (model weights, training data, API keys, inference outputs) based on what a typical workload places in GPU memory, but no test to date has demonstrated a second process actually reading recoverable, meaningful data out of another process's residual allocation. This is the single highest-priority next step: a concrete demonstration of "Process B recovers N bytes of Process A's data after Process A exits" would move this finding from a confirmed observability/memory-management defect with a plausible exposure pathway to a directly confirmed data-exposure vulnerability.
 
-The power readings are NVML passthrough captured inside the enclave. Therefore:
+2. **All testing to date has been on virtualized/containerized cloud infrastructure**, not on bare physical hardware with no hypervisor present. While the GPU-level measurements (power, memory) are hardware-sourced regardless of the virtualization layer above them, independent confirmation on true bare metal — particularly for the cross-tenant question — has not yet been completed.
 
-- **Supported:** these measurements were executed inside a genuine, verified Intel TDX enclave on H200, tamper-evident and anchored on-chain.
-- **Not yet supported:** "hardware-attested energy measurements." The measurement *environment* is hardware-attested; the measurement *source* (a signed energy exporter) is the next milestone.
+3. **The memory-clock-as-root-cause hypothesis (Section 2.3) is based on two architectures.** It is a reasonable and well-supported pattern, not yet a confirmed general law. Direct confirmation from NVIDIA or HBM vendors (SK Hynix, Samsung) on whether HBM3e's idle clock behavior differs intentionally from HBM2e's would resolve this.
 
-### Significance and Next Step
+4. **B200 findings were collected on early-release driver/CUDA/PyTorch versions** (driver 580.126.20, CUDA 13.0, PyTorch 2.11.0+cu128) for a newly launched architecture. Some findings — particularly the FP16 telemetry blackout — may be partially or fully addressable in firmware/driver updates rather than being permanent hardware characteristics. We recommend these results be re-validated against current driver versions periodically, and would welcome confirmation from NVIDIA on which findings are architectural versus software-addressable.
 
-This establishes a verifiable hardware-rooted execution environment for the ghost-power finding — distinct from, and stronger than, the hardware-measured software telemetry in all prior parts. Closing the signed-exporter gap is the milestone that extends attestation from the environment to the energy data itself.
+5. **Fleet-level cost projections (Section 4) assume a 24/7, fleet-wide duty cycle** that has not been validated against real production fleet telemetry. These figures should be treated as a theoretical ceiling, not an expected value, until real-world sampling data exists.
 
-Collaboration: Serial Alice / Sirius GreenTech (Nelson Vicente). Research initiated by Mike Bains; Serial Alice provided the TDX attestation and on-chain anchoring layer.
+6. **The cross-GPU isolation finding (Section 3.3) is based on a single test profile** on one 2x H200 pod and has not yet been replicated across other multi-GPU configurations or architectures.
 
-Author: Manmohan (Mike) Bains
-Contact: mikebains41@gmail.com
-Duncan BC Canada
-2026-06-12
+---
+
+## 8. The GPU Energy Optimizer: Detection Tooling
+
+The open-source AI GPU Energy Optimizer (v1.0.0) was built to detect both findings in production in real time, since neither is visible to existing NVML-based tooling:
+
+- Real-time ghost-power and memory-desync detection (cross-validates `memory.used` against `utilization.memory` and `power.draw` against `utilization.gpu`, rather than trusting either utilization figure alone)
+- The Compute Energy Intensity (CEI) benchmark — FLOPs per joule — as a standardized cross-provider efficiency metric (reference value: 5.68B FLOPs/J sustained FP32 on A100 SXM; note that this figure excludes ghost-power periods, and a ghost-power-corrected true CEI was measured at 4.12B FLOPs/J, roughly 27.5% lower)
+- Kubernetes/Helm deployment for fleet-scale monitoring, with Prometheus/Grafana integration
+- Support for 17+ cloud providers
+
+Live API: https://ai-gpu-brain-v3.onrender.com/docs
+Repository: https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+
+---
+
+## 9. Call to Action
+
+We are seeking three forms of collaboration:
+
+- **GPU cloud partnerships** — sponsored compute access (particularly true bare-metal access, per Limitation 2 above) to validate the cross-tenant exposure pathway directly.
+- **Research collaborations** — with security researchers or academic labs who can help design and execute the attack proof-of-concept described in Limitation 1.
+- **NVIDIA and HBM vendor engagement** — to confirm or correct the architectural hypotheses in Sections 2.3 and 7, and to assess whether any findings are addressable via firmware/driver update.
+
+All testing to date has been conducted independently and at personal expense.
+
+**Contact:** mikebains41@gmail.com
+**GitHub:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+
+---
+
+## Appendix A: A100 SXM Complete Test Summary (24 Tests)
+
+| Test | Name | Key Finding |
+|------|------|--------------|
+| 01 | Idle Baseline | 62.7W @ 0% util |
+| 02 | Ghost Power | 102.14W @ 0% util — confirmed |
+| 03 | Sampling Rate | Blind spot persists at 1s, 100ms, 10ms |
+| 04 | Load Ramp | 357.7W with severe lag at 0% util |
+| 05 | CEI Compute 2048 | 14.35 TFLOPS, 0.15% error |
+| 06 | CEI Efficiency 2048 | 52.6 GFLOPS/W |
+| 07 | CEI Compute 4096 | 15.3 TFLOPS |
+| 08 | FP16 Tensor Core | 231.08 TFLOPS, 15 min sustained |
+| 09 | Normality Test | p=0.000000, skew=-47.15 |
+| 10 | Log-Log Scaling | Peak at 4096 (17.79 TFLOPS) |
+| 11 | Observability Validation | 3,044 samples, burst 396–406W |
+| 12 | 8192 Load Test | 305–342W @ 100% util |
+| 13 | Load + Cooldown (5+6 min) | 146.66W peak @ 0% util |
+| 14 | Ghost Power (10+10 min) | 146.66W peak, never returned to true idle |
+| 15 | Idle Baseline (15 min) | 67.1W floor, 27°C |
+| 16 | Remediation Attempt | Blocked by hypervisor |
+| 17 | P-State Retention | P0 + 1593MHz locked post-load |
+| 18 | Power vs. Matrix Size | Peak 339.1W at 6144×6144 |
+| 19 | FP16, 10 min continuous | 482.7W avg, 1.03e+15 FLOPs |
+| 20 | FP16 vs FP32 (quick) | FP16 4.7x faster; FP32 ghost at 137W |
+| 21 | FP16 vs FP32 (full) | FP16 3.0x faster; mismatch persists |
+| 22 | Persistence Disable | Inconclusive — hypervisor ignored command |
+| 23 | Idle Baseline Confirm | 67.1W confirmed |
+| 24 | CEI Validation (15 min) | 5.68B FLOPs/J reference value |
+
+22 complete / 1 blocked / 1 inconclusive. 11 H100 SXM tests also completed (idle ~69.5W, peak ~412W, no ghost power detected).
+
+## Appendix B: Full Cross-Architecture Security Matrix
+
+| GPU | HBM | VRAM Residual (graceful) | Max Ghost Power | NVML Blind | Power Recovery |
+|---|---|---|---|---|---|
+| A100 SXM | HBM2e | 457–465 MB | 357W | No | Partial |
+| H100 SXM | HBM2e | 457 MB | 86W | No | Partial |
+| H200 SXM | HBM3e | 529–1,630 MB | 136W | No | Partial |
+| B200 SXM | HBM3e | 628–728 MB | 549–574W | Yes (FP16 complete blackout) | None |
+| A100 PCIe | GDDR6 | 0 MB | 0W | No | Full |
+| T4 | GDDR6 | 0 MB | 0W | No | Full |
+| RTX 4090 | GDDR6X | 0 MB | 0W | No | Full |
+
+---
+
+**Acknowledgments:** TDX attestation and on-chain anchoring (Section 6) provided in collaboration with Serial Alice / Sirius GreenTech (Nelson Vicente).
+
+**Researcher:** Manmohan (Mike) Bains, Duncan, BC, Canada
