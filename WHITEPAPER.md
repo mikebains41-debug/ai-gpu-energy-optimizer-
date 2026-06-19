@@ -148,15 +148,15 @@ Every cloud provider security or billing dashboard built on NVML — which is to
 
 ### 3.5 Comparison to Prior Art: LeftoverLocals (CVE-2023-4969)
 
-Trail of Bits' January 2024 disclosure (CVE-2023-4969, "LeftoverLocals") demonstrated that GPU local memory — registers and shared memory used within a single kernel invocation — could leak between kernel invocations on the same GPU, within a single session.
+Trail of Bits' January 2024 disclosure (CVE-2023-4969, "LeftoverLocals") demonstrated that GPU *local* memory — the on-chip registers and shared memory used by GPU kernels — was not always cleared between uses, letting one process's kernel read data left behind by another process's kernel on a shared GPU. The researchers published a working proof-of-concept that recovered real data across this boundary, including reconstructing another user's LLM session output (up to ~181MB per query on one AMD GPU). The affected vendors were Apple, AMD, Qualcomm, and Imagination; NVIDIA confirmed during the coordinated disclosure that its GPUs were not affected.
 
-This research describes a different and substantially larger attack surface, for three concrete reasons:
+The VRAM residual finding in this document is a distinct and complementary issue, not a larger version of the same one. It differs along three axes:
 
-1. **Scope of memory affected.** LeftoverLocals concerned local registers and shared memory, typically kilobytes to low megabytes in scale. This research concerns full VRAM allocations, measured in hundreds of megabytes to over a gigabyte.
-2. **Persistence boundary.** LeftoverLocals leakage occurred within a single user's session, between kernel calls they controlled. The VRAM residual finding persists *across a full process exit*, after the allocating process has terminated entirely and a completely different tenant's process may be scheduled onto the same physical GPU.
-3. **Detectability.** LeftoverLocals was at least partially observable through existing GPU profiling approaches. The VRAM residual finding is invisible to every NVML-based monitoring tool, including the ones cloud providers use for their own security dashboards — there is currently no existing tool, to our knowledge, that would alert an operator to this state.
+1. **Memory tier.** LeftoverLocals concerned on-chip local/shared memory, typically kilobytes to low megabytes per leak. This finding concerns global VRAM (HBM) allocations, measured at 382MB–1,630MB of residual after a process exits.
+2. **Persistence boundary.** LeftoverLocals leaked between kernel invocations on a shared GPU. The residual here persists *across a full process exit* — the allocating process has terminated entirely, and the memory is not zeroed until overwritten or until a hard SIGKILL forces reclamation. Whether a subsequently scheduled tenant can read that residual across a real allocation boundary is the proof-of-concept identified as the top priority in Section 7, and is not yet demonstrated here.
+3. **Vendor and form factor.** LeftoverLocals did not affect NVIDIA. This finding is specific to NVIDIA SXM parts with HBM memory and is absent on every PCIe/GDDR part tested — placing it on hardware the prior work did not cover.
 
-In short: where LeftoverLocals showed that a workload could leak into itself, this finding shows that a workload can leak into a different tenant entirely, at a much larger scale, with no existing detection mechanism.
+A note on maturity, stated plainly: LeftoverLocals is the more developed result — it shipped with a working cross-process exploit recovering real data. This finding is at an earlier stage: a confirmed, hardware-measured memory-management and observability defect, with the cross-tenant exploitation pathway still to be demonstrated (Section 7). The contribution is not "bigger than LeftoverLocals" but "a different memory region, a longer persistence boundary, and a vendor LeftoverLocals left untouched."
 
 ---
 
