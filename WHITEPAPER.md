@@ -148,7 +148,7 @@ Every cloud provider security or billing dashboard built on NVML — which is to
 
 ### 3.5 Comparison to Prior Art: LeftoverLocals (CVE-2023-4969)
 
-Trail of Bits' 2023 disclosure (CVE-2023-4969, "LeftoverLocals") demonstrated that GPU local memory — registers and shared memory used within a single kernel invocation — could leak between kernel invocations on the same GPU, within a single session.
+Trail of Bits' January 2024 disclosure (CVE-2023-4969, "LeftoverLocals") demonstrated that GPU local memory — registers and shared memory used within a single kernel invocation — could leak between kernel invocations on the same GPU, within a single session.
 
 This research describes a different and substantially larger attack surface, for three concrete reasons:
 
