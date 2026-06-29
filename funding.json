@@ -1,0 +1,77 @@
+{
+  "$schema": "https://floss.fund/schema/v1.0.0/funding.schema.json#",
+  "version": "v1.0.0",
+  "entity": {
+    "type": "individual",
+    "role": "maintainer",
+    "name": "Manmohan Mike Bains",
+    "email": "mikebains41@gmail.com",
+    "phone": "",
+    "description": "Independent GPU security and energy researcher based in Duncan, British Columbia, Canada. Solo maintainer of GPU Energy Optimizer and Watchdog AIDR. Filed CVE-2048350 (CVSS 8.4) for NVIDIA GPU VRAM residual data exposure affecting all major NVIDIA SXM architectures."
+  },
+  "projects": [
+    {
+      "guid": "gpu-energy-optimizer",
+      "name": "GPU Energy Optimizer",
+      "description": "GPU energy observability and security platform. Measures Compute Energy Intensity (FLOPs/joule) across NVIDIA A100, H100, H200, B200, B300 hardware. Detects ghost power — sustained elevated power draw during reported idle windows invisible to NVML. 42 validated tests. 15 blockchain-anchored certificates via Serial Alice independent attestation on NVIDIA H200 inside Intel TDX confidential compute enclave — all overall_valid. CVE-2048350 CVSS 8.4 filed 2026-05-31. Hardware Abstraction Layer supports NVIDIA, Broadcom Jalapeño, Google TPU, Amazon Trainium. EU AI Act Article 9 and Article 53 compliance measurement. Kubernetes DaemonSet for 1000-GPU fleet deployment. Live Prometheus and Grafana monitoring stack. Cross-GPU isolation failure validated: GPU1 picked up 528MB residual data from GPU0 at 0% utilization — NVML blind throughout.",
+      "webpageUrl": {
+        "url": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-",
+        "isPrivate": false
+      },
+      "licenses": ["Source-Available"],
+      "tags": [
+        "gpu", "energy", "security", "nvidia", "observability",
+        "kubernetes", "eu-ai-act", "cve", "ghost-power", "cei",
+        "tee", "attestation", "confidential-compute", "vram"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "github-sponsors",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/mikebains41-debug",
+        "description": "GitHub Sponsors"
+      }
+    ],
+    "plans": [
+      {
+        "guid": "cross-gpu-isolation",
+        "name": "Cross-GPU Isolation Validation",
+        "description": "Extend the public test suite to multi-GPU environments. Validate cross-GPU VRAM residual exposure across H100, H200, B200, B300 architectures. Results and full methodology published openly. Requires minimum 2-GPU rental on Vast.ai or RunPod.",
+        "amount": 30000,
+        "currency": "USD",
+        "frequency": "one-time"
+      },
+      {
+        "guid": "fp8-precision-measurement",
+        "name": "FP8 Precision Energy Measurement",
+        "description": "Validate FP8 kernel optimization on real hardware and extend the open CEI measurement standard to quantized inference workloads. Addresses gap identified in Serial Alice Independent Validation Report June 2026. All results published openly.",
+        "amount": 40000,
+        "currency": "USD",
+        "frequency": "one-time"
+      },
+      {
+        "guid": "bmc-pdu-telemetry",
+        "name": "BMC/PDU Telemetry Integration",
+        "description": "Extend GPU Optimizer beyond NVML to host-level power measurement. Addresses the measurement boundary gap identified in Serial Alice dossier — NVML reports board power only, leaving PSU/VRM/cooling unmeasured. Requires bare metal access with BMC/IPMI.",
+        "amount": 25000,
+        "currency": "USD",
+        "frequency": "one-time"
+      },
+      {
+        "guid": "sustaining-maintenance",
+        "name": "Sustaining Maintenance",
+        "description": "Fund ongoing GPU Optimizer development, test validation across new GPU architectures as they are released, EU AI Act compliance updates, and continued CVE security research on multi-tenant GPU infrastructure.",
+        "amount": 50000,
+        "currency": "USD",
+        "frequency": "one-time"
+      }
+    ],
+    "history": null
+  }
+}
