@@ -5,8 +5,20 @@ try:
 except ImportError:
     print("Run: pip install pynvml"); sys.exit(1)
 
-GHOST_POWER_W = 90.0
-DESYNC_POWER_W = 100.0
+def _measure_idle_baseline():
+    """Sample power for 1s at startup to get a real idle baseline."""
+    pynvml.nvmlInit()
+    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    samples = []
+    for _ in range(5):
+        pw = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0
+        samples.append(pw)
+        time.sleep(0.2)
+    return sum(samples) / len(samples)
+
+_IDLE_BASELINE_W = _measure_idle_baseline()
+GHOST_POWER_W = round(_IDLE_BASELINE_W + 8.0, 2)    # Dynamic idle+8W — same method as M2
+DESYNC_POWER_W = round(_IDLE_BASELINE_W + 20.0, 2)  # Dynamic idle+20W for desync threshold
 DESYNC_UTIL_PCT = 5.0
 LOCKED_MEM_CLOCK = 1593
 POLL_INTERVAL = 1.0
