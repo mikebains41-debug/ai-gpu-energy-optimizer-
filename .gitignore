@@ -44,3 +44,5 @@ scripts/
 config.yaml
 CLAUDE.md
 node_modules/
+__pycache__/
+*.pyc
