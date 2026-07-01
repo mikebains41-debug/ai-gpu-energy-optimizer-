@@ -33,24 +33,43 @@
 
 **GPU energy observability platform with multi-provider anomaly detection** — per-user API keys, time-series metrics, anomaly detection across 17 cloud GPU providers, live APIs, and Grafana dashboards.
 
-> «Built from an Android phone using Termux. © 2026 Mike Bains — Source available for research and evaluation.»
+> «Built from an Android phone using Termux. © 2026 Manmohan (Mike) Bains — Source available for research and evaluation.»
 
 ---
 
-## 💼 Commercial Use & Licensing
+## 💼 Commercial Use and Licensing
 
-**This is NOT open-source software.** This is source-available software with restricted commercial use.
+This is NOT open-source software. This is source-available software with restricted commercial use.
 
-**Need commercial deployment?** Contact mikebains41@gmail.com for:
-- Production deployment licenses
-- Enterprise support agreements
-- OEM integration rights
-- Managed service provider licenses
-- Cloud provider partnerships
+### You may
+- Use for personal research and testing
+- Deploy for internal evaluation up to 50 GPUs
+- Contribute bug fixes and improvements
+- Share anonymized telemetry for CEI benchmark
 
-**Pricing starts at $25K/year** for commercial deployments. Custom pricing available for volume deployments and strategic partnerships.
+### You may NOT
+- Use for commercial purposes without a license
+- Resell, relicense, or host as a managed service
+- Deploy in production without a commercial license
+- Replicate the DESYNC/GHOST anomaly detection methodology in competing products
 
-**Current commercial license holders:** [None yet — be the first!]
+### Commercial Licensing
+
+GPU Optimizer is available for commercial deployment under a per-deployment license.
+Pricing is based on GPU count and deployment scale.
+
+Contact mikebains41@gmail.com with:
+- Number of GPUs in deployment
+- Deployment environment (cloud, bare metal, hybrid)
+- Use case (energy optimization, compliance reporting, security)
+
+### Intellectual Property
+
+The DESYNC/GHOST anomaly detection method, CEI benchmark standard,
+ratio-based CEI gating, and VRAM residual detection method are proprietary
+intellectual property of GPU Optimizer Inc. Patent pending.
+
+Copyright 2026 Manmohan (Mike) Bains. All rights reserved.
 
 ---
 
@@ -270,7 +289,7 @@ The GPU Energy Optimizer includes an opt-in telemetry sharing feature to build t
 
 **What we NEVER collect:** Instance IDs, account names, job payloads, IP addresses, or API keys.
 
-**Data Rights:** By contributing telemetry data, you grant Mike Bains a non-exclusive, royalty-free license to use anonymized, aggregated data for CEI benchmark development, anomaly detection improvement, provider reliability reporting, and academic research. You retain full ownership of your raw telemetry. Individual contributor data is never identified without explicit consent.
+**Data Rights:** By contributing telemetry data, you grant Manmohan (Mike) Bains a non-exclusive, royalty-free license to use anonymized, aggregated data for CEI benchmark development, anomaly detection improvement, provider reliability reporting, and academic research. You retain full ownership of your raw telemetry. Individual contributor data is never identified without explicit consent.
 
 For data requests or enterprise DPA: mikebains41@gmail.com
 
@@ -278,14 +297,14 @@ For data requests or enterprise DPA: mikebains41@gmail.com
 
 ## 🛡️ Intellectual Property
 
-The following are protected intellectual property of Mike Bains:
+The following are protected intellectual property of Manmohan (Mike) Bains:
 
 - **DESYNC Detection Algorithm**: Method for identifying GPU power/utilization desynchronization
 - **GHOST Detection Algorithm**: Method for identifying physically impossible telemetry states
 - **CEI (Compute Energy Intensity)**: Benchmark standard and calculation methodology
 - **Multi-Provider Telemetry Validation Framework**: Cross-cloud anomaly detection system
 
-**Trademarks:** DESYNC™, GHOST™, and CEI™ are trademarks of Mike Bains.
+**Trademarks:** DESYNC™, GHOST™, and CEI™ are trademarks of Manmohan (Mike) Bains.
 
 **Research Use:** Academic and non-commercial research use is permitted with proper citation. Commercial deployment requires explicit licensing.
 
@@ -315,11 +334,11 @@ This software is provided for research, evaluation, and non-commercial use only.
 - Deploy in production environments without a commercial license
 - Clone or replicate the DESYNC/GHOST detection methodology in competing products
 
-**Intellectual Property Notice:** The DESYNC/GHOST anomaly detection method, CEI benchmark standard, and related algorithms are proprietary intellectual property of Mike Bains. Commercial use requires a separate license agreement.
+**Intellectual Property Notice:** The DESYNC/GHOST anomaly detection method, CEI benchmark standard, and related algorithms are proprietary intellectual property of GPU Optimizer Inc.
 
 For commercial licensing: mikebains41@gmail.com
 
-© 2026 Mike Bains. All rights reserved.
+Copyright 2026 Manmohan (Mike) Bains. All rights reserved.
 
 *This notice is for informational purposes and does not constitute legal advice.*
 
