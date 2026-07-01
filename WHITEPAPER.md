@@ -6,7 +6,7 @@
 **Contact:** mikebains41@gmail.com
 **Repository:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 **Live API:** https://ai-gpu-brain-v3.onrender.com/docs
-**Related:** CVE Request 2048350 (filed with MITRE, 2026-05-31)
+**Related:** CVE-2048350 CVSS 8.4 (filed with MITRE, 2026-05-31, pending assignment)
 
 > **Revision note:** This document consolidates and supersedes the original multi-part research log (Parts I–IX, XI), which was published incrementally between May 19 and June 12, 2026. The underlying findings are unchanged; this revision removes redundant executive summaries, tightens claims that the original log stated more strongly than the evidence supports, and adds an explicit limitations section. Anyone citing specific figures should treat this version as authoritative over the original dated parts.
 
@@ -36,7 +36,7 @@ All tests were conducted independently, at personal expense, with no sponsorship
 
 The test harness used NVML (via `nvidia-smi` subprocess calls; `pynvml` was used only inside the TDX environment, per its provider's stack), custom Python workload generators (PyTorch matrix operations at varying precision and size), and continuous power/utilization/memory polling at sampling intervals from 10ms to 1s.
 
-As of June 12, 2026: **72+ validated tests across 7 architectures**, covering idle baselines, load ramps, sampling-rate sensitivity, sustained ghost-power windows, VRAM allocation/residual tests with both graceful and forced (`SIGKILL`) process termination, cross-GPU isolation tests, and one TDX-attested reproduction. All raw logs, JSON summaries, and screenshots are maintained in a private repository (available on request); a public subset is queryable via the live API.
+As of July 2026: **42 validated Morpheus suite tests (M1-M42) across 7 architectures, plus 15 independently attested Serial Alice certificates**, covering idle baselines, load ramps, sampling-rate sensitivity, sustained ghost-power windows, VRAM allocation/residual tests with both graceful and forced (`SIGKILL`) process termination, cross-GPU isolation tests, and one TDX-attested reproduction. All raw logs, JSON summaries, and screenshots are maintained in a private repository (available on request); a public subset is queryable via the live API.
 
 **A note on the testing environment:** all results in Sections 2–5 were collected on containerized cloud infrastructure (RunPod), not bare physical hardware with no hypervisor layer. The findings are hardware-measured (the power and memory figures come directly from NVML/the GPU, not from a simulation), but independent confirmation on true bare-metal hardware — with no virtualization layer between the test process and the silicon — has not yet been completed and is identified as a priority in Section 7.
 
@@ -306,7 +306,7 @@ Acknowledgments: Independent validation provided by Serial Alice / Sirius GreenT
 
 This research is hardware-measured and reproducible, but several gaps remain open. They are listed here explicitly rather than implied away, in descending order of priority:
 
-1. **No attack proof-of-concept yet exists.** Section 3 describes what *could* plausibly be present in residual VRAM (model weights, training data, API keys, inference outputs) based on what a typical workload places in GPU memory, but no test to date has demonstrated a second process actually reading recoverable, meaningful data out of another process's residual allocation. This is the single highest-priority next step: a concrete demonstration of "Process B recovers N bytes of Process A's data after Process A exits" would move this finding from a confirmed observability/memory-management defect with a plausible exposure pathway to a directly confirmed data-exposure vulnerability.
+1. **Cross-GPU data exposure is hardware-confirmed; same-GPU cross-tenant proof-of-concept is the remaining open item.** The cross-GPU isolation failure is confirmed hardware-measured: GPU1 retained 528MB of residual VRAM from GPU0 at 0% reported utilization on a 2x H200 pod. The same-GPU sequential question — can Process B read recoverable meaningful data from Process A's residual after Process A exits on the same GPU — has not yet been demonstrated with a working exploit. The SEC-AB/VRAM/KILL tests in the Serial Alice battery showed isolation held in the single-GPU CVM environment tested, with a working positive control confirming the scanner can detect a leak when one exists. A concrete cross-tenant proof-of-concept on shared physical hardware with sequential tenant allocation remains the highest-priority next step.
 
 2. **All testing to date has been on virtualized/containerized cloud infrastructure**, not on bare physical hardware with no hypervisor present. While the GPU-level measurements (power, memory) are hardware-sourced regardless of the virtualization layer above them, independent confirmation on true bare metal — particularly for the cross-tenant question — has not yet been completed.
 
@@ -338,11 +338,12 @@ Repository: https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 
 ## 9. Call to Action
 
-We are seeking three forms of collaboration:
+We are seeking four forms of collaboration:
 
-- **GPU cloud partnerships** — sponsored compute access (particularly true bare-metal access, per Limitation 2 above) to validate the cross-tenant exposure pathway directly.
-- **Research collaborations** — with security researchers or academic labs who can help design and execute the attack proof-of-concept described in Limitation 1.
+- **GPU cloud partnerships** — sponsored compute access (particularly true bare-metal access, per Limitation 2 above) to validate the cross-tenant exposure pathway directly and extend cross-GPU isolation testing across additional architectures.
+- **Research collaborations** — with security researchers or academic labs who can help design and execute the same-GPU cross-tenant proof-of-concept described in Limitation 1.
 - **NVIDIA and HBM vendor engagement** — to confirm or correct the architectural hypotheses in Sections 2.3 and 7, and to assess whether any findings are addressable via firmware/driver update.
+- **Responsible disclosure engagement** — CVE-2048350 (CVSS 8.4) has been filed with MITRE. We are seeking confirmation from NVIDIA and PyTorch maintainers on whether the VRAM residual behavior is addressable via CUDA memory allocator changes, and welcome coordinated disclosure engagement.
 
 All testing to date has been conducted independently and at personal expense.
 
