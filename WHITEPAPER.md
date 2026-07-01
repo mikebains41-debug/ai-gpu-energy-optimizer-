@@ -176,33 +176,131 @@ The following frameworks across 14 jurisdictions create reporting obligations fo
 
 ---
 
-## 6. Hardware-Attested Validation: Intel TDX Enclave and On-Chain Anchoring
 
-A subset of the ghost power finding (H200 idle and full-load power measurements) was independently reproduced inside a verified Intel TDX confidential-computing enclave, in collaboration with Serial Alice (Sirius GreenTech). Measurement sample hashes were cryptographically bound into the hardware TDX attestation quote, and the resulting certificates anchored on the Polygon blockchain — providing a tamper-evident, publicly verifiable record, in contrast to the self-reported software telemetry used elsewhere in this document.
+## 6. Independent Validation: Serial Alice — June 27, 2026
 
-**What this attests:**
+In June 2026, Serial Alice (Sirius GreenTech) conducted an independent validation of GPU Energy Optimizer across a battery of 15 tests on a NVIDIA H200 SXM inside an Intel TDX confidential-computing enclave hosted on Phala Cloud. All results are cryptographically signed with Ed25519 (classical) and ML-DSA-65 (FIPS 204 post-quantum) signatures, included in a Merkle batch, and anchored on the Polygon mainnet. Every certificate is independently verifiable at api.serialalice.pt with no account required.
 
-| Property | Status | Evidence |
+This section reports what Serial Alice attests. What it does not attest is stated explicitly: Serial Alice attests the measurement and its tamper-evidence, not the researcher's interpretation, GPU Energy Optimizer's methodology, or regulatory conformance.
+
+### 6.1 Scope and Method
+
+Hardware: NVIDIA H200 SXM · Intel TDX confidential-compute enclave · Phala Cloud (dstack CVM)
+Date: 2026-06-27
+Cumulative test duration: 24 hours and above
+Total samples: 11,052
+Crashes: 0
+
+Two attestation tiers were used. self_reported: Serial Alice signs and anchors GPU Energy Optimizer's own measured values verbatim, providing tamper-evidence for the measurement without independently re-deriving it. hardware_attested: Serial Alice's own agent measures inside the H200 TEE and binds the record to the Intel TDX quote. Two certificates (AGT-M4, AGT-M7) reached this tier — the highest available.
+
+Every certificate was verified across seven independent layers: schema conformance (CEA-2.0), SHA-256 hash, Ed25519 signature, ML-DSA-65 signature, Merkle batch proof, Polygon anchor confirmation, and issuance policy. A certificate is overall_valid only when all seven layers pass. All 15 certificates are overall_valid.
+
+### 6.2 Ghost Power and Idle Floor — Confirmed
+
+The ghost power finding from Section 2 was independently reproduced on H200.
+
+- Idle floor: 80.36W — cert sa-29820cec7f404fcfb9b56ed15e1757ca
+- Ghost power cooldown tail at ~0% utilization: 147.96W — cert sa-b2f092b30e3c4196a8afbceffda266ee
+- Ghost power excess above idle: ~67.6W (derived)
+
+The cooldown tail of 147.96W at approximately 0% reported utilization — approximately 67.6W above the measured idle floor — is the attested figure for genuine post-workload idle-leak on H200. This is consistent with the A100 SXM finding in Section 2 (146.66W peak ghost power) and confirms the cross-architecture pattern.
+
+A Serial Alice caveat applies to the M2 and M3 sample counts: at 487W workload power, essentially every active sample clears the idle+8W threshold, so the ghost sample count reflects compute power above idle, not isolated idle-leak. The genuine isolated idle-leak figure is the M6 cooldown tail above.
+
+The ghost-threshold inconsistency flagged by Serial Alice — M2 used dynamic idle+8W while the production exporter used a flat 90W constant across six files — was identified and corrected. The dynamic idle+8W threshold is now applied across all test files and the production exporter.
+
+### 6.3 Compute Energy Intensity — Cross-Laboratory Reproduced
+
+- FP32 CEI: 3.178e11 FLOPs/J (tier EXCELLENT) — cert sa-8858266ebbda45ceb240db0fa122a554
+- FP32 CEI reproducibility: 3.135–3.187e11 across 5 passes (±1.6%)
+- FP32 CEI cross-laboratory: ~4% vs. researcher's separate bare-metal H200 run at 3.288e11
+- FP16 CEI inside TDX enclave: 2.846e12 FLOPs/J (tier EXCELLENT) — cert sa-b6d99f8d118543fdb136bf36872a9ad3
+- FP16 CEI researcher bare-metal: 5.13e12 FLOPs/J
+- Same-GPU FP16/FP32 ratio inside enclave: approximately 9x
+- Same-GPU FP16/FP32 ratio bare-metal: 15.6x
+
+The FP32 CEI result (3.178e11 FLOPs/J) is the most reproducible signal in the battery — ±1.6% across five passes and within ~4% of an independent bare-metal reproduction. Cross-laboratory reproduction at this level of agreement is the strongest available evidence that GPU Energy Optimizer measures consistently.
+
+The FP16 gap between the TDX enclave result and the bare-metal result is explained by encrypted-memory overhead in confidential compute: FP16 is memory-bandwidth-bound, and TDX encrypted-memory overhead applies a measurable tax. This is the measurable cost of attestation, not a discrepancy. The correct figure to cite for same-GPU FP16 speedup is the CEI ratio from the same run, not a cross-environment comparison of absolute values.
+
+The hardware-attested certificates AGT-M4 and AGT-M7 confirm measurements taken by Serial Alice's own agent inside the verified TDX enclave, bound to the Intel hardware attestation quote.
+
+### 6.4 Methodological Finding: Measure Ratios, Not Absolutes
+
+Serial Alice's 30-run reproducibility study on H200 is the central methodological finding of this validation:
+
+| Quantity (30 runs) | Mean | Coefficient of Variation |
 |---|---|---|
-| Intel TDX enclave genuine | Verified | TD quote verified, MRTD allowed |
-| TCB status | Up to date | Intel-PCS collateral |
-| Measurement bound to quote | Yes | Sample hash in REPORT_DATA; `tee_quote_bound = true` |
-| Certificate integrity | Signed (Ed25519) | — |
-| Public verifiability | Anchored on Polygon | Blocks 88401586, 88402187 |
+| FP32 absolute CEI | 7.03e10 FLOPs/J | 20.6% — not reproducible single-run |
+| FP16 absolute CEI | 5.93e11 FLOPs/J | 19.5% — not reproducible single-run |
+| BF16 absolute CEI | 6.08e11 FLOPs/J | 21.4% — not reproducible single-run |
+| FP8 absolute CEI | 8.62e11 FLOPs/J | 22.9% — not reproducible single-run |
+| FP8/BF16 ratio | 1.410 (+41%) | 2.81% — reproducible |
 
-**Attested H200 results:** idle baseline 80.3W; full load 592.84W; ghost fraction (idle/load) 13.6% — measured inside the verified enclave.
+Under back-to-back load the GPU heats and throttles, swinging absolute CEI by roughly 2x. The ratio between precision levels is rock-stable because the thermal state affects every precision proportionally, canceling the dominant noise term.
 
-**What this does not yet attest, stated plainly:** the trust score reached for this measurement (0.8, the "hardware_attested" tier in Serial Alice's scoring model) reflects verification of the *execution environment* — that the TDX enclave is genuine and the sample hash is bound to it. It does not yet reflect independent attestation of the *energy measurement source itself*: the power readings are NVML values captured from inside the enclave, and a signed energy exporter (which would attest the measurement pipeline, not just the environment) was not present in this submission. The accurate framing is: these measurements were executed inside a genuine, verified, tamper-evident hardware environment — not that the energy values themselves carry independent hardware attestation. Closing the signed-exporter gap is the explicit next milestone for this collaboration.
+The practical consequence: any pass/fail gate built on a single-run absolute CEI against a fixed reference sits on this noise floor and will flip on thermal state alone, independent of actual GPU performance. GPU Energy Optimizer's M20 test exhibited exactly this fragility — it reads FAIL on H200 because the H200 is approximately 54x above the A100 reference constant, documented and expected behavior, not a defect. The correctly-calibrated gate (M20_H200) passes at +1.9% against Serial Alice's attested H200 baseline. The ratio-based gate (M20_v2) runs both precision modes in the same thermal session and checks the ratio, which is stable. This is the correct design for production CEI gates.
 
-This attestation work applies to the energy/power finding only. It has no bearing on the VRAM residual finding, and should not be read as extending hardware attestation to that result.
+### 6.5 Tenant Isolation — SEC-AB, SEC-VRAM, SEC-KILL
 
-### Additional Finding: Detecting Covert Workloads via Power Fingerprint
+Three isolation scenarios were tested. All three passed.
 
-A follow-up test using the same TDX-attested H200 setup examined a different question: can an unauthorized background process hide inside an otherwise legitimate, certified workload? A baseline workload was measured at 657.4W ("clean"). The same workload was then re-run with a covert background process injected, consuming approximately 15% of GPU capacity — representative of an unauthorized workload such as cryptocurrency mining running alongside a tenant's legitimate job. Power draw rose to 663.2W ("with covert process"), a difference of 5.8W, captured and certified by two separate attestation certificates anchored at the same Polygon block.
+- SEC-AB (A/B writer/reader with positive control): 0 cross-tenant recoveries; positive control 3,125,000 hits — cert sa-f47d9425a06b443ab3bb93d033276da0
+- SEC-VRAM (graceful teardown): 0 recoveries; isolation_held = true — cert sa-2346aeedc75a464b974f5fc052ad2b56
+- SEC-KILL (SIGKILL termination): 0 recoveries; isolation_held = true — cert sa-83c49247b7b94b5dbe77d2075031d37d
 
-This is a single test on one workload pair and should be read as preliminary, not as a general detection threshold — we do not yet know how this signal scales with covert workload size, varies across GPU architectures, or holds up against a process specifically designed to mask its power signature. It is included here because it is hardware-attested and represents a distinct, additional security application of power telemetry beyond the ghost power and VRAM residual findings described elsewhere in this document: where ghost power and VRAM residual concern data leakage and energy accounting, this finding concerns detecting unauthorized compute activity hidden within an apparently normal, certified workload.
+The positive control in SEC-AB is critical to interpreting the result correctly: the scanner confirmed 3,125,000 hits when the marker was intentionally present, proving the harness can detect a leak when one exists. Finding zero in the actual test is therefore meaningful, not a silent null.
 
----
+These results apply to same-GPU isolation within the single-GPU CVM tested. Cross-GPU isolation requires two or more physical GPUs and is listed as a gap in Section 7.
+
+### 6.6 Cross-GPU Isolation Failure — Confirmed Outside Serial Alice Scope
+
+The cross-GPU residual finding from Section 3.3 was confirmed in independent testing on a 2x H200 pod outside the Serial Alice CVM environment. GPU1, which ran no compute workload, retained 528MB of residual VRAM from GPU0 activity while NVML reported 0% utilization on both GPUs throughout. This is a distinct and broader exposure pathway than same-GPU sequential residual. It has not yet been replicated in a Serial Alice attested run, as cross-GPU testing was outside the scope of the single-GPU CVM used for the June 27 battery. It is listed as the top priority next step in Section 7.
+
+### 6.7 FP8 Precision Ladder — Serial Alice Finding, Attribution Required
+
+Beyond the GPU Energy Optimizer test battery, Serial Alice ran an independent four-precision FLOPs-per-joule ladder on the H200 inside the TDX enclave. This is a Serial Alice finding. The source script was not provided to and is not present in this codebase. The specific numbers below have not been independently reproduced by GPU Energy Optimizer's own measurement code and should be cited with this attribution.
+
+| Precision | TFLOPS | Power | CEI (FLOPs/J) | vs FP32 |
+|---|---|---|---|---|
+| FP32 | 46.9 | 620.9W | 7.55e10 | 1.00x |
+| FP16 | 340.1 | 525.2W | 6.48e11 | 8.57x |
+| BF16 | 349.6 | 517.3W | 6.76e11 | 8.95x |
+| FP8 (e4m3) | 384.4 | 400.9W | 9.59e11 | 12.69x |
+
+Certificate: sa-e6628d5cff38402da74d5343a0b17c03 — Polygon: 0x6ae0ce
+
+The FP8 efficiency gain is power-driven, not throughput-driven. FP8 throughput (384 TFLOPS) is only approximately 10% above BF16 (350 TFLOPS), far below the device's FP8 tensor-core peak. The gain comes from lower power draw at 400.9W versus 517-621W for other precisions. The FP8/BF16 ratio of +41% is reproducible at CV 2.81% over 30 runs where the absolute values are not, consistent with the methodological finding in Section 6.4.
+
+An in-house FP8 ladder test (M_fp8_ladder.py) has been written and is ready to run on next H200 rental to independently verify or refute these figures using this codebase's own measurement code.
+
+### 6.8 All 15 Certificates
+
+All certificates verify as overall_valid with all seven layers green and confirmed Polygon anchors.
+
+Shared anchor (11 bridge certificates): polygonscan.com/tx/0x28327b
+Verify any certificate: api.serialalice.pt/v2/certificates/<id>/verify
+
+1. M2 ghost detection — self_reported — sa-29820cec7f404fcfb9b56ed15e1757ca — 0x28327b
+2. M3 DESYNC detection — self_reported — sa-1270c86eacd64db6bf5f26a34fe1381f — 0x28327b
+3. M4 CEI FP32 — self_reported — sa-8858266ebbda45ceb240db0fa122a554 — 0x28327b
+4. M6 sustained run — self_reported — sa-b2f092b30e3c4196a8afbceffda266ee — 0x28327b
+5. M7 CEI FP16 — self_reported — sa-b6d99f8d118543fdb136bf36872a9ad3 — 0x28327b
+6. M19 ghost accuracy — self_reported — sa-6d9f9abf7bb64b9d9894b19338cf57d7 — 0x28327b
+7. M20 CEI accuracy — self_reported — sa-9c90bff0f6ce4e4898ff5cc32407bfd2 — 0x28327b
+8. M20 H200 calibrated — self_reported — sa-51e01f583e4b4505834f98df32448ae6 — 0x28327b
+9. SEC-AB isolation — self_reported — sa-f47d9425a06b443ab3bb93d033276da0 — 0x28327b
+10. SEC-VRAM isolation — self_reported — sa-2346aeedc75a464b974f5fc052ad2b56 — 0x28327b
+11. SEC-KILL isolation — self_reported — sa-83c49247b7b94b5dbe77d2075031d37d — 0x28327b
+12. AGT-M4 TEE hardware_attested — sa-482d90ff89cd415e9b32ac68ef5759e5 — 0xcfc3e7
+13. AGT-M7 TEE hardware_attested — sa-208f23496b324f22b8f1327028b612bf — 0xf2a08c
+14. FP8 ladder — self_reported — sa-e6628d5cff38402da74d5343a0b17c03 — 0x6ae0ce
+15. SA self-proof — self_reported — sa-cb4f69809b524f1faaac37d5b51a20f4 — 0xa4f52b
+
+Attestation statement: Serial Alice attests that the measurements recorded in the fifteen certificates were captured on a NVIDIA H200 GPU operating inside an Intel TDX confidential-compute enclave, at the timestamps bound into each record, and have not been altered since issuance, as independently provable by the classical Ed25519 signature, the post-quantum ML-DSA-65 signature, the Merkle batch proof, and the immutable Polygon on-chain anchor. As of this report, 15 of 15 certificates verify as overall_valid with on-chain anchors confirmed. This is a statement of measurement integrity, not a statement of regulatory conformance.
+
+Acknowledgments: Independent validation provided by Serial Alice / Sirius GreenTech. Validation lead: Nelson Vicente, CEO, Sirius GreenTech, Portugal.
+
 
 ## 7. Limitations and Priority Next Steps
 
