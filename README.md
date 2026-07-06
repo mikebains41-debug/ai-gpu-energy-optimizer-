@@ -367,3 +367,6 @@ GitHub Repository. https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 
 Interactive charts for all key findings:
 [View Charts](charts/gpu_security_charts.jsx)
+
+## Contact
+Mike Bains — mike@gpu-optimizer.com

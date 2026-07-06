@@ -400,3 +400,6 @@ All testing to date has been conducted independently and at personal expense.
 **Acknowledgments:** TDX attestation and on-chain anchoring (Section 6) provided in collaboration with Serial Alice / Sirius GreenTech (Nelson Vicente).
 
 **Researcher:** Manmohan (Mike) Bains, Duncan, BC, Canada
+
+## Contact
+Mike Bains — mike@gpu-optimizer.com
