@@ -12,12 +12,12 @@
 
 
 
-![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen)
+![License](https://img.shields.io/badge/License-Source--Available-blue)
 
 
 
 
-![Commercial Use](https://img.shields.io/badge/Commercial%20Use-Permitted-brightgreen)
+![Commercial Use](https://img.shields.io/badge/Commercial%20Use-License%20Required-red)
 
 
 
@@ -33,7 +33,7 @@
 
 **GPU energy observability platform with multi-provider anomaly detection** — per-user API keys, time-series metrics, anomaly detection across 17 cloud GPU providers, live APIs, and Grafana dashboards.
 
-> «Built from an Android phone using Termux. © 2026 Manmohan (Mike) Bains — Licensed under Apache 2.0 — free to use, modify, and distribute.»
+> «Built from an Android phone using Termux. © 2026 Manmohan (Mike) Bains — Source available for research and evaluation.»
 
 ---
 
