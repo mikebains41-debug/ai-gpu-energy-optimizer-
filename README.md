@@ -1,6 +1,6 @@
 ## 🔒 Security Findings
 
-**CVE-2048350 CVSS 8.4** — VRAM residual data leakage confirmed across A100, H100, H200, and B200 SXM. Filed with MITRE 2026-05-31.
+**CVE-2048350 CVSS 8.4 — Patent application in preparation. Published by GPU Optimizer Inc. (federally incorporated in Canada)** — VRAM residual data leakage confirmed across A100, H100, H200, and B200 SXM. Filed with MITRE 2026-05-31.
 
 👉 [View Interactive Security Findings Charts](https://ai-gpu-energy-optimizer.vercel.app/security-findings)
 

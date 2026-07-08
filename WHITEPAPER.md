@@ -7,6 +7,8 @@
 **Repository:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 **Live API:** https://ai-gpu-brain-v3.onrender.com/docs
 **Related:** CVE-2048350 CVSS 8.4 (filed with MITRE, 2026-05-31, pending assignment)
+**Patent status:** Canadian patent application in preparation — GPU Optimizer Inc.
+**Entity:** GPU Optimizer Inc., federally incorporated in Canada (July 2026)
 
 > **Revision note:** This document consolidates and supersedes the original multi-part research log (Parts I–IX, XI), which was published incrementally between May 19 and June 12, 2026. The underlying findings are unchanged; this revision removes redundant executive summaries, tightens claims that the original log stated more strongly than the evidence supports, and adds an explicit limitations section. Anyone citing specific figures should treat this version as authoritative over the original dated parts.
 
