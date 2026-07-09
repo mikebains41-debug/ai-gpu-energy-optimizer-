@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendCredentialsEmail } from '@/lib/email';
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Generate credentials
     const clusterId = `${companyName.toLowerCase().replace(/\s/g, '-')}-${Math.random().toString(36).slice(2, 10)}`;
-    const apiKey = `gpu_opt_${Math.random().toString(36) + Math.random().toString(36)}`;
+    const apiKey = `gpu_opt_${randomBytes(24).toString('hex')}`;
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 90);
 
