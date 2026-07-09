@@ -16,7 +16,7 @@ celery==5.4.0
 
 # GPU Monitoring
 pynvml==11.5.0
-aiohttp==3.11.0
+aiohttp==3.14.1
 
 # Observability
 prometheus-client==0.21.0
