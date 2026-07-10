@@ -133,6 +133,20 @@ A full multi-phase test profile on a 2x H200 SXM pod produced a result not seen 
 | After GPU0 compute, before cleanup | 19,030 MB | 910 MB |
 | After graceful cleanup | 1,102 MB | **528 MB** |
 
+```
+1. SAME-GPU SEQUENTIAL VECTOR (Multi-Tenancy)
+   [ Tenant A ] ───> Exits Gracefully ───> Leaves 382MB–1.6GB in VRAM
+                                                        │
+   [ Tenant B ] <─── Allocates Same GPU <───────────────┘ (Unzeroed Pages)
+
+
+2. CROSS-GPU CONCURRENT VECTOR (Pod Boundary Failure)
+   [ GPU 0: Active Workload ] ───( Leakage across Pod Fabric )───┐
+                                                                 ▼
+   [ GPU 1: Completely Idle ] <──────────────────────────────────┘
+   (Retains 528MB of Tenant A data at 0% reported utilization)
+```
+
 This is a meaningfully different and broader exposure pathway than same-GPU sequential residual: it suggests that in multi-GPU pod allocations, data can cross between GPUs within the same allocation boundary, not only between sequential tenants on one GPU. We have one test profile demonstrating this; it has not yet been characterized across other architectures or repeated to establish how reliably it reproduces, and that replication is listed in Section 7.
 
 ### 3.4 NVML Blindness Compounds the Risk
@@ -145,6 +159,24 @@ Across every layer tested, NVML's reporting failed to reflect reality:
 | Memory utilization during active allocation | 0% util.memory | Up to 19,030 MB loaded |
 | VRAM residual after exit | 0% util.memory | 382–1,630 MB resident |
 | Cleanup process exit code | 0 (success) | Up to 1,630 MB still resident |
+
+```
+       [ HARDWARE STATE ]
+   B200 drawing 549W–574W peak
+   A100 drawing 146W cooldown tail
+              │
+              ▼ (Driver Anomaly)
+       [ NVIDIA NVML LAYER ]
+   Blind to HBM Memory Clock Lock
+   Reports 0% gpu.utilization
+              │
+              ▼ (Standard API Polling)
+   [ MONITORING ENGINE PLATFORMS ]
+ (Datadog / Prometheus / Cloud Billing)
+              │
+              ▼
+   "System is fully idle/clean"
+```
 
 Every cloud provider security or billing dashboard built on NVML — which is to say, nearly every one in production use — will show a clean, idle GPU at the exact moment hundreds of megabytes to over a gigabyte of a previous workload's data remains physically resident.
 
