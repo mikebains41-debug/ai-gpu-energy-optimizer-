@@ -7,13 +7,13 @@
     "name": "Manmohan Mike Bains",
     "email": "mikebains41@gmail.com",
     "phone": "",
-    "description": "Independent GPU security and energy researcher based in Duncan, British Columbia, Canada. Solo maintainer of GPU Energy Optimizer and Watchdog AIDR. Filed CVE-2048350 (CVSS 8.4) for NVIDIA GPU VRAM residual data exposure affecting all major NVIDIA SXM architectures."
+    "description": "Independent GPU security and energy researcher based in Duncan, British Columbia, Canada. Solo maintainer of GPU Energy Optimizer and Watchdog AIDR. Reported to MITRE (2026-05-31) a VRAM residual data exposure affecting NVIDIA SXM architectures; CVE assignment pending, self-assessed CVSS 8.4."
   },
   "projects": [
     {
       "guid": "gpu-energy-optimizer",
       "name": "GPU Energy Optimizer",
-      "description": "GPU energy observability and security platform. Measures Compute Energy Intensity (FLOPs/joule) across NVIDIA A100, H100, H200, B200, B300 hardware. Detects ghost power — sustained elevated power draw during reported idle windows invisible to NVML. 42 validated tests. 15 blockchain-anchored certificates via Serial Alice independent attestation on NVIDIA H200 inside Intel TDX confidential compute enclave — all overall_valid. CVE-2048350 CVSS 8.4 filed 2026-05-31. Hardware Abstraction Layer supports NVIDIA, Broadcom Jalapeño, Google TPU, Amazon Trainium. EU AI Act Article 9 and Article 53 compliance measurement. Kubernetes DaemonSet for 1000-GPU fleet deployment. Live Prometheus and Grafana monitoring stack. Cross-GPU isolation failure validated: GPU1 picked up 528MB residual data from GPU0 at 0% utilization — NVML blind throughout.",
+      "description": "GPU energy observability and security platform. Measures Compute Energy Intensity (FLOPs/joule) across NVIDIA A100, H100, H200, B200, B300 hardware. Detects ghost power — sustained elevated power draw during reported idle windows invisible to NVML. 42 validated tests. 15 blockchain-anchored certificates via Serial Alice independent attestation on NVIDIA H200 inside Intel TDX confidential compute enclave — all overall_valid. Reported to MITRE 2026-05-31, CVE assignment pending, self-assessed CVSS 8.4. Hardware Abstraction Layer supports NVIDIA, Broadcom Jalapeño, Google TPU, Amazon Trainium. EU AI Act Article 9 and Article 53 compliance measurement. Kubernetes DaemonSet for 1000-GPU fleet deployment. Live Prometheus and Grafana monitoring stack. Cross-GPU isolation failure validated: GPU1 picked up 528MB residual data from GPU0 at 0% utilization — NVML blind throughout.",
       "webpageUrl": {
         "url": "https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-"
       },

@@ -7,7 +7,7 @@
 
 72+ validated hardware tests across 7 GPU architectures confirming two major research tracks — ghost power energy findings and VRAM security vulnerability.
 
-**CVE Request 2048350 filed 2026-05-31.**
+**Reported to MITRE 2026-05-31; no CVE number assigned yet.**
 
 ## Security Findings — VRAM Residual Data Leakage
 
