@@ -30,7 +30,7 @@ export default function GPUSecurityCharts() {
     <div style={{ background: "#0a0a0f", minHeight: "100vh", fontFamily: "monospace", color: "#e0e0e0", padding: 24 }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <div style={{ borderBottom: "1px solid #ff2244", paddingBottom: 16, marginBottom: 24 }}>
-          <div style={{ color: "#ff2244", fontSize: 11, letterSpacing: 4 }}>CVE REQUEST 2048350 · MANMOHAN MIKE BAINS · 2026-05-31</div>
+          <div style={{ color: "#ff2244", fontSize: 11, letterSpacing: 4 }}>REPORTED TO MITRE · CVE PENDING · MANMOHAN MIKE BAINS · 2026-05-31</div>
           <div style={{ fontSize: 22, fontWeight: "bold", color: "#fff", marginTop: 8 }}>AI GPU ENERGY OPTIMIZER</div>
           <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>Security Findings — 72+ Tests · 7 Architectures</div>
         </div>

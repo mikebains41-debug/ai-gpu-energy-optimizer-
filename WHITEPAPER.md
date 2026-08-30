@@ -6,7 +6,7 @@
 **Contact:** mikebains41@gmail.com
 **Repository:** https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 **Live API:** https://ai-gpu-brain-v3.onrender.com/docs
-**Related:** CVE-2048350 CVSS 8.4 (filed with MITRE, 2026-05-31, pending assignment)
+**Related:** GPU VRAM residual exposure — reported to MITRE 2026-05-31, no CVE assigned yet. Self-assessed CVSS 8.4, not independently reviewed.
 **Patent status:** Canadian patent application in preparation — GPU Optimizer Inc.
 **Entity:** GPU Optimizer Inc., federally incorporated in Canada (July 2026)
 
@@ -377,7 +377,7 @@ We are seeking four forms of collaboration:
 - **GPU cloud partnerships** — sponsored compute access (particularly true bare-metal access, per Limitation 2 above) to validate the cross-tenant exposure pathway directly and extend cross-GPU isolation testing across additional architectures.
 - **Research collaborations** — with security researchers or academic labs who can help design and execute the same-GPU cross-tenant proof-of-concept described in Limitation 1.
 - **NVIDIA and HBM vendor engagement** — to confirm or correct the architectural hypotheses in Sections 2.3 and 7, and to assess whether any findings are addressable via firmware/driver update.
-- **Responsible disclosure engagement** — CVE-2048350 (CVSS 8.4) has been filed with MITRE. We are seeking confirmation from NVIDIA and PyTorch maintainers on whether the VRAM residual behavior is addressable via CUDA memory allocator changes, and welcome coordinated disclosure engagement.
+- **Responsible disclosure engagement** — This issue has been reported to MITRE (2026-05-31); no CVE number has been assigned yet, with a self-assessed CVSS of 8.4 not independently reviewed. We are seeking confirmation from NVIDIA and PyTorch maintainers on whether the VRAM residual behavior is addressable via CUDA memory allocator changes, and welcome coordinated disclosure engagement.
 
 All testing to date has been conducted independently and at personal expense.
 
