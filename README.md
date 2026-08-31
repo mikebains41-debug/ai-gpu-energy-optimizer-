@@ -1,6 +1,6 @@
 ## 🔒 Security Findings
 
-**CVE-2048350 CVSS 8.4 — Patent application in preparation. Published by GPU Optimizer Inc. (federally incorporated in Canada)** — VRAM residual data leakage confirmed across A100, H100, H200, and B200 SXM. Filed with MITRE 2026-05-31.
+**VRAM Residual Data Leakage — reported to MITRE 2026-05-31, no CVE assigned yet (self-assessed CVSS 8.4, not independently reviewed). Patent application in preparation. Published by GPU Optimizer Inc. (incorporated in British Columbia, Canada)** — VRAM residual data leakage observed across A100, H200, and B200 SXM. H100 SXM shows residual as well but is clean on cold-boot ghost power (see Validated Findings). Filed with MITRE 2026-05-31.
 
 👉 [View Interactive Security Findings Charts](https://ai-gpu-energy-optimizer.vercel.app/security-findings)
 
@@ -81,8 +81,8 @@ Copyright 2026 Manmohan (Mike) Bains. All rights reserved.
 | Frontend Dashboard | https://ai-gpu-energy-optimizer.vercel.app |
 | A100 Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/a100 |
 | H100 Metrics | https://ai-gpu-brain-v3.onrender.com/metrics/h100 |
-| A100 Results (24 tests, example: /results/a100/test-01_idle_baseline) | https://ai-gpu-brain-v3.onrender.com/results/a100 |
-| H100 Results (11 tests, example: /results/h100/test-01_idle_baseline) | https://ai-gpu-brain-v3.onrender.com/results/h100 |
+| A100 Results (24 tests) | https://ai-gpu-brain-v3.onrender.com/results/a100 |
+| H100 Results (11 tests) | https://ai-gpu-brain-v3.onrender.com/results/h100 |
 | CEI Standard | https://ai-gpu-brain-v3.onrender.com/standards/cei |
 | GPU Compare API | https://ai-gpu-brain-v3.onrender.com/compare/gpu |
 | CEI Telemetry | https://gpu-core-private.onrender.com/telemetry/stats |
@@ -91,12 +91,12 @@ Copyright 2026 Manmohan (Mike) Bains. All rights reserved.
 
 ## ⚡ 60-Second Install
 
-\`\`\`bash
+```bash
 curl -fsSL https://get.docker.com | sh
 git clone https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 cd ai-gpu-energy-optimizer-
 docker-compose up
-\`\`\`
+```
 
 Open: http://localhost:3000
 
@@ -138,19 +138,17 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 
 ## 🔍 Anomaly Detection
 
-**GHOST** — GPU drawing 65-574W while NVML reports 0% utilization. Confirmed across A100, H200, B200 SXM. Invisible to DCGM, Prometheus, Datadog, and all NVML-based tools.
+**GHOST** — GPU drawing power while NVML reports 0% utilization. Sustained ghost power confirmed on A100, H200, and B200 SXM; short post-exit transient spikes (up to ~574W on B200) decay within about a second to the sustained level. Invisible to DCGM, Prometheus, Datadog, and all NVML-based tools.
 
 **DESYNC** — Power rail and NVML utilization counter are out of phase. GPU draws sustained high power while reported utilization lags or reads zero.
 
 **Validated Across:** AWS, GCP, Azure, RunPod, CoreWeave, Vast.ai, Lambda, Paperspace, Colab, Kaggle, HuggingFace, Salad, Voltage Park, Crusoe, Genesis, FluidStack, and Massed Compute.
 
----
-
 ## 📊 Validated Findings
 
-**CVE-2048350 CVSS 8.4 — VRAM Residual Data Leakage**
+**VRAM Residual Data Leakage — self-assessed CVSS 8.4, reported to MITRE 2026-05-31, no CVE assigned yet**
 - A100 SXM: 457-465MB residual after graceful PyTorch exit — SIGKILL clears to 0MB
-- H100 SXM: 457MB residual after graceful PyTorch exit
+- H100 SXM: ~529MB residual after graceful PyTorch exit (H100 is clean on cold-boot ghost power; VRAM residual is a separate, present effect)
 - H200 SXM: 529-629MB residual single workload, 1630MB full profile
 - B200 SXM: 628-728MB fixed residual regardless of compute precision
 - Cross-GPU isolation failure on H200 — GPU1 retained 528MB from GPU0 despite GPU1 idle
@@ -158,10 +156,10 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 - False clear signal — process exits code 0 while 1630MB remains exposed
 
 **Ghost Power**
-- A100 SXM: 146.66W at 0% utilization — architectural confirmed
-- B200 SXM: 144W cold boot, 549-574W ghost spike after process exit at 0% NVML
+- A100 SXM: 146.66W at 0% utilization — architectural, confirmed
+- B200 SXM: 144W cold boot; short post-exit transient up to 549-574W at 0% NVML, decaying within ~1s to sustained ghost power
 - H200 SXM: 147.96W post-load ghost power confirmed — Serial Alice cert sa-b2f092 2026-06-27
-- H100 SXM: Clean — Hopper HBM2e confirmed no ghost power
+- H100 SXM: Clean on cold boot — Hopper HBM2e shows no cold-boot ghost power (ghost power requires a prior workload to trigger)
 - HBM memory clock locked 24/7 — A100 1593MHz, B200 3996MHz — root cause confirmed
 
 **Performance Findings**
@@ -177,12 +175,9 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 
 ## 🏅 Independent Validation
 
-**Third-Party Attested — June 27, 2026**
+**Third-Party Attested — June 27, 2026 (prior to any commercial agreement)**
 
-Independently validated on NVIDIA H200 inside Intel TDX confidential compute enclave
-in collaboration with a European energy attestation partner.
-Ed25519 + ML-DSA-65 post-quantum signatures. Merkle batch. Polygon mainnet anchors.
-All certificates publicly verifiable on-chain with no account required.
+Independently validated on NVIDIA H200 inside Intel TDX confidential compute enclave in collaboration with a European energy attestation partner. This validation was performed on June 27, 2026, before any commercial agreement between the parties. Ed25519 + ML-DSA-65 post-quantum signatures. Merkle batch. Polygon mainnet anchors. All certificates publicly verifiable on-chain with no account required.
 
 - 24h+ cumulative testing. 11,052 samples. 0 crashes.
 - FP32 CEI 3.178e11 FLOPs/J confirmed ±1.6% across 5 independent passes
@@ -192,44 +187,13 @@ All certificates publicly verifiable on-chain with no account required.
 - Cross-GPU isolation failure 528MB confirmed on 2x H200
 - 15 blockchain-anchored certificates — all overall_valid across 7 verification layers
 
-This validation would not have been possible without the collaboration of our European partner.
-Full certificate details and Polygon anchors are in the whitepaper.
-
----
-
-## 🔌 Example API Usage
-
-\`\`\`bash
-curl -H "X-API-Key: YOUR_API_KEY" https://ai-gpu-brain-v3.onrender.com/metrics/a100
-curl https://ai-gpu-brain-v3.onrender.com/compare/gpu
-curl https://ai-gpu-brain-v3.onrender.com/standards/cei
-\`\`\`
-
----
-
-## 📡 API Coverage
-
-30+ endpoints covering:
-
-- Real-time ghost power detection
-- Compute Energy Intensity (CEI) benchmarking
-- A100 vs H100 comparative analysis
-- FP32 vs FP16 vs FP8 efficiency comparison
-- Matrix scaling analysis (2048 → 8192)
-- Prometheus metrics export
-- Grafana dashboard integration
-- SSE replay of recorded test runs
-- Job tracking and duration measurement
+This validation would not have been possible without the collaboration of our European partner. Full certificate details and Polygon anchors are in the whitepaper.
 
 ---
 
 ## 🧠 The CEI Standard
 
-Compute Energy Intensity (CEI) is a benchmark defined by this project.
-
-It measures: Floating-point operations delivered per joule during sustained GPU workloads.
-
-The goal is to normalize GPU efficiency measurements across providers, accelerators, and workload types.
+Compute Energy Intensity (CEI) is a benchmark defined by this project. It measures floating-point operations delivered per joule during sustained GPU workloads. The goal is to normalize GPU efficiency measurements across providers, accelerators, and workload types.
 
 ---
 
@@ -240,81 +204,9 @@ The goal is to normalize GPU efficiency measurements across providers, accelerat
 | 🔔 Slack Alerts | Real-time webhook on DESYNC or GHOST anomalies |
 | 💰 Cost Estimation | Convert power anomalies into estimated $ waste |
 | ⌨️ CLI Tool | gpuopt status / gpuopt submit |
-| 📊 Prometheus Exporter | Shipped — integration with existing monitoring stacks |
+| 📊 Prometheus Exporter | Shipped |
 | 📈 Energy Score Timeline | Historical efficiency scoring |
 | 🔄 Self-Update Script | Pull latest anomaly rules |
-
----
-
-## 🗺️ Full Feature Roadmap
-
-### Security & Access
-- SSO / OAuth login
-- Role-based access control
-- API key expiry and rotation
-
-### GPU Hardware
-- Tenstorrent support
-- AMD ROCm support
-- Apple Silicon MPS support
-- Intel Arc GPU support
-
-### Scheduling & Automation
-- Auto-migrate workloads on anomaly
-- Energy-aware job scheduling
-- Off-peak scheduling optimization
-
-### Reporting
-- Weekly energy reports
-- Carbon footprint estimation
-- Data center compliance reporting
-
-### Integrations
-- Weights & Biases
-- HuggingFace monitoring
-- Kubernetes operator
-- Terraform provider
-
-### Business Features
-- Multi-tenant billing dashboard
-- SLA monitoring per provider
-- Real-time provider cost comparison
-- Team chargeback reporting
-
-### Developer Experience
-- CLI tooling
-- Prometheus exporter
-- Self-update utility
-- Python and Node.js SDKs
-
----
-
-## 👤 Author
-
-**Manmohan (Mike) Bains**
-
-- Built entirely from Android + Termux — Samsung S25 Ultra
-- Independent GPU security and energy researcher, Duncan BC Canada
-- Focused on GPU observability, telemetry validation, energy benchmarking, and security
-- Open to infrastructure, observability, AI systems partnerships, and licensing
-
-Email: mikebains41@gmail.com
-
----
-
-## 📊 Benchmark Contribution (Optional)
-
-The GPU Energy Optimizer includes an opt-in telemetry sharing feature to build the CEI benchmark dataset. By enabling contribution, you help map systematic telemetry divergence across cloud providers and improve DESYNC/GHOST detection accuracy. All data is anonymized, aggregated, and used strictly for research and standardization. You retain full ownership of your raw metrics and may disable sharing at any time.
-
-**Enable via Docker Compose:** CEI_TELEMETRY=true
-
-**What we collect:** GPU model, cloud provider, power draw, utilization, workload type, anonymized anomaly flags.
-
-**What we NEVER collect:** Instance IDs, account names, job payloads, IP addresses, or API keys.
-
-**Data Rights:** By contributing telemetry data, you grant Manmohan (Mike) Bains a non-exclusive, royalty-free license to use anonymized, aggregated data for CEI benchmark development, anomaly detection improvement, provider reliability reporting, and academic research. You retain full ownership of your raw telemetry. Individual contributor data is never identified without explicit consent.
-
-For data requests or enterprise DPA: mikebains41@gmail.com
 
 ---
 
@@ -329,17 +221,10 @@ The following are protected intellectual property of Manmohan (Mike) Bains:
 
 **Trademarks:** DESYNC™, GHOST™, and CEI™ are trademarks of Manmohan (Mike) Bains.
 
-**Research Use:** Academic and non-commercial research use is permitted with proper citation. Commercial deployment requires explicit licensing.
-
 **Citation:**
-\`\`\`
-Bains, M. (2026). GPU Energy Optimizer: Telemetry Validation and Anomaly Detection.
-GitHub Repository. https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
-\`\`\`
-
----
-
-
+```
+Bains, M. (2026). GPU Energy Optimizer: Telemetry Validation and Anomaly Detection. GitHub Repository. https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
+```
 
 ---
 
@@ -348,25 +233,18 @@ GitHub Repository. https://github.com/mikebains41-debug/ai-gpu-energy-optimizer-
 ### Hardware Test Results
 - 24 A100 SXM tests — publicly queryable
 - 11 H100 SXM tests — publicly queryable
-- Query any result: `curl https://ai-gpu-brain-v3.onrender.com/results/a100/1`
 
 ### Platform Validation — 40/40 Tests Passing
 
-- All public API endpoints (health, metrics, engine, standards, compare, results)
+- All public API endpoints
 - DESYNC and GHOST anomaly detection validated against A100 and H100 power envelopes
 - 17 cloud provider telemetry validation
-- Database operations (insert, query, aggregation)
+- Database operations
 - API key authentication and authorization
 - Kubernetes and Run:ai integration hooks
 - CEI benchmark calculation and persistence
 
 **Full test suite: 42/42 Morpheus passing. Plus 15 Serial Alice blockchain-anchored certificates on H200 inside Intel TDX.**
-
-
-## 📊 Security Findings Charts
-
-Interactive charts for all key findings:
-[View Charts](charts/gpu_security_charts.jsx)
 
 ## Contact
 Mike Bains — mike@gpu-optimizer.com
