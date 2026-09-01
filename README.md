@@ -102,6 +102,32 @@ Open: http://localhost:3000
 
 ---
 
+## 🔌 Example API Usage
+
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" https://ai-gpu-brain-v3.onrender.com/metrics/a100
+curl https://ai-gpu-brain-v3.onrender.com/compare/gpu
+curl https://ai-gpu-brain-v3.onrender.com/standards/cei
+```
+
+---
+
+## 📡 API Coverage
+
+30+ endpoints covering:
+
+- Real-time ghost power detection
+- Compute Energy Intensity (CEI) benchmarking
+- A100 vs H100 comparative analysis
+- FP32 vs FP16 vs FP8 efficiency comparison
+- Matrix scaling analysis (2048 → 8192)
+- Prometheus metrics export
+- Grafana dashboard integration
+- SSE replay of recorded test runs
+- Job tracking and duration measurement
+
+---
+
 ## 🏗️ Architecture
 
 GPU Agent → FastAPI Backend → SQLite/PostgreSQL → Grafana Dashboard
