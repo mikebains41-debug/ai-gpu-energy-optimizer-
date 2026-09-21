@@ -1,6 +1,6 @@
 ## 🔒 Security Findings
 
-**VRAM Residual Data Leakage — reported to MITRE 2026-05-31, no CVE assigned yet (self-assessed CVSS 8.4, not independently reviewed). Patent application in preparation. Published by GPU Optimizer Inc. (incorporated in British Columbia, Canada)** — VRAM residual data leakage observed across A100, H200, and B200 SXM. H100 SXM shows residual as well but is clean on cold-boot ghost power (see Validated Findings). Filed with MITRE 2026-05-31.
+**VRAM Residual Accounting Gap — reported to MITRE 2026-05-31, no CVE assigned yet. Patent application in preparation. Published by GPU Optimizer Inc. (incorporated in British Columbia, Canada)** — GPU memory remains reported as allocated after the owning process exits, observed across A100, H200, and B200 SXM. Direct testing found no data recoverable from the residual: this is an accounting and capacity-integrity gap, not data leakage, and no CVSS score is attached (see Validated Findings). H100 SXM shows residual as well but is clean on cold-boot ghost power (see Validated Findings). Filed with MITRE 2026-05-31.
 
 👉 [View Interactive Security Findings Charts](https://ai-gpu-energy-optimizer.vercel.app/security-findings)
 
@@ -172,14 +172,53 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 
 ## 📊 Validated Findings
 
-**VRAM Residual Data Leakage — self-assessed CVSS 8.4, reported to MITRE 2026-05-31, no CVE assigned yet**
-- A100 SXM: 457-465MB residual after graceful PyTorch exit — SIGKILL clears to 0MB
-- H100 SXM: ~529MB residual after graceful PyTorch exit (H100 is clean on cold-boot ghost power; VRAM residual is a separate, present effect)
-- H200 SXM: 529-629MB residual single workload, 1630MB full profile
-- B200 SXM: 628-728MB fixed residual regardless of compute precision
-- Cross-GPU isolation failure on H200 — GPU1 retained 528MB from GPU0 despite GPU1 idle
+**VRAM Residual Accounting Gap — reported to MITRE 2026-05-31, no CVE assigned yet**
+
+GPU memory remains reported as allocated after the owning process exits, while
+NVML reports 0% memory utilization throughout. Invisible to DCGM, Prometheus,
+and Datadog.
+
+- A100 SXM: 457-465MB after graceful PyTorch exit; SIGKILL clears to 0MB
+- H100 SXM: ~529MB after graceful PyTorch exit (H100 is clean on cold-boot ghost power; the VRAM residual is a separate, present effect)
+- H200 SXM: 529-629MB single workload, 1630MB full profile
+- B200 SXM: 628-728MB, fixed regardless of compute precision, and exit-path independent
+- H200 SXM on bare RunPod (2026-09-19): SIGKILL and SIGTERM both clear the accounting completely — 0.0MB residual, watched for 90s and 60s
 - NVML reports 0% throughout — invisible to DCGM, Prometheus, Datadog
-- False clear signal — process exits code 0 while 1630MB remains exposed
+- False clear signal — the process exits code 0 while the memory remains unreclaimed and NVML reports the GPU as idle. An operator or scheduler reading NVML sees capacity that is not actually available.
+
+**What this is not.** No data is recoverable from the residual. Direct tests
+wrote a known byte pattern into VRAM, ended the owning process (gracefully in
+one test, by SIGKILL in another), then allocated a fresh buffer and read it for
+240 seconds. Both returned zero pattern matches and zero nonzero bytes,
+sustained. Reproduced independently on B200 and again on H200 (2026-09-19,
+pattern_byte_matches 0, nonzero_bytes 0). This is an accounting and capacity
+integrity problem, not data leakage. It is characterized that way here
+deliberately, rather than left for a reviewer to discover.
+
+No CVSS score is attached. CVSS scores vulnerabilities; an accounting gap of
+this kind has no attack vector and no confidentiality impact. An earlier
+self-assessed 8.4 was published before the recovery tests were run and has been
+withdrawn.
+
+**Cross-GPU residual — environment-specific, and worth pursuing.** A 528MB
+retention on GPU1 following a GPU0 workload was measured on 2x H200 inside an
+Intel TDX confidential compute enclave (Serial Alice, 2026-06-27, blockchain-
+anchored certificate). It did not reproduce on bare-metal RunPod H200: on
+2026-09-19 all three GPU pairs were measured simultaneously during a GPU0-only
+workload, and GPU1, GPU2 and GPU3 did not move by a single megabyte while GPU0
+went 4MB -> 1140MB -> 628MB. The 3MB deltas seen in an earlier bare-metal check
+were CUDA context peer-mapping overhead, which appears on every peer GPU at
+context creation regardless of workload.
+
+Two measurements, two environments, two different results. We have not tested a
+CVM ourselves, so the Serial Alice measurement is not contradicted by ours — it
+is bounded by it. The working hypothesis is that the confidential-compute path
+itself is implicated: inside a TEE, GPU memory is mediated by the hypervisor and
+the enclave rather than allocated directly, a different code path from bare
+metal. If that holds, a cross-GPU retention that appears under TDX and not on
+bare metal is a more consequential finding than a general H200 one, since
+confidential computing is where tenant isolation is supposed to be strongest.
+Stated as an open question, not a conclusion — it needs a CVM session to settle.
 
 **Ghost Power**
 - A100 SXM: 146.66W at 0% utilization — architectural, confirmed
