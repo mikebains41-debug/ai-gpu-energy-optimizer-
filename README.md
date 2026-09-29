@@ -1,6 +1,6 @@
 ## 🔒 Security Findings
 
-**VRAM Residual Accounting Gap — reported to MITRE 2026-05-31, no CVE assigned yet. Patent application in preparation. Published by GPU Optimizer Inc. (incorporated in British Columbia, Canada)** — GPU memory remains reported as allocated after the owning process exits, observed across A100, H200, and B200 SXM. Direct testing found no data recoverable from the residual: this is an accounting and capacity-integrity gap, not data leakage, and no CVSS score is attached (see Validated Findings). H100 SXM shows residual as well but is clean on cold-boot ghost power (see Validated Findings). Filed with MITRE 2026-05-31.
+**VRAM Residual Accounting Gap — reported to MITRE 2026-05-31, no CVE assigned yet. Patent application in preparation. Published by GPU Optimizer Inc. (incorporated in British Columbia, Canada)** — GPU memory remains reported as allocated after the owning process exits, observed across A100, H200, and B200 SXM. Direct testing found no data recoverable from the residual: this is an accounting and capacity-integrity gap, not data leakage, and no CVSS score is attached (see Validated Findings). H100 SXM shows the residual as well. Filed with MITRE 2026-05-31.
 
 👉 [View Interactive Security Findings Charts](https://ai-gpu-energy-optimizer.vercel.app/security-findings)
 
@@ -67,7 +67,7 @@ Contact mikebains41@gmail.com with:
 
 The DESYNC/GHOST anomaly detection method, CEI benchmark standard,
 ratio-based CEI gating, and VRAM residual detection method are proprietary
-intellectual property of GPU Optimizer Inc. Patent pending.
+intellectual property of GPU Optimizer Inc. Patent pending — Canadian patent application 3,317,464.
 
 Copyright 2026 Manmohan (Mike) Bains. All rights reserved.
 
@@ -164,7 +164,7 @@ AWS • GCP • Azure • RunPod • CoreWeave • Vast.ai • Lambda • Papers
 
 ## 🔍 Anomaly Detection
 
-**GHOST** — GPU drawing power while NVML reports 0% utilization. Sustained ghost power confirmed on A100, H200, and B200 SXM; short post-exit transient spikes (up to ~574W on B200) decay within about a second to the sustained level. Invisible to DCGM, Prometheus, Datadog, and all NVML-based tools.
+**GHOST** — GPU drawing power while NVML reports 0% utilization. Sustained ghost power confirmed on A100, H100, H200, B200 and B300; short post-exit transient spikes (up to ~574W on B200) decay within about a second to the sustained level. Invisible to utilization-based monitoring (DCGM, Prometheus, Datadog dashboards).
 
 **DESYNC** — Power rail and NVML utilization counter are out of phase. GPU draws sustained high power while reported utilization lags or reads zero.
 
@@ -179,7 +179,7 @@ NVML reports 0% memory utilization throughout. Invisible to DCGM, Prometheus,
 and Datadog.
 
 - A100 SXM: 457-465MB after graceful PyTorch exit; SIGKILL clears to 0MB
-- H100 SXM: ~529MB after graceful PyTorch exit (H100 is clean on cold-boot ghost power; the VRAM residual is a separate, present effect)
+- H100 SXM: ~529MB after graceful PyTorch exit
 - H200 SXM: 529-629MB single workload, 1630MB full profile
 - B200 SXM: 628-728MB, fixed regardless of compute precision, and exit-path independent
 - H200 SXM on bare RunPod (2026-09-19): SIGKILL and SIGTERM both clear the accounting completely — 0.0MB residual, watched for 90s and 60s
@@ -221,11 +221,21 @@ confidential computing is where tenant isolation is supposed to be strongest.
 Stated as an open question, not a conclusion — it needs a CVM session to settle.
 
 **Ghost Power**
-- A100 SXM: 146.66W at 0% utilization — architectural, confirmed
-- B200 SXM: 144W cold boot; short post-exit transient up to 549-574W at 0% NVML, decaying within ~1s to sustained ghost power
-- H200 SXM: 147.96W post-load ghost power confirmed — Serial Alice cert sa-b2f092 2026-06-27
-- H100 SXM: Clean on cold boot — Hopper HBM2e shows no cold-boot ghost power (ghost power requires a prior workload to trigger)
-- HBM memory clock locked 24/7 — A100 1593MHz, B200 3996MHz — root cause confirmed
+
+A GPU drawing well above its idle floor while NVML reports 0% utilization, because an attached program keeps the compute clock at full speed.
+
+| | True idle | Program attached, 0% util | Ghost | Share |
+|---|---|---|---|---|
+| A100 SXM | 66.70 W | 87.73 W | 21.0 W | 24% |
+| H100 SXM | 70.65 W | 119.59 W | 48.9 W | 41% |
+| H200 | 76.12 W | 124.51 W | 48.4 W | 39% |
+| B200 | 139.35 W | 189.77 W | 50.4 W | 27% |
+| B300 SXM6 | 135.31 W | 186.15 W | 50.8 W | 27% |
+
+- **B200:** short post-exit transient up to 549–574 W, decaying within about a second to the sustained level.
+- **H200 inside Intel TDX** (Serial Alice, 27 June 2026): 147.96 W ghost, 80.36 W floor — cert sa-b2f092.
+- **Cause:** the compute clock, not memory — r² 0.935 on H100 and 0.974 on H200 against compute clock; 0.000 against memory clock.
+- **Confirmed with full administrator access** (H100, Google Cloud, 17 September 2026): 69.25 W true idle, 119.06 W at 0% utilization, and 41% recovered with the program still running — cert sa-4c8d18e79879477d9821a0da87786202.
 
 **Performance Findings**
 - H100 SXM idle baseline 69-76W
@@ -249,7 +259,7 @@ Independently validated on NVIDIA H200 inside Intel TDX confidential compute enc
 - Ghost power 147.96W at 0% utilization confirmed — cert sa-b2f092
 - Idle floor 80.36W confirmed — cert sa-29820c
 - Tenant isolation held in 3 independent scenarios with working positive control
-- Cross-GPU isolation failure 528MB confirmed on 2x H200
+- 528 MB cross-GPU retention measured on 2x H200 under Intel TDX; did not reproduce on bare metal
 - 15 blockchain-anchored certificates — all overall_valid across 7 verification layers
 
 This validation would not have been possible without the collaboration of our European partner. Full certificate details and Polygon anchors are in the whitepaper.
@@ -280,7 +290,7 @@ Compute Energy Intensity (CEI) is a benchmark defined by this project. It measur
 The following are protected intellectual property of Manmohan (Mike) Bains:
 
 - **DESYNC Detection Algorithm**: Method for identifying GPU power/utilization desynchronization
-- **GHOST Detection Algorithm**: Method for identifying physically impossible telemetry states
+- **GHOST Detection Algorithm**: Method for identifying telemetry states where utilization reads 0% while the card draws above its idle floor
 - **CEI (Compute Energy Intensity)**: Benchmark standard and calculation methodology
 - **Multi-Provider Telemetry Validation Framework**: Cross-cloud anomaly detection system
 
